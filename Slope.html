@@ -1,0 +1,629 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Slope Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one full-bleed graph-paper plane; tool rail floats left, view controls top-right, inspector bottom-right. */
+:root {
+  --paper: #fbfcfd; --panel: #ffffff; --panel-2: #f1f5f8; --ink: #15223b; --muted: #5a6a80;
+  --grid-minor: #e3ebf1; --grid-major: #c3d3df; --axis: #3b4a61; --border: #d3dee7;
+  --sel: #1f5ad6; --rise: #1f5ad6; --run: #c46a00; --tri: rgba(255, 214, 64, .28); --tag: #15223b; --tag-ink: #ffffff;
+  --c0: #15223b; --c1: #1f5ad6; --c2: #c46a00; --c3: #0d8a5c; --c4: #8a3ad6; --c5: #d23a3a;
+  --shadow: 0 1px 2px rgba(21,34,59,.08), 0 4px 14px rgba(21,34,59,.08);
+  --body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #0f1a2c; --panel: #16243b; --panel-2: #1c2d48; --ink: #e6edf7; --muted: #9fb0c6;
+  --grid-minor: #18273f; --grid-major: #263a58; --axis: #a9bbd3; --border: #2a3f5f;
+  --sel: #7aa5ff; --rise: #6f9bff; --run: #f2a43a; --tri: rgba(255, 214, 64, .16); --tag: #e6edf7; --tag-ink: #0f1a2c;
+  --c0: #e6edf7; --c1: #6f9bff; --c2: #f2a43a; --c3: #3fd19a; --c4: #c493ff; --c5: #ff7b7b;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 18px rgba(0,0,0,.3); color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --paper: #0f1a2c; --panel: #16243b; --panel-2: #1c2d48; --ink: #e6edf7; --muted: #9fb0c6;
+  --grid-minor: #18273f; --grid-major: #263a58; --axis: #a9bbd3; --border: #2a3f5f;
+  --sel: #7aa5ff; --rise: #6f9bff; --run: #f2a43a; --tri: rgba(255, 214, 64, .16); --tag: #e6edf7; --tag-ink: #0f1a2c;
+  --c0: #e6edf7; --c1: #6f9bff; --c2: #f2a43a; --c3: #3fd19a; --c4: #c493ff; --c5: #ff7b7b;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 18px rgba(0,0,0,.3); color-scheme: dark; }
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { background: var(--paper); color: var(--ink); font-family: var(--body); font-size: 14px; overflow: hidden; }
+.app { position: relative; height: 100%; overflow: hidden; }
+#g { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; user-select: none; -webkit-user-select: none; }
+#g.t-select { cursor: default; } #g.panning { cursor: grabbing; } #g.t-draw { cursor: crosshair; }
+.float { position: absolute; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; box-shadow: var(--shadow); }
+/* tool rail */
+.rail { left: 12px; top: 12px; padding: 6px; display: flex; flex-direction: column; gap: 2px; max-height: calc(100% - 24px); overflow-y: auto; }
+.tool { display: grid; grid-template-columns: 22px auto; align-items: center; gap: 8px; border: 0; background: transparent; color: var(--ink); font: inherit; font-size: 13.5px; padding: 7px 10px 7px 8px; border-radius: 5px; cursor: pointer; text-align: left; white-space: nowrap; }
+.tool svg { width: 20px; height: 20px; }
+.tool kbd { font-family: var(--mono); font-size: 10.5px; color: var(--muted); margin-left: 8px; }
+.tool:hover { background: var(--panel-2); }
+.tool[aria-pressed="true"] { background: var(--sel); color: var(--paper); }
+.tool[aria-pressed="true"] kbd { color: inherit; opacity: .75; }
+.sep { height: 1px; background: var(--border); margin: 5px 4px; }
+.style-row { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 6px; max-width: 170px; }
+.sw { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--panel); outline: 1px solid var(--border); cursor: pointer; padding: 0; }
+.sw[aria-pressed="true"] { outline: 2px solid var(--ink); }
+.dash-btn { border: 1px solid var(--border); background: var(--panel); color: var(--ink); border-radius: 5px; padding: 3px 8px; font: inherit; font-size: 12.5px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.dash-btn[aria-pressed="true"] { border-color: var(--ink); background: var(--panel-2); }
+/* view controls */
+.view { right: 12px; top: 12px; padding: 4px; display: flex; gap: 2px; }
+.ib { border: 0; background: transparent; color: var(--ink); width: 34px; height: 34px; border-radius: 5px; display: grid; place-items: center; cursor: pointer; font: inherit; }
+.ib svg { width: 18px; height: 18px; }
+.ib:hover:not(:disabled) { background: var(--panel-2); }
+.ib:disabled { opacity: .35; cursor: default; }
+.ib.wide { width: auto; padding: 0 10px; font-size: 13px; }
+.ib.danger { color: var(--c5); }
+button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--sel); outline-offset: 1px; }
+/* status */
+.status { left: 50%; transform: translateX(-50%); bottom: 12px; padding: 7px 12px; display: flex; gap: 14px; align-items: center; font-size: 13px; max-width: calc(100% - 24px); }
+.status .xy { font-family: var(--mono); font-variant-numeric: tabular-nums; color: var(--muted); white-space: nowrap; }
+.status .hint { color: var(--ink); min-width: 0; }
+/* inspector */
+.insp { right: 12px; bottom: 12px; width: 290px; max-height: calc(100% - 80px); overflow-y: auto; padding: 14px 16px; display: grid; gap: 12px; }
+.insp h2 { margin: 0; font-size: 15px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.insp h2 .x { font-weight: 400; }
+.field { display: grid; gap: 4px; }
+.field > span { font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.insp input[type=text], .insp input[type=number], .insp textarea { font: inherit; font-family: var(--mono); font-size: 14px; color: var(--ink); background: var(--panel-2); border: 1px solid var(--border); border-radius: 5px; padding: 6px 8px; width: 100%; min-width: 0; }
+.insp textarea { font-family: var(--body); resize: vertical; min-height: 56px; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+.seg button { border: 0; background: var(--panel); color: var(--ink); font: inherit; font-size: 13px; padding: 6px 4px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--border); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.readout { background: var(--panel-2); border-radius: 6px; padding: 10px 12px; font-family: var(--mono); font-variant-numeric: tabular-nums; display: grid; gap: 4px; font-size: 13.5px; }
+.readout .big { font-size: 20px; font-weight: 600; }
+.readout .lab { font-family: var(--body); font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
+.readout .lab:first-child { margin-top: 0; }
+.rise { color: var(--rise); } .run { color: var(--run); }
+.checks { display: grid; gap: 6px; }
+.checks label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.checks input { accent-color: var(--sel); margin: 0; width: 16px; height: 16px; }
+.del { border: 1px solid var(--border); background: transparent; color: var(--c5); font: inherit; border-radius: 5px; padding: 6px 10px; cursor: pointer; justify-self: start; }
+.empty { color: var(--muted); font-size: 13px; line-height: 1.45; }
+@media (max-width: 720px) {
+  .rail { top: auto; bottom: 12px; left: 12px; right: 12px; flex-direction: row; overflow-x: auto; overflow-y: hidden; max-height: none; align-items: center; }
+  .tool { grid-template-columns: 22px; padding: 7px; } .tool .tl, .tool kbd { display: none; }
+  .sep { width: 1px; height: 26px; margin: 0 4px; }
+  .style-row { flex-wrap: nowrap; max-width: none; align-items: center; }
+  .status { bottom: auto; top: 58px; left: 12px; right: 12px; transform: none; }
+  .status .hint { display: none; }
+  .insp { left: 12px; right: 12px; width: auto; bottom: 72px; max-height: 45%; }
+}
+</style>
+
+<div class="app">
+  <svg id="g" aria-label="Coordinate plane"></svg>
+
+  <nav class="float rail" id="rail" aria-label="Tools"></nav>
+
+  <div class="float view" aria-label="View">
+    <button class="ib" id="undo" title="Undo (Ctrl+Z)" aria-label="Undo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button>
+    <button class="ib" id="redo" title="Redo (Ctrl+Shift+Z)" aria-label="Redo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg></button>
+    <button class="ib" id="zout" title="Zoom out" aria-label="Zoom out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg></button>
+    <button class="ib" id="zin" title="Zoom in" aria-label="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5v14"/></svg></button>
+    <button class="ib" id="home" title="Center on origin" aria-label="Center on origin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button>
+    <button class="ib wide danger" id="clear">Clear</button>
+  </div>
+
+  <div class="float status"><span class="xy" id="xy">(0, 0)</span><span class="hint" id="hint"></span></div>
+
+  <aside class="float insp" id="insp" hidden></aside>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  const svg = document.getElementById('g');
+  const $ = id => document.getElementById(id);
+
+  // ---------------- tools ----------------
+  const I = (p) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+  const TOOLS = [
+    { id: 'select', name: 'Select & move', key: 'V', icon: I('<path d="M5 3l14 8-6 1.5L10 19z"/>'), hint: 'Drag points, lines or drawings to move them. Click to inspect. Drag empty space to pan.' },
+    { id: 'point', name: 'Point', key: 'P', icon: I('<circle cx="12" cy="12" r="4" fill="currentColor"/>'), hint: 'Click to place a point. Points snap to the grid (hold Alt to place freely).' },
+    { id: 'line', name: 'Line', key: 'L', icon: I('<path d="M4 19 20 5"/><circle cx="7" cy="16" r="2.2" fill="currentColor"/><circle cx="17" cy="8" r="2.2" fill="currentColor"/>'), hint: 'Click two points (or empty spots) to connect them. Set segment, ray or full line in the panel.' },
+    { id: 'poly', name: 'Polygon', key: 'G', icon: I('<path d="M5 18 8 6l11 3-2 9z"/>'), hint: 'Click each vertex. Click the first vertex or press Enter to close the shape.' },
+    { id: 'pen', name: 'Pen', key: 'D', icon: I('<path d="M4 20c3-1 4-5 7-8s6-4 9-8"/>'), hint: 'Drag to draw freehand.' },
+    { id: 'text', name: 'Text', key: 'T', icon: I('<path d="M5 6V4h14v2M12 4v16M9 20h6"/>'), hint: 'Click where the label should go, then type in the panel.' },
+    { sep: true },
+    { id: 'rr', name: 'Rise & run', key: 'R', icon: I('<path d="M4 19h14V5"/><path d="M4 19 18 5" stroke-dasharray="2 3"/>'), hint: 'Click a line to show or hide its rise and run.' },
+    { id: 'slope', name: 'Measure slope', key: 'M', icon: I('<path d="M3 20 21 6"/><rect x="11" y="13" width="9" height="6" rx="1.5"/>'), hint: 'Click a line to pin its slope on the graph.' },
+    { id: 'erase', name: 'Erase', key: 'E', icon: I('<path d="m7 21-4-4 10-10 8 8-6 6z"/><path d="M7 21h13"/>'), hint: 'Click anything to delete it.' },
+  ];
+  let tool = 'select';
+  let color = 1, dashed = false;
+
+  function buildRail() {
+    let h = '';
+    for (const t of TOOLS) {
+      if (t.sep) { h += '<div class="sep"></div>'; continue; }
+      h += `<button class="tool" data-tool="${t.id}" aria-pressed="${t.id === tool}" title="${t.name} (${t.key})">${t.icon}<span class="tl">${t.name}<kbd>${t.key}</kbd></span></button>`;
+    }
+    h += '<div class="sep"></div><div class="style-row" role="group" aria-label="Color">';
+    for (let i = 0; i < 6; i++) h += `<button class="sw" data-color="${i}" style="background:var(--c${i})" aria-pressed="${i === color}" aria-label="Color ${i + 1}"></button>`;
+    h += `<button class="dash-btn" id="dash" aria-pressed="${dashed}"><svg width="20" height="6"><line x1="0" y1="3" x2="20" y2="3" stroke="currentColor" stroke-width="2" stroke-dasharray="4 3"/></svg>Dashed</button></div>`;
+    $('rail').innerHTML = h;
+  }
+  $('rail').addEventListener('click', e => {
+    const tb = e.target.closest('[data-tool]'); if (tb) { setTool(tb.dataset.tool); return; }
+    const cb = e.target.closest('[data-color]');
+    if (cb) { color = +cb.dataset.color; applyStyle({ color }); buildRail(); return; }
+    if (e.target.closest('#dash')) { dashed = !dashed; applyStyle({ dash: dashed }); buildRail(); }
+  });
+  function setTool(id) {
+    tool = id; tmp = null; buildRail();
+    svg.className.baseVal = id === 'select' ? 't-select' : 't-draw';
+    $('hint').textContent = TOOLS.find(t => t.id === id).hint;
+    render();
+  }
+  function applyStyle(s) {
+    const o = selObj(); if (!o) return;
+    begin();
+    if (s.color !== undefined) o.color = s.color;
+    if (s.dash !== undefined && 'dash' in o) o.dash = s.dash;
+    commit(); render();
+  }
+
+  // ---------------- state ----------------
+  function demo() {
+    return { n: 4, pts: { p1: { x: -3, y: -1, label: 'A', color: 0, coords: true }, p2: { x: 3, y: 3, label: 'B', color: 0, coords: true } },
+      objs: [{ id: 'o3', type: 'line', a: 'p1', b: 'p2', ext: 'segment', color: 1, dash: false, rr: true, flip: false, slope: true }] };
+  }
+  const KEY = 'slope-lab-graph-v2';
+  let st;
+  try { st = JSON.parse(localStorage.getItem(KEY)); } catch (e) { st = null; }
+  if (!st || !st.pts || !st.objs) st = demo();
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} };
+  const uid = p => p + (st.n++);
+
+  let undoS = [], redoS = [], pre = null;
+  function begin() { pre = JSON.stringify(st); }
+  function commit() {
+    if (pre === null) return;
+    const now = JSON.stringify(st);
+    if (now !== pre) { undoS.push(pre); if (undoS.length > 200) undoS.shift(); redoS = []; save(); }
+    pre = null; syncUndo();
+  }
+  function syncUndo() { $('undo').disabled = !undoS.length; $('redo').disabled = !redoS.length; }
+  function undo() { if (!undoS.length) return; redoS.push(JSON.stringify(st)); st = JSON.parse(undoS.pop()); fixSel(); save(); syncUndo(); render(); }
+  function redo() { if (!redoS.length) return; undoS.push(JSON.stringify(st)); st = JSON.parse(redoS.pop()); fixSel(); save(); syncUndo(); render(); }
+
+  let sel = null; // {kind:'pt'|'obj', id}
+  const selObj = () => sel && (sel.kind === 'pt' ? st.pts[sel.id] : st.objs.find(o => o.id === sel.id));
+  function fixSel() { if (sel && !selObj()) sel = null; }
+
+  function nextLabel() {
+    const used = new Set(Object.values(st.pts).map(p => p.label));
+    for (let k = 0; ; k++) for (let i = 0; i < 26; i++) { const L = String.fromCharCode(65 + i) + (k ? k : ''); if (!used.has(L)) return L; }
+  }
+  function delPoint(id) {
+    delete st.pts[id];
+    st.objs = st.objs.filter(o => !(o.type === 'line' && (o.a === id || o.b === id)));
+    st.objs.forEach(o => { if (o.type === 'poly') o.pts = o.pts.filter(p => p !== id); });
+    st.objs = st.objs.filter(o => !(o.type === 'poly' && o.pts.length < 2));
+  }
+  function delObj(id) { st.objs = st.objs.filter(o => o.id !== id); }
+
+  // ---------------- view ----------------
+  let W = 800, H = 600;
+  const view = { ox: 0, oy: 0, s: 40 };
+  const sx = x => W / 2 + (x - view.ox) * view.s;
+  const sy = y => H / 2 - (y - view.oy) * view.s;
+  const wx = X => view.ox + (X - W / 2) / view.s;
+  const wy = Y => view.oy - (Y - H / 2) / view.s;
+  new ResizeObserver(() => { const r = svg.getBoundingClientRect(); W = r.width; H = r.height; svg.setAttribute('viewBox', `0 0 ${W} ${H}`); render(); }).observe(svg);
+
+  function steps() {
+    const c = [0.1, 0.2, 0.25, 0.5, 1, 2, 5, 10, 20, 25, 50, 100];
+    const minor = c.find(v => v * view.s >= 16) || 100;
+    const major = c.find(v => v * view.s >= 54 && (v / minor) % 1 < 1e-9) || 100;
+    return { minor, major };
+  }
+  function zoomAt(f, X, Y) {
+    const x = wx(X), y = wy(Y);
+    view.s = Math.max(6, Math.min(400, view.s * f));
+    view.ox = x - (X - W / 2) / view.s; view.oy = y + (Y - H / 2) / view.s;
+    render();
+  }
+
+  // ---------------- number helpers ----------------
+  const gcd = (a, b) => { a = Math.abs(a); b = Math.abs(b); while (b) [a, b] = [b, a % b]; return a || 1; };
+  function rat(n, d) { if (d < 0) { n = -n; d = -d; } const g = gcd(n, d); return { n: n / g, d: d / g }; }
+  function toRat(v) { for (const k of [1, 2, 3, 4, 5, 8, 10, 20, 100]) { const t = v * k; if (Math.abs(t - Math.round(t)) < 1e-7) return rat(Math.round(t), k); } return null; }
+  const rsub = (a, b) => rat(a.n * b.d - b.n * a.d, a.d * b.d);
+  const rmul = (a, b) => rat(a.n * b.n, a.d * b.d);
+  const rdiv = (a, b) => rat(a.n * b.d, a.d * b.n);
+  const fmt = v => { const r = Math.round(v * 100) / 100; return (Object.is(r, -0) ? 0 : r).toString().replace('-', '−'); };
+  const fstr = r => (r.n < 0 ? '−' : '') + Math.abs(r.n) + (r.d === 1 ? '' : '/' + r.d);
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  function lineInfo(o) {
+    const A = st.pts[o.a], B = st.pts[o.b];
+    const rise = B.y - A.y, run = B.x - A.x;
+    const info = { A, B, rise, run, vertical: Math.abs(run) < 1e-9 };
+    const rr = toRat(rise), ru = toRat(run), xa = toRat(A.x), ya = toRat(A.y);
+    if (info.vertical) { info.mStr = 'undefined'; info.eq = `x = ${fmt(A.x)}`; }
+    else if (rr && ru && xa && ya) {
+      const m = rdiv(rr, ru); const b = rsub(ya, rmul(m, xa));
+      info.m = m; info.mStr = fstr(m); info.mDec = m.n / m.d;
+      let coef = m.n === 0 ? '' : (m.d === 1 ? (m.n === 1 ? '' : m.n === -1 ? '−' : fstr(m)) : (m.n < 0 ? '−' : '') + '(' + Math.abs(m.n) + '/' + m.d + ')');
+      if (m.n === 0) info.eq = `y = ${fstr(b)}`;
+      else info.eq = `y = ${coef}x` + (b.n === 0 ? '' : (b.n > 0 ? ' + ' : ' − ') + fstr({ n: Math.abs(b.n), d: b.d }));
+    } else {
+      const m = rise / run, b = A.y - m * A.x; info.mDec = m; info.mStr = fmt(m);
+      info.eq = `y = ${fmt(m)}x ${b < 0 ? '−' : '+'} ${fmt(Math.abs(b))}`;
+    }
+    const d2 = rise * rise + run * run; info.len = Math.sqrt(d2);
+    const d2r = toRat(d2);
+    if (d2r && d2r.d === 1) {
+      let n = d2r.n, k = 1; for (let f = 2; f * f <= n; f++) while (n % (f * f) === 0) { n /= f * f; k *= f; }
+      info.lenStr = n === 1 ? String(k) : `√${d2r.n}` + (k > 1 ? ` = ${k}√${n}` : '') + ` ≈ ${fmt(info.len)}`;
+    } else info.lenStr = '≈ ' + fmt(info.len);
+    return info;
+  }
+
+  // ---------------- render ----------------
+  let tmp = null;      // in-progress construction
+  let cursor = null;   // world coords of pointer
+  let hover = null;    // id under pointer for line-targeting tools
+
+  function clipFull(A, B, mode) { // returns [x1,y1,x2,y2] in world coords
+    if (mode === 'segment') return [A.x, A.y, B.x, B.y];
+    const x0 = wx(-20), x1 = wx(W + 20), y0 = wy(H + 20), y1 = wy(-20);
+    const dx = B.x - A.x, dy = B.y - A.y;
+    let tmin = -Infinity, tmax = Infinity;
+    const clip = (p, q) => { if (Math.abs(p) < 1e-12) return q >= 0; const t = q / p; if (p < 0) tmin = Math.max(tmin, t); else tmax = Math.min(tmax, t); return true; };
+    if (!clip(-dx, A.x - x0) || !clip(dx, x1 - A.x) || !clip(-dy, A.y - y0) || !clip(dy, y1 - A.y)) return null;
+    if (mode === 'ray') tmin = Math.max(tmin, 0);
+    if (tmin > tmax) return null;
+    return [A.x + dx * tmin, A.y + dy * tmin, A.x + dx * tmax, A.y + dy * tmax];
+  }
+
+  function render() {
+    const { minor, major } = steps();
+    let h = '';
+    // grid
+    const gx0 = Math.floor(wx(0) / minor) * minor, gx1 = wx(W), gy0 = Math.floor(wy(H) / minor) * minor, gy1 = wy(0);
+    let gmin = '', gmaj = '', labels = '';
+    const isMaj = v => Math.abs(v / major - Math.round(v / major)) < 1e-6;
+    for (let x = gx0; x <= gx1; x += minor) { const X = sx(x).toFixed(1); (isMaj(x) ? (gmaj += `M${X} 0V${H}`) : (gmin += `M${X} 0V${H}`)); }
+    for (let y = gy0; y <= gy1; y += minor) { const Y = sy(y).toFixed(1); (isMaj(y) ? (gmaj += `M0 ${Y}H${W}`) : (gmin += `M0 ${Y}H${W}`)); }
+    h += `<path d="${gmin}" stroke="var(--grid-minor)" stroke-width="1"/><path d="${gmaj}" stroke="var(--grid-major)" stroke-width="1"/>`;
+    const ax = Math.min(Math.max(sx(0), 0), W), ay = Math.min(Math.max(sy(0), 0), H);
+    h += `<path d="M0 ${ay}H${W}M${ax} 0V${H}" stroke="var(--axis)" stroke-width="1.6"/>`;
+    const lx = Math.min(Math.max(ay + 15, 15), H - 6), ly = Math.min(Math.max(ax - 6, 30), W - 4);
+    for (let x = Math.ceil(wx(0) / major) * major; x <= gx1; x += major) if (Math.abs(x) > 1e-9) labels += `<text x="${sx(x)}" y="${lx}" text-anchor="middle">${fmt(x)}</text>`;
+    for (let y = Math.ceil(wy(H) / major) * major; y <= gy1; y += major) if (Math.abs(y) > 1e-9) labels += `<text x="${ly}" y="${sy(y) + 4}" text-anchor="end">${fmt(y)}</text>`;
+    h += `<g font-family="var(--mono)" font-size="11" fill="var(--muted)" stroke="var(--paper)" stroke-width="3" paint-order="stroke">${labels}<text x="${W - 8}" y="${ay - 8}" text-anchor="end" font-style="italic" font-size="13" fill="var(--axis)">x</text><text x="${ax + 8}" y="16" font-style="italic" font-size="13" fill="var(--axis)">y</text></g>`;
+
+    const isSel = (k, id) => sel && sel.kind === k && sel.id === id;
+    // polygons
+    for (const o of st.objs) if (o.type === 'poly') {
+      const pts = o.pts.map(id => st.pts[id]).filter(Boolean).map(p => `${sx(p.x)},${sy(p.y)}`).join(' ');
+      const s = isSel('obj', o.id) || hover === o.id;
+      h += `<polygon data-id="${o.id}" points="${pts}" fill="${o.fill ? `var(--c${o.color})` : 'transparent'}" fill-opacity="${o.fill ? .16 : 0}" stroke="var(--c${o.color})" stroke-width="${s ? 3.4 : 2.4}" stroke-dasharray="${o.dash ? '8 6' : 'none'}" stroke-linejoin="round"/>`;
+      if (s) h += `<polygon points="${pts}" fill="none" stroke="var(--sel)" stroke-opacity=".35" stroke-width="9" pointer-events="none"/>`;
+    }
+    // paths
+    for (const o of st.objs) if (o.type === 'path') {
+      const d = 'M' + o.d.map(p => `${sx(p[0]).toFixed(1)} ${sy(p[1]).toFixed(1)}`).join('L');
+      const s = isSel('obj', o.id) || hover === o.id;
+      if (s) h += `<path d="${d}" fill="none" stroke="var(--sel)" stroke-opacity=".3" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>`;
+      h += `<path d="${d}" fill="none" stroke="var(--c${o.color})" stroke-width="2.6" stroke-dasharray="${o.dash ? '8 6' : 'none'}" stroke-linecap="round" stroke-linejoin="round"/>`;
+      h += `<path data-id="${o.id}" d="${d}" fill="none" stroke="transparent" stroke-width="16"/>`;
+    }
+    // lines
+    let overlays = '';
+    for (const o of st.objs) if (o.type === 'line') {
+      const A = st.pts[o.a], B = st.pts[o.b]; if (!A || !B) continue;
+      const c = clipFull(A, B, o.ext); const s = isSel('obj', o.id) || hover === o.id;
+      if (c) {
+        const [x1, y1, x2, y2] = [sx(c[0]), sy(c[1]), sx(c[2]), sy(c[3])];
+        if (s) h += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--sel)" stroke-opacity=".3" stroke-width="10" stroke-linecap="round"/>`;
+        h += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--c${o.color})" stroke-width="2.6" stroke-dasharray="${o.dash ? '9 6' : 'none'}" stroke-linecap="round"/>`;
+        h += `<line data-id="${o.id}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="transparent" stroke-width="16"/>`;
+      }
+      if (o.rr) overlays += rrSVG(o);
+      if (o.slope) overlays += slopeTag(o);
+    }
+    h += overlays;
+    // preview
+    if (tmp && cursor) {
+      const C = snapWorld(cursor, true);
+      if (tmp.kind === 'line' && st.pts[tmp.a]) { const A = st.pts[tmp.a]; h += `<line x1="${sx(A.x)}" y1="${sy(A.y)}" x2="${sx(C.x)}" y2="${sy(C.y)}" stroke="var(--c${color})" stroke-width="2" stroke-dasharray="5 5" pointer-events="none"/>`; }
+      if (tmp.kind === 'poly' && tmp.pts.length) { const pts = tmp.pts.map(id => st.pts[id]).map(p => `${sx(p.x)},${sy(p.y)}`).join(' ') + ` ${sx(C.x)},${sy(C.y)}`; h += `<polyline points="${pts}" fill="none" stroke="var(--c${color})" stroke-width="2" stroke-dasharray="5 5" pointer-events="none"/>`; }
+      if (tmp.kind === 'pen') { const d = 'M' + tmp.d.map(p => `${sx(p[0])} ${sy(p[1])}`).join('L'); h += `<path d="${d}" fill="none" stroke="var(--c${color})" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>`; }
+    }
+    if (cursor && ['point', 'line', 'poly'].includes(tool)) { const C = snapWorld(cursor, true); h += `<circle cx="${sx(C.x)}" cy="${sy(C.y)}" r="5" fill="none" stroke="var(--c${color})" stroke-width="1.5" pointer-events="none"/>`; }
+    // texts
+    for (const o of st.objs) if (o.type === 'text') {
+      const s = isSel('obj', o.id) || hover === o.id;
+      const lines = String(o.text || ' ').split('\n');
+      h += `<text data-id="${o.id}" x="${sx(o.x)}" y="${sy(o.y)}" font-family="var(--body)" font-size="${o.size || 16}" font-weight="700" fill="var(--c${o.color})" stroke="var(--paper)" stroke-width="4" paint-order="stroke" style="cursor:${tool === 'select' ? 'move' : 'inherit'}" ${s ? 'text-decoration="underline"' : ''}>${lines.map((l, i) => `<tspan x="${sx(o.x)}" dy="${i ? 1.25 : 0}em">${esc(l) || ' '}</tspan>`).join('')}</text>`;
+    }
+    // points
+    for (const id in st.pts) {
+      const p = st.pts[id], X = sx(p.x), Y = sy(p.y), s = isSel('pt', id);
+      if (s) h += `<circle cx="${X}" cy="${Y}" r="12" fill="var(--sel)" fill-opacity=".2"/>`;
+      h += `<g data-pt="${id}"><circle cx="${X}" cy="${Y}" r="14" fill="transparent"/><circle cx="${X}" cy="${Y}" r="5.5" fill="var(--paper)" stroke="var(--c${p.color})" stroke-width="2.8"/></g>`;
+      const t = (p.label || '') + (p.coords ? `(${fmt(p.x)}, ${fmt(p.y)})` : '');
+      if (t) h += `<text x="${X + 10}" y="${Y - 10}" font-family="var(--mono)" font-size="13" font-weight="600" fill="var(--c${p.color})" stroke="var(--paper)" stroke-width="4" paint-order="stroke" stroke-linejoin="round" pointer-events="none">${esc(t)}</text>`;
+    }
+    svg.innerHTML = h;
+    renderInspector();
+  }
+
+  function rrSVG(o) {
+    const A = st.pts[o.a], B = st.pts[o.b];
+    const rise = B.y - A.y, run = B.x - A.x; let h = '';
+    const K = o.flip ? { x: A.x, y: B.y } : { x: B.x, y: A.y };
+    const [aX, aY, bX, bY, kX, kY] = [sx(A.x), sy(A.y), sx(B.x), sy(B.y), sx(K.x), sy(K.y)];
+    if (Math.abs(rise) > 1e-9 && Math.abs(run) > 1e-9) {
+      h += `<polygon points="${aX},${aY} ${kX},${kY} ${bX},${bY}" fill="var(--tri)" pointer-events="none"/>`;
+      const s = 10, ddx = Math.sign((o.flip ? bX : aX) - kX) * s, ddy = Math.sign((o.flip ? aY : bY) - kY) * s;
+      h += `<path d="M${kX + ddx} ${kY}V${kY + ddy}H${kX}" fill="none" stroke="var(--muted)" stroke-width="1" pointer-events="none"/>`;
+    }
+    const lab = (x, y, t, c, anchor) => `<text x="${x}" y="${y}" text-anchor="${anchor}" font-family="var(--mono)" font-size="13" font-weight="600" fill="${c}" stroke="var(--paper)" stroke-width="4" paint-order="stroke" stroke-linejoin="round" pointer-events="none">${t}</text>`;
+    // horizontal leg (run) and vertical leg (rise)
+    const H1 = o.flip ? [kX, kY, bX, bY] : [aX, aY, kX, kY];
+    const V1 = o.flip ? [aX, aY, kX, kY] : [kX, kY, bX, bY];
+    const midTriX = (aX + bX + kX) / 3, midTriY = (aY + bY + kY) / 3;
+    if (Math.abs(run) > 1e-9) {
+      h += `<line x1="${H1[0]}" y1="${H1[1]}" x2="${H1[2]}" y2="${H1[3]}" stroke="var(--run)" stroke-width="3.4" stroke-linecap="round" pointer-events="none"/>`;
+      const my = H1[1] + (midTriY < H1[1] ? 19 : -9);
+      h += lab((H1[0] + H1[2]) / 2, my, 'run = ' + fmt(run), 'var(--run)', 'middle');
+    }
+    if (Math.abs(rise) > 1e-9) {
+      h += `<line x1="${V1[0]}" y1="${V1[1]}" x2="${V1[2]}" y2="${V1[3]}" stroke="var(--rise)" stroke-width="3.4" stroke-linecap="round" pointer-events="none"/>`;
+      const right = midTriX < V1[0];
+      h += lab(V1[0] + (right ? 9 : -9), (V1[1] + V1[3]) / 2 + 4, 'rise = ' + fmt(rise), 'var(--rise)', right ? 'start' : 'end');
+    }
+    return h;
+  }
+
+  function slopeTag(o) {
+    const inf = lineInfo(o), A = inf.A, B = inf.B;
+    const t = inf.vertical ? 'm undefined' : `m = ${inf.mStr}` + (inf.m && inf.m.d !== 1 ? ` ≈ ${fmt(inf.mDec)}` : '');
+    const mx = (sx(A.x) + sx(B.x)) / 2, my = (sy(A.y) + sy(B.y)) / 2;
+    let nx = -(sy(B.y) - sy(A.y)), ny = sx(B.x) - sx(A.x); const L = Math.hypot(nx, ny) || 1; nx /= L; ny /= L;
+    if (ny > 0) { nx = -nx; ny = -ny; } // put tag above the line
+    const w = t.length * 7.9 + 16, hh = 24, cx = mx + nx * 26, cy = my + ny * 26;
+    return `<g pointer-events="none"><rect x="${cx - w / 2}" y="${cy - hh / 2}" width="${w}" height="${hh}" rx="5" fill="var(--tag)"/><text x="${cx}" y="${cy + 4.5}" text-anchor="middle" font-family="var(--mono)" font-size="13" font-weight="600" fill="var(--tag-ink)">${t}</text></g>`;
+  }
+
+  // ---------------- inspector ----------------
+  let inspKey = '';
+  function renderInspector() {
+    const box = $('insp'); const o = selObj();
+    if (!o) { box.hidden = true; inspKey = ''; return; }
+    box.hidden = false;
+    const active = document.activeElement && box.contains(document.activeElement) && document.activeElement.matches('input[type=text],input[type=number],textarea');
+    const key = sel.kind + sel.id;
+    if (key === inspKey) {
+      updateReadout();
+      if (sel.kind === 'pt' && !active) { const fx = $('f-x'), fy = $('f-y'); if (fx) fx.value = o.x; if (fy) fy.value = o.y; }
+      return;
+    }
+    inspKey = key;
+    const close = `<button class="ib x" data-act="close" aria-label="Close panel" title="Close">✕</button>`;
+    let h = '';
+    if (sel.kind === 'pt') {
+      h += `<h2>Point ${esc(o.label || '')}${close}</h2>
+        <label class="field"><span>Label</span><input type="text" id="f-label" value="${esc(o.label || '')}" maxlength="12"></label>
+        <div class="two"><label class="field"><span>x</span><input type="number" id="f-x" step="any" value="${o.x}"></label><label class="field"><span>y</span><input type="number" id="f-y" step="any" value="${o.y}"></label></div>
+        <div class="checks"><label><input type="checkbox" id="f-coords" ${o.coords ? 'checked' : ''}>Show coordinates</label></div>
+        <button class="del" data-act="del">Delete point</button>`;
+    } else if (o.type === 'line') {
+      const a = st.pts[o.a], b = st.pts[o.b];
+      h += `<h2>${o.ext === 'segment' ? 'Segment' : o.ext === 'ray' ? 'Ray' : 'Line'} ${esc(a.label)}${esc(b.label)}${close}</h2>
+        <div class="seg" role="group" aria-label="Extent">${['segment', 'ray', 'line'].map(e => `<button data-ext="${e}" aria-pressed="${o.ext === e}">${e === 'segment' ? 'Segment' : e === 'ray' ? 'Ray' : 'Infinite line'}</button>`).join('')}</div>
+        <div class="checks">
+          <label><input type="checkbox" id="f-rr" ${o.rr ? 'checked' : ''}>Show rise &amp; run</label>
+          <label><input type="checkbox" id="f-flip" ${o.flip ? 'checked' : ''}>Flip the triangle</label>
+          <label><input type="checkbox" id="f-slope" ${o.slope ? 'checked' : ''}>Pin slope on graph</label>
+        </div>
+        <button class="del" data-act="del">Delete line</button>`;
+    } else if (o.type === 'poly') {
+      h += `<h2>Polygon ${o.pts.map(id => esc(st.pts[id] ? st.pts[id].label : '')).join('')}${close}</h2>
+        <div class="checks"><label><input type="checkbox" id="f-fill" ${o.fill ? 'checked' : ''}>Fill</label></div>
+        <button class="del" data-act="del">Delete polygon</button>`;
+    } else if (o.type === 'path') {
+      h += `<h2>Drawing${close}</h2><p class="empty">Use the color and dash buttons in the tool rail to restyle it.</p><button class="del" data-act="del">Delete drawing</button>`;
+    } else if (o.type === 'text') {
+      h += `<h2>Text${close}</h2>
+        <label class="field"><span>Text</span><textarea id="f-text">${esc(o.text)}</textarea></label>
+        <div class="seg" role="group" aria-label="Size">${[13, 16, 22].map((z, i) => `<button data-size="${z}" aria-pressed="${(o.size || 16) === z}">${['Small', 'Medium', 'Large'][i]}</button>`).join('')}</div>
+        <button class="del" data-act="del">Delete text</button>`;
+    }
+    box.innerHTML = h;
+    updateReadout();
+  }
+  function updateReadout() {
+    const o = selObj(); const ro = $('ro'); if (!o || !ro) return;
+    if (o.type === 'line') {
+      const i = lineInfo(o);
+      ro.innerHTML = `<div class="lab">Slope</div>
+        <div><span class="rise">rise ${fmt(i.rise)}</span> / <span class="run">run ${fmt(i.run)}</span></div>
+        <div class="big">${i.vertical ? 'm is undefined' : 'm = ' + i.mStr}${i.m && i.m.d !== 1 ? ` <span style="font-size:14px;font-weight:400">≈ ${fmt(i.mDec)}</span>` : ''}</div>
+        <div class="lab">Equation</div><div>${i.eq}</div>
+        <div class="lab">Length ${esc(i.A.label)}${esc(i.B.label)}</div><div>${i.lenStr}</div>`;
+    } else if (o.type === 'poly') {
+      const P = o.pts.map(id => st.pts[id]); let per = 0, area = 0;
+      for (let k = 0; k < P.length; k++) { const p = P[k], q = P[(k + 1) % P.length]; per += Math.hypot(q.x - p.x, q.y - p.y); area += p.x * q.y - q.x * p.y; }
+      ro.innerHTML = `<div class="lab">Perimeter</div><div>≈ ${fmt(per)}</div><div class="lab">Area</div><div>${fmt(Math.abs(area) / 2)}</div>`;
+    }
+  }
+  $('insp').addEventListener('input', e => {
+    const o = selObj(); if (!o) return;
+    const t = e.target;
+    if (pre === null) begin();
+    if (t.id === 'f-label') o.label = t.value;
+    if (t.id === 'f-x' && t.value !== '' && isFinite(+t.value)) o.x = +t.value;
+    if (t.id === 'f-y' && t.value !== '' && isFinite(+t.value)) o.y = +t.value;
+    if (t.id === 'f-text') o.text = t.value;
+    render();
+  });
+  $('insp').addEventListener('focusout', e => { if (e.target.matches('input[type=text],input[type=number],textarea')) { commit(); render(); } });
+  $('insp').addEventListener('change', e => {
+    const o = selObj(); if (!o) return; const t = e.target;
+    if (t.type !== 'checkbox') return;
+    begin();
+    const map = { 'f-coords': 'coords', 'f-rr': 'rr', 'f-flip': 'flip', 'f-slope': 'slope', 'f-fill': 'fill' };
+    if (map[t.id]) o[map[t.id]] = t.checked;
+    commit(); inspKey = ''; render();
+  });
+  $('insp').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return; const o = selObj();
+    if (b.dataset.act === 'close') { sel = null; render(); return; }
+    if (b.dataset.act === 'del') { begin(); sel.kind === 'pt' ? delPoint(sel.id) : delObj(sel.id); sel = null; commit(); render(); return; }
+    if (b.dataset.ext) { begin(); o.ext = b.dataset.ext; commit(); inspKey = ''; render(); }
+    if (b.dataset.size) { begin(); o.size = +b.dataset.size; commit(); inspKey = ''; render(); }
+  });
+
+  // ---------------- pointer interaction ----------------
+  function toWorld(e) { const r = svg.getBoundingClientRect(); const X = e.clientX - r.left, Y = e.clientY - r.top; return { x: wx(X), y: wy(Y), X, Y }; }
+  let altHeld = false;
+  function snapWorld(w, preferPoint) {
+    if (preferPoint) { const id = nearPoint(w); if (id) return { x: st.pts[id].x, y: st.pts[id].y, id }; }
+    if (altHeld) return { x: Math.round(w.x * 100) / 100, y: Math.round(w.y * 100) / 100 };
+    const m = steps().minor; return { x: Math.round(w.x / m) * m, y: Math.round(w.y / m) * m };
+  }
+  function nearPoint(w, px = 12) {
+    let best = null, bd = px;
+    for (const id in st.pts) { const p = st.pts[id]; const d = Math.hypot(sx(p.x) - sx(w.x), sy(p.y) - sy(w.y)); if (d < bd) { bd = d; best = id; } }
+    return best;
+  }
+  function getOrMakePoint(w) {
+    const s = snapWorld(w, true); if (s.id) return s.id;
+    const id = uid('p'); st.pts[id] = { x: s.x, y: s.y, label: nextLabel(), color: 0, coords: true }; return id;
+  }
+  const lineAt = e => { const el = e.target.closest && e.target.closest('[data-id]'); if (!el) return null; const o = st.objs.find(o => o.id === el.dataset.id); return o; };
+
+  let drag = null; const pointers = new Map(); let pinch = null;
+  svg.addEventListener('pointerdown', e => {
+    altHeld = e.altKey;
+    pointers.set(e.pointerId, { X: e.clientX, Y: e.clientY });
+    svg.setPointerCapture(e.pointerId);
+    if (pointers.size === 2) { drag = null; tmp = tmp && tmp.kind === 'pen' ? null : tmp; const [a, b] = [...pointers.values()]; pinch = { d: Math.hypot(a.X - b.X, a.Y - b.Y) }; return; }
+    const w = toWorld(e); cursor = w;
+    const ptEl = e.target.closest('[data-pt]'); const obj = lineAt(e);
+    if (tool === 'select') {
+      if (ptEl) { const id = ptEl.dataset.pt; sel = { kind: 'pt', id }; begin(); drag = { kind: 'pt', id, moved: false }; }
+      else if (obj) {
+        sel = { kind: 'obj', id: obj.id }; begin();
+        const s0 = snapWorld(w); drag = { kind: 'obj', o: obj, s0, orig: JSON.parse(JSON.stringify({ pts: objPts(obj).map(id => ({ id, x: st.pts[id].x, y: st.pts[id].y })), d: obj.d, x: obj.x, y: obj.y })) };
+      } else { sel = null; drag = { kind: 'pan', X: w.X, Y: w.Y, ox: view.ox, oy: view.oy }; svg.classList.add('panning'); }
+      render(); return;
+    }
+    if (tool === 'point') { begin(); const near = nearPoint(w); if (near) sel = { kind: 'pt', id: near }; else { const id = getOrMakePoint(w); sel = { kind: 'pt', id }; } commit(); render(); return; }
+    if (tool === 'line') {
+      begin(); const id = getOrMakePoint(w);
+      if (!tmp) { tmp = { kind: 'line', a: id }; commit(); }
+      else if (id !== tmp.a) { const o = { id: uid('o'), type: 'line', a: tmp.a, b: id, ext: 'segment', color, dash: dashed, rr: false, flip: false, slope: false }; st.objs.push(o); sel = { kind: 'obj', id: o.id }; tmp = null; commit(); }
+      else commit();
+      render(); return;
+    }
+    if (tool === 'poly') {
+      begin();
+      const near = nearPoint(w);
+      if (tmp && tmp.pts.length >= 3 && near === tmp.pts[0]) { finishPoly(); commit(); render(); return; }
+      const id = getOrMakePoint(w);
+      if (!tmp) tmp = { kind: 'poly', pts: [] };
+      if (tmp.pts[tmp.pts.length - 1] !== id) tmp.pts.push(id);
+      commit(); render(); return;
+    }
+    if (tool === 'pen') { tmp = { kind: 'pen', d: [[w.x, w.y]] }; return; }
+    if (tool === 'text') { begin(); const s = snapWorld(w); const o = { id: uid('o'), type: 'text', x: s.x, y: s.y, text: 'Label', color, size: 16 }; st.objs.push(o); sel = { kind: 'obj', id: o.id }; commit(); render(); const ta = $('f-text'); if (ta) { ta.focus(); ta.select(); } setTool('select'); return; }
+    if (tool === 'rr' || tool === 'slope') {
+      if (obj && obj.type === 'line') { begin(); if (tool === 'rr') obj.rr = !obj.rr; else obj.slope = !obj.slope; sel = { kind: 'obj', id: obj.id }; commit(); render(); }
+      return;
+    }
+    if (tool === 'erase') {
+      begin();
+      if (ptEl) delPoint(ptEl.dataset.pt); else if (obj) delObj(obj.id);
+      fixSel(); commit(); render();
+    }
+  });
+  function objPts(o) { return o.type === 'line' ? [o.a, o.b] : o.type === 'poly' ? o.pts : []; }
+  function finishPoly() { if (tmp && tmp.pts.length >= 3) { const o = { id: uid('o'), type: 'poly', pts: tmp.pts.slice(), color, dash: dashed, fill: true }; st.objs.push(o); sel = { kind: 'obj', id: o.id }; } tmp = null; }
+
+  svg.addEventListener('pointermove', e => {
+    altHeld = e.altKey;
+    if (pointers.has(e.pointerId)) pointers.set(e.pointerId, { X: e.clientX, Y: e.clientY });
+    if (pinch && pointers.size === 2) {
+      const [a, b] = [...pointers.values()]; const d = Math.hypot(a.X - b.X, a.Y - b.Y); const r = svg.getBoundingClientRect();
+      zoomAt(d / pinch.d, (a.X + b.X) / 2 - r.left, (a.Y + b.Y) / 2 - r.top); pinch.d = d; return;
+    }
+    const w = toWorld(e); cursor = w;
+    $('xy').textContent = `(${fmt(w.x)}, ${fmt(w.y)})`;
+    if (drag) {
+      if (drag.kind === 'pan') { view.ox = drag.ox - (w.X - drag.X) / view.s; view.oy = drag.oy + (w.Y - drag.Y) / view.s; render(); return; }
+      if (drag.kind === 'pt') { const s = snapWorld(w); const p = st.pts[drag.id]; if (p.x !== s.x || p.y !== s.y) { p.x = s.x; p.y = s.y; render(); } return; }
+      if (drag.kind === 'obj') {
+        const s = snapWorld(w); const dx = s.x - drag.s0.x, dy = s.y - drag.s0.y; const o = drag.o;
+        drag.orig.pts.forEach(q => { st.pts[q.id].x = q.x + dx; st.pts[q.id].y = q.y + dy; });
+        if (o.type === 'path') o.d = drag.orig.d.map(p => [p[0] + dx, p[1] + dy]);
+        if (o.type === 'text') { o.x = drag.orig.x + dx; o.y = drag.orig.y + dy; }
+        render(); return;
+      }
+    }
+    if (tmp && tmp.kind === 'pen' && pointers.size) {
+      const last = tmp.d[tmp.d.length - 1];
+      if (Math.hypot(sx(last[0]) - w.X, sy(last[1]) - w.Y) > 2.5) tmp.d.push([w.x, w.y]);
+      render(); return;
+    }
+    const nh = (['rr', 'slope', 'erase'].includes(tool)) ? (lineAt(e) || {}).id || null : null;
+    if (nh !== hover || tmp || ['point', 'line', 'poly'].includes(tool)) { hover = nh; render(); }
+  });
+  function endPointer(e) {
+    pointers.delete(e.pointerId);
+    if (pointers.size < 2) pinch = null;
+    if (tmp && tmp.kind === 'pen') {
+      if (tmp.d.length > 1) { begin(); const o = { id: uid('o'), type: 'path', d: tmp.d.map(p => [Math.round(p[0] * 1000) / 1000, Math.round(p[1] * 1000) / 1000]), color, dash: dashed }; st.objs.push(o); commit(); }
+      tmp = null; render();
+    }
+    if (drag) { if (drag.kind !== 'pan') commit(); drag = null; svg.classList.remove('panning'); }
+  }
+  svg.addEventListener('pointerup', endPointer);
+  svg.addEventListener('pointercancel', endPointer);
+  svg.addEventListener('pointerleave', () => { if (!drag && !(tmp && tmp.kind === 'pen')) { cursor = null; hover = null; render(); } });
+  svg.addEventListener('wheel', e => { e.preventDefault(); const r = svg.getBoundingClientRect(); zoomAt(Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0015)), e.clientX - r.left, e.clientY - r.top); }, { passive: false });
+  svg.addEventListener('dblclick', e => { if (tool === 'poly' && tmp) { begin(); finishPoly(); commit(); render(); } });
+
+  // ---------------- keyboard & buttons ----------------
+  document.addEventListener('keydown', e => {
+    if (e.target.matches && e.target.matches('input, textarea')) { if (e.key === 'Escape') e.target.blur(); return; }
+    const k = e.key.toLowerCase();
+    if ((e.metaKey || e.ctrlKey) && k === 'z') { e.preventDefault(); e.shiftKey ? redo() : undo(); return; }
+    if ((e.metaKey || e.ctrlKey) && k === 'y') { e.preventDefault(); redo(); return; }
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key === 'Escape') { tmp = null; sel = null; render(); return; }
+    if (e.key === 'Enter' && tool === 'poly' && tmp) { begin(); finishPoly(); commit(); render(); return; }
+    if ((e.key === 'Delete' || e.key === 'Backspace') && sel) { e.preventDefault(); begin(); sel.kind === 'pt' ? delPoint(sel.id) : delObj(sel.id); sel = null; commit(); render(); return; }
+    if (sel && sel.kind === 'pt' && e.key.startsWith('Arrow')) {
+      e.preventDefault(); const m = steps().minor, p = st.pts[sel.id]; begin();
+      if (e.key === 'ArrowLeft') p.x -= m; if (e.key === 'ArrowRight') p.x += m; if (e.key === 'ArrowUp') p.y += m; if (e.key === 'ArrowDown') p.y -= m;
+      p.x = Math.round(p.x * 1e6) / 1e6; p.y = Math.round(p.y * 1e6) / 1e6; commit(); render(); return;
+    }
+    const t = TOOLS.find(t => t.key && t.key.toLowerCase() === k); if (t) setTool(t.id);
+  });
+  $('undo').onclick = undo; $('redo').onclick = redo;
+  $('zin').onclick = () => zoomAt(1.25, W / 2, H / 2);
+  $('zout').onclick = () => zoomAt(0.8, W / 2, H / 2);
+  $('home').onclick = () => { view.ox = 0; view.oy = 0; view.s = 40; render(); };
+  let clearArm = null;
+  $('clear').onclick = () => {
+    const b = $('clear');
+    if (!clearArm) { b.textContent = 'Click again to clear'; clearArm = setTimeout(() => { b.textContent = 'Clear'; clearArm = null; }, 2500); return; }
+    clearTimeout(clearArm); clearArm = null; b.textContent = 'Clear';
+    begin(); st.pts = {}; st.objs = []; sel = null; tmp = null; commit(); render();
+  };
+
+  buildRail(); setTool('select'); syncUndo();
+})();
+</script>
+
+</body></html>
