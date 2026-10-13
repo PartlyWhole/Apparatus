@@ -64,14 +64,14 @@
     return shiftP('calc', ctr, dir, s, ri(2, dir > 0 ? 4 : Math.min(4, 7 - fracDigits(s))));
   }
   const SKILLS = [
-    { id: 'w-reach', gen: genW('reach') },                       // 3 → 300
-    { id: 'w-count', gen: genW('count') },                       // 3 → 300: how many ×10?
-    { id: 'd-reach', gen: genD('reach') },                       // 0.45 → 45
-    { id: 'd-count', gen: genD('count') },
-    { id: 'mp-times', gen: lvl => lvl === 0 ? shiftP('reach', 'mt', 1, decimal(1, ri(1, 2)), ri(1, 2))
+    { id: 'w-reach', quick: true, gen: genW('reach') },                       // 3 → 300
+    { id: 'w-count', quick: true, gen: genW('count') },                       // 3 → 300: how many ×10?
+    { id: 'd-reach', quick: true, gen: genD('reach') },                       // 0.45 → 45
+    { id: 'd-count', quick: true, gen: genD('count') },
+    { id: 'mp-times', quick: true, gen: lvl => lvl === 0 ? shiftP('reach', 'mt', 1, decimal(1, ri(1, 2)), ri(1, 2))
         : lvl === 1 ? shiftP('reach', 'mt', 1, decimal(ri(0, 2), ri(2, 3)), ri(2, 3))
         : shiftP('count', 'mt', 1, decimal(ri(0, 3), ri(1, 4)), ri(2, 5)) },
-    { id: 'mp-divide', gen: lvl => lvl === 0 ? shiftP('reach', 'md', -1, wholeZ(ri(2, 3)), ri(1, 2))
+    { id: 'mp-divide', quick: true, gen: lvl => lvl === 0 ? shiftP('reach', 'md', -1, wholeZ(ri(2, 3)), ri(1, 2))
         : lvl === 1 ? shiftP('reach', 'md', -1, one([wholeZ(ri(1, 4)), decimal(ri(1, 2), 1)]), ri(2, 3))
         : shiftP('count', 'md', -1, run(ri(1, 3)), ri(3, 5)) },
     { id: 'mixed', gen: genCalc },                               // 3.6 × 100 = ?   45 ÷ 1000 = ?
@@ -89,6 +89,9 @@
   // Right on review: box + 1 (max 5). Wrong: back to box 1. With nothing due and nothing new, the soonest-due skill
   // comes early; that keeps its box when right.
   const UP = [2, 2, 3];
+  // quick skills (the warm-up counters): one right per level, and their first review starts further out
+  const QUICK_UP = [1, 1, 1], QUICK_BOX = 3;
+  const upFor = k => k.quick ? QUICK_UP : UP;
   const GAP = [0, 3, 8, 20, 50, 120];
   const DAYS = [0, 0, 1, 3, 7, 21];
   const KEY = 'apparatus.counters.progression.v1';
@@ -120,7 +123,7 @@
     if (review) { s.box = !ok ? 1 : early ? s.box : Math.min(5, s.box + 1); schedule(s); }
     else if (ok) {
       s.streak++;
-      if (s.streak >= UP[s.lvl]) { s.streak = 0; if (s.lvl < 2) s.lvl++; else { s.box = 1; schedule(s); } }
+      if (s.streak >= upFor(skill)[s.lvl]) { s.streak = 0; if (s.lvl < 2) s.lvl++; else { s.box = skill.quick ? QUICK_BOX : 1; schedule(s); } }
     } else { s.streak = 0; s.lvl = Math.max(0, s.lvl - 1); }
     st.last = skill.id; st.lastReview = review;
     save(); dots();
@@ -134,7 +137,7 @@
     [...dotsEl.children].forEach((d, i) => {
       const s = st.sk[SKILLS[i].id];
       d.className = s.box ? 'm' : i === learn ? 'l' : '';
-      d.style.setProperty('--p', s.box ? (0.45 + 0.11 * s.box).toFixed(2) : ((s.lvl * 2 + s.streak) / 7).toFixed(3));
+      d.style.setProperty('--p', s.box ? (0.45 + 0.11 * s.box).toFixed(2) : (() => { const u = upFor(SKILLS[i]); return ((u.slice(0, s.lvl).reduce((a, b) => a + b, 0) + s.streak) / (u[0] + u[1] + u[2])).toFixed(3); })());
       d.toggleAttribute('data-now', !!cur && cur.skill === SKILLS[i]);
     });
     const done = SKILLS.filter(k => st.sk[k.id].box).length;
