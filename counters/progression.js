@@ -335,7 +335,12 @@
     if (!cur || cur.done || cur.showing) return;
     const p = cur.p;
     if (p.type === 'reach') {
-      if (cur.steps === p.n) return success();
+      if (cur.counting) {                      // reached it: now say how many presses it took
+        const v = $('a').value.trim();
+        if (!/^\d+$/.test(v)) return;
+        return +v === p.n ? success() : fail('Try again');
+      }
+      if (cur.steps === p.n) return askCount();
       if (cur.steps < p.n) return say('Not yet', 'bad');
       return;
     }
@@ -361,8 +366,18 @@
     const p = cur.p;
     if (i.id === 'e') return parseInt(i.value.replace(/[−–]/, '-').replace(/\s/g, ''), 10) === p.e;
     if (i.id === 'm') return norm(i.value) === p.m;
-    if (p.type === 'count') return /^\d+$/.test(i.value.trim()) && +i.value.trim() === p.n;
+    if (p.type === 'count' || p.type === 'reach') return /^\d+$/.test(i.value.trim()) && +i.value.trim() === p.n;
     return norm(i.value) === (p.type === 'calc' ? p.t : p.plain);
+  }
+  function askCount() {
+    const p = cur.p;
+    cur.counting = true;
+    C.lock(true);
+    say('');
+    q.insertAdjacentHTML('beforeend', `<span class="sub">How many ${opSym(p)}10?</span>`);
+    ans.innerHTML = input('a', 'numeric', 'How many', 'n');
+    ans.hidden = false;
+    $('a').focus({ preventScroll: true });
   }
   function score(ok) { if (cur.scored) return; cur.scored = true; record(cur.skill, cur.review, cur.early, ok, cur.visit); }
   function success() {
@@ -375,7 +390,7 @@
     if (cur.tries >= 2) return finish(line(cur.p), 'show', true);
     say(msg, 'bad');
     const p = cur.p, my = token;
-    if (p.type === 'reach') wait(900).then(() => { if (my === token && !cur.done) { cur.steps = 0; C.load(p.s); C.lock(false); } });
+    if (p.type === 'reach' && !cur.counting) wait(900).then(() => { if (my === token && !cur.done) { cur.steps = 0; C.load(p.s); C.lock(false); } });
     else { const i = [...ans.querySelectorAll('input')].find(i => !right(i)) || ans.querySelector('input'); if (i) { i.select(); i.focus({ preventScroll: true }); } }
   }
   // Show the answer line, replay it on the counter, then offer Next.

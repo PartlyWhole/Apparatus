@@ -50,7 +50,7 @@
     }
   };
 
-  let mode, prob, steps, scored, done, showing = false;
+  let mode, prob, steps, scored, done, counting = false, showing = false;
   let right = 0, total = 0, streak = 0;
   const q = $('exQ'), ans = $('exAnswer'), fb = $('exFb');
   const retryBtn = $('exRetry'), showBtn = $('exShow'), checkBtn = $('exCheck'), nextBtn = $('exNext');
@@ -96,6 +96,7 @@
   }
   function loadShift() {
     steps = 0; done = false;
+    if (counting) { counting = false; ans.hidden = true; ans.innerHTML = ''; q.querySelector('.ex-sub')?.remove(); }
     C.load(prob.s);
     C.lock(mode === 'count');
   }
@@ -156,12 +157,30 @@
 
   function check() {
     if (showing || done) return;
-    if (cfg && mode === 'make') {
-      const v = C.read().value, t = target();
-      if (steps === prob.n) {
-        done = true; C.lock(true); score(true);
+    if (cfg && mode === 'make' && counting) {
+      // reached the number: now say how many presses it took
+      const v = $('exN').value.trim();
+      if (!/^\d+$/.test(v)) return;
+      if (+v === steps) {
+        done = true; score(true);
         say(`✓ ${chain()}`, 'good');
         finish();
+      } else {
+        score(false);
+        say('Try again', 'bad');
+        retype();
+      }
+      return;
+    }
+    if (cfg && mode === 'make') {
+      if (steps === prob.n) {
+        counting = true; C.lock(true); say('');
+        q.insertAdjacentHTML('beforeend', `<span class="ex-sub">How many ${op}10?</span>`);
+        ans.innerHTML = `<input id="exN" type="text" inputmode="numeric" autocomplete="off" aria-label="How many times" style="width:5ch">`;
+        ans.hidden = false;
+        const i = $('exN');
+        i.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); check(); } });
+        i.focus({ preventScroll: true });
       } else if (steps < prob.n) {
         say('Not yet', 'bad');
       } else {
