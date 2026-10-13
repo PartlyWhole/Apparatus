@@ -6,7 +6,7 @@
   let speed = 1, instant = false;
   const rate = () => instant ? 1000 : speed;
   const wait = ms => new Promise(r => setTimeout(r, ms));
-  const pace = ms => wait(ms / rate());
+  const beat = ms => wait(ms / rate());
 
   // ---------- decimal strings (no floating point) ----------
   function norm(s) {
@@ -50,6 +50,7 @@
   function mant(k) { return k === 1 ? nz() : norm(nz() + '.' + Array.from({ length: k - 2 }, dg).join('') + nz()); }
 
   // ---------- skills ----------
+  // tier: importance. 0 = core, always in; 1 = in from pace 1/3; 2 = in from pace 2/3 (see pacing below)
   // ctr: w ×10 whole, d ×10 decimal, mt moving point ×10, md moving point ÷10, sci × 10ⁿ
   // types: reach (press until you get there), count (how many presses), calc (type the result), toSci, fromSci
   const shiftP = (type, ctr, dir, s, n) => ({ type, ctr, dir, s, n, t: shift(s, dir * n) });
@@ -68,23 +69,23 @@
     return shiftP('calc', ctr, dir, s, ri(2, dir > 0 ? 4 : Math.min(4, 7 - fracDigits(s))));
   }
   const SKILLS = [
-    { id: 'w-reach', quick: true, gen: genW('reach') },                       // 3 → 300
-    { id: 'w-count', quick: true, gen: genW('count') },                       // 3 → 300: how many ×10?
-    { id: 'd-reach', quick: true, gen: genD('reach') },                       // 0.45 → 45
-    { id: 'd-count', quick: true, gen: genD('count') },
-    { id: 'mp-times', quick: true, gen: lvl => lvl === 0 ? shiftP('reach', 'mt', 1, decimal(1, ri(1, 2)), ri(1, 2))
+    { id: 'w-reach', tier: 0, quick: true, gen: genW('reach') },                       // 3 → 300
+    { id: 'w-count', tier: 2, quick: true, gen: genW('count') },                       // 3 → 300: how many ×10?
+    { id: 'd-reach', tier: 0, quick: true, gen: genD('reach') },                       // 0.45 → 45
+    { id: 'd-count', tier: 2, quick: true, gen: genD('count') },
+    { id: 'mp-times', tier: 0, quick: true, gen: lvl => lvl === 0 ? shiftP('reach', 'mt', 1, decimal(1, ri(1, 2)), ri(1, 2))
         : lvl === 1 ? shiftP('reach', 'mt', 1, decimal(ri(0, 2), ri(2, 3)), ri(2, 3))
         : shiftP('count', 'mt', 1, decimal(ri(0, 3), ri(1, 4)), ri(2, 5)) },
-    { id: 'mp-divide', quick: true, gen: lvl => lvl === 0 ? shiftP('reach', 'md', -1, wholeZ(ri(2, 3)), ri(1, 2))
+    { id: 'mp-divide', tier: 1, quick: true, gen: lvl => lvl === 0 ? shiftP('reach', 'md', -1, wholeZ(ri(2, 3)), ri(1, 2))
         : lvl === 1 ? shiftP('reach', 'md', -1, one([wholeZ(ri(1, 4)), decimal(ri(1, 2), 1)]), ri(2, 3))
         : shiftP('count', 'md', -1, run(ri(1, 3)), ri(3, 5)) },
-    { id: 'mixed', gen: genCalc },                               // 3.6 × 100 = ?   45 ÷ 1000 = ?
-    { id: 'sci-big', gen: lvl => lvl === 0 ? sciP('toSci', 1, ri(1, 3)) : lvl === 1 ? sciP('toSci', 2, ri(2, 5)) : sciP('toSci', ri(2, 3), ri(3, 7)) },
-    { id: 'sci-small', gen: lvl => lvl === 0 ? sciP('toSci', 1, ri(-2, -1)) : lvl === 1 ? sciP('toSci', 2, ri(-3, -1)) : sciP('toSci', ri(2, 3), ri(-5, -2)) },
-    { id: 'sci-back', gen: lvl => lvl === 0 ? sciP('fromSci', ri(1, 2), one([1, 2, 3, -1, -2]))
+    { id: 'mixed', tier: 0, gen: genCalc },                               // 3.6 × 100 = ?   45 ÷ 1000 = ?
+    { id: 'sci-big', tier: 0, gen: lvl => lvl === 0 ? sciP('toSci', 1, ri(1, 3)) : lvl === 1 ? sciP('toSci', 2, ri(2, 5)) : sciP('toSci', ri(2, 3), ri(3, 7)) },
+    { id: 'sci-small', tier: 0, gen: lvl => lvl === 0 ? sciP('toSci', 1, ri(-2, -1)) : lvl === 1 ? sciP('toSci', 2, ri(-3, -1)) : sciP('toSci', ri(2, 3), ri(-5, -2)) },
+    { id: 'sci-back', tier: 0, gen: lvl => lvl === 0 ? sciP('fromSci', ri(1, 2), one([1, 2, 3, -1, -2]))
         : lvl === 1 ? sciP('fromSci', 2, one([1, 2, 3, 4, -1, -2, -3, -4]))
         : sciP('fromSci', ri(2, 3), one([-5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7])) },
-    { id: 'sci-mixed', gen: lvl => one([genCalc, SKILLS[7].gen, SKILLS[8].gen, SKILLS[9].gen])(Math.max(1, lvl)) }
+    { id: 'sci-mixed', tier: 1, gen: lvl => one([genCalc, SKILLS[7].gen, SKILLS[8].gen, SKILLS[9].gen])(Math.max(1, lvl)) }
   ];
   const NAMES = { 'w-reach': '×10 · reach', 'w-count': '×10 · how many', 'd-reach': '×10 decimals · reach', 'd-count': '×10 decimals · how many',
     'mp-times': 'Moving point ×10', 'mp-divide': 'Moving point ÷10', mixed: '× and ÷ by 10ⁿ', 'sci-big': 'Big → scientific',
@@ -96,58 +97,113 @@
     if (ok) { if (++PR.streak >= 2) { PR.streak = 0; PR.lvl = Math.min(2, PR.lvl + 1); } }
     else { PR.streak = 0; PR.lvl = Math.max(0, PR.lvl - 1); }
   }
-  const ONLY = SKILLS.find(k => k.id === ONLY_ID) || null;
+  let ONLY = SKILLS.find(k => k.id === ONLY_ID) || null;
+
+  // ---------- pacing: one knob, 0 = cram … 1 = full ----------
+  // ?pace=0.35 sets any value; the Cram · Full control sets 0 or 1. Shared with the other paths, and remembered.
+  // Every tuning constant below is derived from PACE, in tune(), by piecewise-linear interpolation through three
+  // anchors (cram 0, middle 0.5, full 1); counts are rounded. Each is monotonic in pace. The middle is the original tuning.
+  const PACE_KEY = 'apparatus.pace';
+  const clamp01 = x => Math.min(1, Math.max(0, x));
+  let PACE = 1;
+  try { const v = parseFloat(localStorage.getItem(PACE_KEY)); if (isFinite(v)) PACE = clamp01(v); } catch (_) {}
+  { const v = parseFloat(new URLSearchParams(location.search).get('pace'));
+    if (isFinite(v)) { PACE = clamp01(v); try { localStorage.setItem(PACE_KEY, String(PACE)); } catch (_) {} } }
+  let T;
+  function tune() {
+    const at = (c, m, f) => PACE <= 0.5 ? c + (m - c) * PACE * 2 : m + (f - m) * (PACE - 0.5) * 2;
+    const n = (c, m, f) => Math.round(at(c, m, f));
+    const ns = (c, m, f) => c.map((_, i) => n(c[i], m[i], f[i]));
+    T = {
+      // which skills are in: tier 0 always, tier 1 from pace 1/3, tier 2 from pace 2/3
+      tiers: Math.floor(PACE * 3 + 1e-9),
+      // first-try right answers in a row to pass each level (easy, medium, hard); 0 skips that level.
+      // cram skips the easy level; full asks for 2–3 per level
+      up: ns([0, 1, 1], [1, 2, 2], [2, 3, 3]),
+      // quick skills (warm-up counters): stay quick (no hard level) below pace 0.75; easy level skipped below 0.25
+      quickUp: ns([0, 1, 0], [1, 1, 0], [1, 1, 1]),
+      // a quick skill's first review starts in this box
+      quickBox: 3,
+      // review gaps per box, in problems and in days (whichever comes first): cram is dense, full is long-term
+      gap: ns([0, 2, 4, 8, 14, 25], [0, 3, 8, 20, 50, 120], [0, 4, 12, 30, 80, 200]),
+      days: [0, 0, 1, 3, 7, 21].map((m, i) => at([0, 0, 0, 1, 2, 4][i], m, [0, 1, 3, 7, 21, 60][i])),
+      // while something is still being learned: new problems needed before a review, and most reviews in a row
+      newGap: n(2, 1, 1),
+      revRun: n(1, 1, 2)
+    };
+  }
+  tune();
+  const active = k => k.tier <= T.tiers;
+  const ACTIVE = () => SKILLS.filter(active);
 
   // ---------- spaced repetition (Leitner boxes per skill) ----------
-  // box 0: learning. Levels 0→1→2 after 2 first-try right in a row; 3 in a row at level 2 masters it (box 1).
-  // A mastered skill returns after GAP[box] problems, or after DAYS[box] days, whichever comes first.
-  // Right on review: box + 1 (max 5). Wrong: back to box 1. With nothing due and nothing new, the soonest-due skill
-  // comes early; that keeps its box when right.
-  const UP = [1, 2, 2];
-  // quick skills (the warm-up counters): one right per level, and their first review starts further out
-  const QUICK_UP = [1, 1, 0], QUICK_BOX = 3;
-  const upFor = k => k.quick ? QUICK_UP : UP;
-  const GAP = [0, 3, 8, 20, 50, 120];
-  const DAYS = [0, 0, 1, 3, 7, 21];
+  // box 0: learning, through the levels by first-try right answers in a row (T.up); passing the last level masters
+  // it (box 1; quick skills box T.quickBox). A mastered skill returns after T.gap[box] problems, or after T.days[box]
+  // days, whichever comes first. Right on review: box + 1 (max 5). Wrong: back to box 1. With nothing due and nothing
+  // new, the soonest-due skill comes early; that keeps its box when right.
+  const upFor = k => k.quick ? T.quickUp : T.up;
   const KEY = 'apparatus.counters.progression.v1';
-  const fresh = () => ({ n: 0, lastReview: false, last: null, sk: {} });
+  // at: SKILLS index where learning resumes (› moves it on); visit: a mastered skill served again via ‹ ›, on its own
+  // levels {id, lvl, streak}, never touching its box
+  const fresh = () => ({ n: 0, newRun: 0, revRun: 0, last: null, at: 0, visit: null, sk: {} });
   let st = fresh();
-  try { const raw = localStorage.getItem(KEY); if (raw) { const o = JSON.parse(raw); if (o && typeof o === 'object' && o.sk) st = Object.assign(fresh(), o); } } catch (_) {}
+  try { const raw = localStorage.getItem(KEY); if (raw) { const o = JSON.parse(raw); if (o && typeof o === 'object' && o.sk) { st = Object.assign(fresh(), o); if (o.lastReview) st.revRun = 1; delete st.lastReview; } } } catch (_) {}
   SKILLS.forEach(k => { st.sk[k.id] = Object.assign({ lvl: 0, streak: 0, box: 0, dueAt: 0, dueTime: 0 }, st.sk[k.id]); });
   function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (_) {} }
 
   function schedule(s) {
-    s.dueAt = st.n + GAP[s.box];
-    s.dueTime = DAYS[s.box] ? Date.now() + DAYS[s.box] * 864e5 : 0;
+    s.dueAt = st.n + T.gap[s.box];
+    s.dueTime = T.days[s.box] ? Date.now() + T.days[s.box] * 864e5 : 0;
   }
+  // a learning skill sits on its first level that isn't skipped at this pace; past the last one it is mastered
+  function settle(k) {
+    const s = st.sk[k.id], u = upFor(k);
+    if (s.box) return;
+    while (s.lvl < 3 && !u[s.lvl]) { s.lvl++; s.streak = 0; }
+    if (s.lvl > 2) { s.lvl = 2; s.streak = 0; s.box = k.quick ? T.quickBox : 1; schedule(s); }
+  }
+  const settleAll = () => SKILLS.forEach(settle);
+  settleAll();
   const isDue = (s, now) => s.box > 0 && (s.dueAt <= st.n || (s.dueTime > 0 && now >= s.dueTime));
+  const byId = id => SKILLS.find(k => k.id === id);
+  const visiting = () => st.visit && active(byId(st.visit.id)) ? byId(st.visit.id) : null;
+  // the skill being learned: the first unmastered one from the cursor on, then any skipped earlier
+  function learnSkill() {
+    const open = ACTIVE().filter(k => st.sk[k.id].box === 0);
+    return open.find(k => SKILLS.indexOf(k) >= st.at) || open[0] || null;
+  }
   function pick() {
     if (ONLY) return { skill: ONLY, review: false };
-    const now = Date.now();
-    const learn = SKILLS.find(k => st.sk[k.id].box === 0);
-    const due = SKILLS.filter(k => isDue(st.sk[k.id], now)).sort((a, b) => st.sk[a.id].dueAt - st.sk[b.id].dueAt);
+    const now = Date.now(), list = ACTIVE(), vis = visiting();
+    const learn = vis || learnSkill();
+    const due = list.filter(k => k !== vis && isDue(st.sk[k.id], now)).sort((a, b) => st.sk[a.id].dueAt - st.sk[b.id].dueAt);
     if (due.length > 1 && due[0].id === st.last) due.push(due.shift());
-    // reviews interleave with new material: never two reviews in a row while something is still being learned
-    if (due.length && (!learn || !st.lastReview)) return { skill: due[0], review: true };
-    if (learn) return { skill: learn, review: false };
-    const soonest = SKILLS.filter(k => k.id !== st.last).sort((a, b) => st.sk[a.id].dueAt - st.sk[b.id].dueAt)[0];
+    // reviews interleave with new material: while something is still being learned, a review needs T.newGap new
+    // problems before it, and at most T.revRun reviews come in a row
+    const room = !learn || (st.revRun ? st.revRun < T.revRun : st.newRun >= T.newGap);
+    if (due.length && room) return { skill: due[0], review: true };
+    if (learn) return { skill: learn, review: false, visit: learn === vis };
+    const soonest = list.filter(k => k.id !== st.last).sort((a, b) => st.sk[a.id].dueAt - st.sk[b.id].dueAt)[0] || list[0];
     return { skill: soonest, review: true, early: true };
   }
-  function record(skill, review, early, ok) {
+  function record(skill, review, early, ok, visit) {
     if (ONLY) { practiced(ok); return; }
-    const s = st.sk[skill.id];
+    const s = st.sk[skill.id], v = st.visit;
     st.n++;
-    if (review) { s.box = !ok ? 1 : early ? s.box : Math.min(5, s.box + 1); schedule(s); }
+    if (visit && v && v.id === skill.id) {            // its own ramp; done after the last level
+      const u = upFor(skill);
+      if (ok) { if (++v.streak >= u[v.lvl]) { v.lvl++; v.streak = 0; } } else { v.streak = 0; v.lvl = Math.max(0, v.lvl - 1); }
+      while (v.lvl < 3 && !u[v.lvl]) v.lvl++;
+      if (v.lvl > 2) st.visit = null;
+    }
+    else if (review) { s.box = !ok ? 1 : early ? s.box : Math.min(5, s.box + 1); schedule(s); }
+    else if (s.box) {}                                // mastered meanwhile (pace switched mid-problem)
     else if (ok) {
-      s.streak++;
-      if (s.streak >= upFor(skill)[s.lvl]) {
-        s.streak = 0;
-        // quick skills are mastered after the medium level; the hard level comes back in review
-        if (s.lvl < 2 && !(skill.quick && s.lvl === 1)) s.lvl++;
-        else { s.box = skill.quick ? QUICK_BOX : 1; schedule(s); }
-      }
+      if (++s.streak >= upFor(skill)[s.lvl]) { s.lvl++; s.streak = 0; }
     } else { s.streak = 0; s.lvl = Math.max(0, s.lvl - 1); }
-    st.last = skill.id; st.lastReview = review;
+    settle(skill);
+    if (review) { st.revRun++; st.newRun = 0; } else { st.newRun++; st.revRun = 0; }
+    st.last = skill.id;
     save(); dots();
   }
 
@@ -156,15 +212,16 @@
   dotsEl.innerHTML = SKILLS.map(() => '<i></i>').join('');
   function dots() {
     if (ONLY) return;
-    const learn = SKILLS.findIndex(k => st.sk[k.id].box === 0);
+    const list = ACTIVE(), learn = visiting() || learnSkill();
     [...dotsEl.children].forEach((d, i) => {
-      const s = st.sk[SKILLS[i].id];
-      d.className = s.box ? 'm' : i === learn ? 'l' : '';
-      d.style.setProperty('--p', s.box ? (0.45 + 0.11 * s.box).toFixed(2) : (() => { const u = upFor(SKILLS[i]); return ((u.slice(0, s.lvl).reduce((a, b) => a + b, 0) + s.streak) / (u[0] + u[1] + u[2])).toFixed(3); })());
-      d.toggleAttribute('data-now', !!cur && cur.skill === SKILLS[i]);
+      const k = SKILLS[i], s = st.sk[k.id], u = upFor(k);
+      d.hidden = !active(k);
+      d.className = s.box ? 'm' : k === learn ? 'l' : '';
+      d.style.setProperty('--p', s.box ? (0.45 + 0.11 * s.box).toFixed(2) : ((u.slice(0, s.lvl).reduce((a, b) => a + b, 0) + s.streak) / (u[0] + u[1] + u[2])).toFixed(3));
+      d.toggleAttribute('data-now', !!cur && cur.skill === k);
     });
-    const done = SKILLS.filter(k => st.sk[k.id].box).length;
-    dotsEl.setAttribute('aria-label', `${done} of ${SKILLS.length}`);
+    const done = list.filter(k => st.sk[k.id].box).length;
+    dotsEl.setAttribute('aria-label', `${done} of ${list.length}`);
   }
 
   // ---------- counters ----------
@@ -225,13 +282,13 @@
 
   async function newProblem() {
     const my = ++token;
-    const { skill, review, early = false } = pick();
+    const { skill, review, early = false, visit = false } = pick();
     const s = st.sk[skill.id];
-    const lvl = ONLY ? PR.lvl : review ? (s.box === 1 ? 1 : 2) : s.lvl;
+    const lvl = ONLY ? PR.lvl : visit ? st.visit.lvl : review ? (s.box === 1 ? 1 : 2) : s.lvl;
     let p, key, k = 0;
     do { p = skill.gen(lvl); key = JSON.stringify(p); } while (key === lastKey && ++k < 20);
     lastKey = key;
-    cur = { skill, review, early, lvl, p, tries: 0, scored: false, done: false, steps: 0, showing: false };
+    cur = { skill, review, early, visit, lvl, p, tries: 0, scored: false, done: false, steps: 0, showing: false };
     dots();
     say(''); nextBtn.hidden = true; checkBtn.hidden = false; checkBtn.disabled = false;
     const S = `<b>${pretty(p.s || '')}</b>`, T = `<b>${pretty(p.t || '')}</b>`;
@@ -292,7 +349,7 @@
     return v === want ? success() : fail('Try again');
   }
 
-  function score(ok) { if (cur.scored) return; cur.scored = true; record(cur.skill, cur.review, cur.early, ok); }
+  function score(ok) { if (cur.scored) return; cur.scored = true; record(cur.skill, cur.review, cur.early, ok, cur.visit); }
   function success() {
     score(true);
     finish(`✓ ${line(cur.p)}`, 'good', cur.p.type !== 'reach');
@@ -319,13 +376,13 @@
     cur.showing = true;
     if (p.ctr === 'sci') {
       C.load(p.plain, p.type === 'toSci' ? 0 : p.e);
-      await pace(600);
+      await beat(600);
       const dir = (p.type === 'toSci') === (p.e > 0) ? -1 : 1;
-      for (let k = 0; k < Math.abs(p.e) && my === token; k++) { await C.step(dir); await pace(220); }
+      for (let k = 0; k < Math.abs(p.e) && my === token; k++) { await C.step(dir); await beat(220); }
     } else {
       C.load(p.s);
-      await pace(600);
-      for (let k = 0; k < p.n && my === token; k++) { await stepUnlocked(); await pace(320); }
+      await beat(600);
+      for (let k = 0; k < p.n && my === token; k++) { await stepUnlocked(); await beat(320); }
       if (my === token) C.lock(true);
     }
     if (my === token) cur.showing = false;
@@ -339,8 +396,44 @@
     e.preventDefault();
     if (cur && cur.done) newProblem(); else check();
   });
-  const resetBtn = $('reset');
-  if (ONLY) { dotsEl.textContent = NAMES[ONLY.id]; dotsEl.classList.add('only'); resetBtn.hidden = true; }
+  const resetBtn = $('reset'), paceEl = $('pace');
+  const showOnly = () => { dotsEl.textContent = NAMES[ONLY.id]; dotsEl.classList.add('only'); resetBtn.hidden = true; paceEl.hidden = true; };
+  if (ONLY) showOnly();
+  // ‹ › : previous / next included skill. Practice mode switches skill; otherwise › moves learning past the current skill
+  // (no credit, no penalty; skipped skills come back after the rest) and ‹ serves the previous skill now.
+  function go(d) {
+    const list = ACTIVE();
+    const here = ONLY || visiting() || learnSkill() || (cur && cur.skill) || list[0];
+    const pos = SKILLS.indexOf(here);                  // wraps around at either end
+    const k = d > 0 ? list.find(k => SKILLS.indexOf(k) > pos) || list[0]
+      : [...list].reverse().find(k => SKILLS.indexOf(k) < pos) || list[list.length - 1];
+    if (ONLY) {
+      ONLY = k; PR.lvl = 0; PR.streak = 0; showOnly();
+      const u = new URL(location.href); u.searchParams.set('skill', k.id); history.replaceState(null, '', u);
+    } else {
+      st.at = SKILLS.indexOf(k);
+      const u = upFor(k); let lvl = 0; while (lvl < 2 && !u[lvl]) lvl++;
+      st.visit = st.sk[k.id].box ? { id: k.id, lvl, streak: 0 } : null;
+      st.revRun = T.revRun; st.newRun = 0;             // the chosen skill comes first, before any review
+      save();
+    }
+    newProblem();
+  }
+  $('prev').addEventListener('click', () => go(-1));
+  $('skip').addEventListener('click', () => go(1));
+  const paceBtns = [...paceEl.querySelectorAll('button')];
+  const showPace = () => paceBtns.forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.pace === PACE)));
+  // switching pace re-derives the tuning; mastered skills stay mastered, learning ones move to a level that's still in
+  function setPace(v) {
+    PACE = clamp01(v);
+    try { localStorage.setItem(PACE_KEY, String(PACE)); } catch (_) {}
+    const u = new URL(location.href);
+    if (u.searchParams.has('pace')) { u.searchParams.delete('pace'); history.replaceState(null, '', u); }
+    tune(); settleAll(); if (!ONLY) save(); showPace(); dots();
+    if (!ONLY && cur && !cur.done && (!active(cur.skill) || (!cur.review && st.sk[cur.skill.id].box))) newProblem();
+  }
+  paceBtns.forEach(b => b.addEventListener('click', () => { if (+b.dataset.pace !== PACE) setPace(+b.dataset.pace); }));
+  showPace();
   let armed = null;
   resetBtn.addEventListener('click', () => {
     if (!armed) {
@@ -351,6 +444,7 @@
     clearTimeout(armed); armed = null; resetBtn.classList.remove('armed'); resetBtn.textContent = '↺';
     st = fresh();
     SKILLS.forEach(k => { st.sk[k.id] = { lvl: 0, streak: 0, box: 0, dueAt: 0, dueTime: 0 }; });
+    settleAll();
     try { localStorage.removeItem(KEY); } catch (_) {}
     newProblem();
   });
@@ -359,7 +453,7 @@
   // for testing: inspect state, or record an answer for the current problem without the UI
   window.__prog = {
     state: () => JSON.parse(JSON.stringify(st)), current: () => cur && { skill: cur.skill.id, review: cur.review, lvl: cur.lvl, p: cur.p },
-    skills: SKILLS.map(k => k.id), setState(o) { st = Object.assign(fresh(), o); save(); dots(); }, sim(ok) { score(ok); return newProblem(); }, next: () => newProblem()
+    skills: SKILLS.map(k => k.id), pace: () => PACE, setPace, tuning: () => JSON.parse(JSON.stringify(Object.assign({ skills: ACTIVE().map(k => k.id) }, T))), setState(o) { st = Object.assign(fresh(), o); SKILLS.forEach(k => { st.sk[k.id] = Object.assign({ lvl: 0, streak: 0, box: 0, dueAt: 0, dueTime: 0 }, st.sk[k.id]); }); settleAll(); save(); dots(); }, sim(ok) { score(ok); return newProblem(); }, next: () => newProblem()
   };
 
   dots();

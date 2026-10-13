@@ -44,6 +44,17 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .home:hover { color: var(--accent); }
 .reset { margin-left: auto; border: 0; background: transparent; color: var(--muted); font-size: 13px; padding: 4px 6px; border-radius: 8px; opacity: 0.6; }
 .reset:hover, .reset.armed { opacity: 1; color: var(--accent); }
+.nav { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.nav button { border: 0; background: transparent; color: var(--muted); font-size: 18px; line-height: 1; padding: 2px 5px; border-radius: 8px; opacity: 0.6; flex: none; }
+.nav button:hover { opacity: 1; color: var(--accent); }
+@media (max-width: 420px) { .top { gap: 10px; } .nav { gap: 2px; } .nav .dots { gap: 5px; } }
+.pace { margin-left: auto; display: inline-flex; align-items: center; color: var(--muted); font-size: 13px; flex: none; }
+.pace span { opacity: 0.5; }
+.pace button { border: 0; background: transparent; color: var(--muted); padding: 4px 5px; border-radius: 8px; opacity: 0.6; }
+.pace button:hover { opacity: 1; }
+.pace button[aria-pressed="true"] { opacity: 1; color: var(--accent); }
+.pace:not([hidden]) + .reset { margin-left: -10px; }
+@media (max-width: 420px) { .pace:not([hidden]) + .reset { margin-left: -6px; } }
 
 /* one dot per skill: hollow = locked, ring filling up = learning, solid = learned (deeper = longer remembered) */
 .dots { display: flex; gap: 7px; flex-wrap: wrap; }
@@ -97,7 +108,8 @@ button { font: inherit; color: inherit; cursor: pointer; }
 <main class="wrap">
   <div class="top">
     <a class="home" href="../index.html" aria-label="Apparatus">←</a>
-    <div class="dots" id="dots" role="img"></div>
+    <div class="nav"><button type="button" id="prev" aria-label="Previous skill" title="Previous skill">‹</button><div class="dots" id="dots" role="img"></div><button type="button" id="skip" aria-label="Next skill" title="Next skill">›</button></div>
+    <div class="pace" id="pace" role="group" aria-label="Pace"><button type="button" data-pace="0">Cram</button><span aria-hidden="true">·</span><button type="button" data-pace="1">Full</button></div>
     <button type="button" class="reset" id="reset" aria-label="Reset progress" title="Reset progress">↺</button>
   </div>
   <section class="task" aria-label="Problem">
