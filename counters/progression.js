@@ -82,6 +82,17 @@
         : sciP('fromSci', ri(2, 3), one([-5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7])) },
     { id: 'sci-mixed', gen: lvl => one([genCalc, SKILLS[7].gen, SKILLS[8].gen, SKILLS[9].gen])(Math.max(1, lvl)) }
   ];
+  const NAMES = { 'w-reach': '×10 · reach', 'w-count': '×10 · how many', 'd-reach': '×10 decimals · reach', 'd-count': '×10 decimals · how many',
+    'mp-times': 'Moving point ×10', 'mp-divide': 'Moving point ÷10', mixed: '× and ÷ by 10ⁿ', 'sci-big': 'Big → scientific',
+    'sci-small': 'Small → scientific', 'sci-back': 'Scientific → decimal', 'sci-mixed': 'Mixed' };
+  // ?skill=<id>: practice one skill on its own; saved progress is left alone
+  const ONLY_ID = new URLSearchParams(location.search).get('skill');
+  const PR = { lvl: 0, streak: 0 };
+  function practiced(ok) {
+    if (ok) { if (++PR.streak >= 2) { PR.streak = 0; PR.lvl = Math.min(2, PR.lvl + 1); } }
+    else { PR.streak = 0; PR.lvl = Math.max(0, PR.lvl - 1); }
+  }
+  const ONLY = SKILLS.find(k => k.id === ONLY_ID) || null;
 
   // ---------- spaced repetition (Leitner boxes per skill) ----------
   // box 0: learning. Levels 0→1→2 after 2 first-try right in a row; 3 in a row at level 2 masters it (box 1).
@@ -107,6 +118,7 @@
   }
   const isDue = (s, now) => s.box > 0 && (s.dueAt <= st.n || (s.dueTime > 0 && now >= s.dueTime));
   function pick() {
+    if (ONLY) return { skill: ONLY, review: false };
     const now = Date.now();
     const learn = SKILLS.find(k => st.sk[k.id].box === 0);
     const due = SKILLS.filter(k => isDue(st.sk[k.id], now)).sort((a, b) => st.sk[a.id].dueAt - st.sk[b.id].dueAt);
@@ -118,6 +130,7 @@
     return { skill: soonest, review: true, early: true };
   }
   function record(skill, review, early, ok) {
+    if (ONLY) { practiced(ok); return; }
     const s = st.sk[skill.id];
     st.n++;
     if (review) { s.box = !ok ? 1 : early ? s.box : Math.min(5, s.box + 1); schedule(s); }
@@ -133,6 +146,7 @@
   const dotsEl = $('dots');
   dotsEl.innerHTML = SKILLS.map(() => '<i></i>').join('');
   function dots() {
+    if (ONLY) return;
     const learn = SKILLS.findIndex(k => st.sk[k.id].box === 0);
     [...dotsEl.children].forEach((d, i) => {
       const s = st.sk[SKILLS[i].id];
@@ -195,7 +209,7 @@
     const my = ++token;
     const { skill, review, early = false } = pick();
     const s = st.sk[skill.id];
-    const lvl = review ? (s.box === 1 ? 1 : 2) : s.lvl;
+    const lvl = ONLY ? PR.lvl : review ? (s.box === 1 ? 1 : 2) : s.lvl;
     let p, key, k = 0;
     do { p = skill.gen(lvl); key = JSON.stringify(p); } while (key === lastKey && ++k < 20);
     lastKey = key;
@@ -308,6 +322,7 @@
     if (cur && cur.done) newProblem(); else check();
   });
   const resetBtn = $('reset');
+  if (ONLY) { dotsEl.textContent = NAMES[ONLY.id]; dotsEl.classList.add('only'); resetBtn.hidden = true; }
   let armed = null;
   resetBtn.addEventListener('click', () => {
     if (!armed) {

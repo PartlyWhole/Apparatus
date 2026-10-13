@@ -288,6 +288,15 @@
     goal: { task: p => `<span class="w">Make</span>${fracHTML(p.goal[0], p.goal[1])}`, check: checkGoal }
   };
 
+  // ?skill=<id>: practice one skill on its own; saved progress is left alone
+  const ONLY_ID = new URLSearchParams(location.search).get('skill');
+  const PR = { lvl: 0, streak: 0 };
+  function practiced(ok) {
+    if (ok) { if (++PR.streak >= 2) { PR.streak = 0; PR.lvl = Math.min(2, PR.lvl + 1); } }
+    else { PR.streak = 0; PR.lvl = Math.max(0, PR.lvl - 1); }
+  }
+  const ONLY = SKILLS.some(s => s.id === ONLY_ID) ? ONLY_ID : null;
+
   // ================= progress and spaced repetition =================
   function fresh() { return { n: 0, front: 0, lastId: null, lastReview: false, sk: {} }; }
   function loadP() {
@@ -307,6 +316,7 @@
   }
   // which skill comes next, and whether it's a review
   function nextSkill(now) {
+    if (ONLY) return { id: ONLY, review: false };
     now = now || Date.now();
     const mastered = SKILLS.slice(0, P.front).map(s => s.id);
     let due = mastered.filter(id => isDue(id, now)).sort((a, b) => (S(a).due - S(b).due) || (S(a).box - S(b).box));
@@ -320,11 +330,13 @@
     return { id: rest[0], review: true };
   }
   function level(id) {
+    if (ONLY) return PR.lvl;
     const s = S(id);
     return s.box === 0 ? LEARN_LEVEL[Math.min(s.streak, LEARN_LEVEL.length - 1)] : Math.min(2, s.box);
   }
   // record one answer; returns true when it masters a new skill
   function grade(id, ok, review, now) {
+    if (ONLY) { practiced(ok); return false; }
     now = now || Date.now();
     const s = S(id);
     P.n++; s.seen++; s.t = now; if (ok) s.ok++;
@@ -582,7 +594,9 @@
   // ---------- progress dots ----------
   const dots = $('dots');
   SKILLS.forEach(s => { const d = document.createElement('i'); d.className = 'dot'; d.title = s.name; dots.appendChild(d); });
+  if (ONLY) { dots.textContent = SKILLS[idx(ONLY)].name; dots.classList.add('only'); $('wipe').hidden = true; }
   function drawDots(popAt) {
+    if (ONLY) return;
     [...dots.children].forEach((d, i) => {
       const s = S(SKILLS[i].id);
       d.className = 'dot';

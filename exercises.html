@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>All Exercises</title>
+<style>
+  :root { --bg:#faf8f4; --fg:#1d1d1f; --muted:#6b6b70; --card:#fff; --line:#e4e0d8; --accent:#2f6fde; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#151517; --fg:#f2f2f2; --muted:#9a9aa0; --card:#1f1f22; --line:#333338; --accent:#7aa7ff; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.5 system-ui,-apple-system,sans-serif; }
+  main { max-width:880px; margin:0 auto; padding:48px 16px; }
+  h1 { font-size:2.5rem; margin:0 0 4px; letter-spacing:-0.02em; }
+  p.sub { color:var(--muted); margin:0 0 32px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:16px; }
+  a.toy { display:block; padding:20px; background:var(--card); border:1px solid var(--line); border-radius:12px; color:inherit; text-decoration:none; transition:border-color .15s, transform .15s; }
+  a.toy:hover { border-color:var(--accent); transform:translateY(-2px); }
+  a.toy h2 { margin:0 0 6px; font-size:1.15rem; }
+  a.toy p { margin:0; color:var(--muted); font-size:.92rem; }
+  h3.section { font-size:.8rem; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin:36px 0 12px; }
+  ol.skills { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; counter-reset: s; }
+  ol.skills a { display: flex; gap: 10px; align-items: baseline; padding: 12px 14px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; color: inherit; text-decoration: none; transition: border-color .15s; }
+  ol.skills a:hover { border-color: var(--accent); }
+  ol.skills a::before { counter-increment: s; content: counter(s); color: var(--muted); font-size: .8rem; min-width: 1.2em; }
+  a.back { color: var(--muted); text-decoration: none; font-size: .9rem; }
+  a.back:hover { color: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="index.html">← Apparatus</a>
+  <h1>Exercises</h1>
+  <h3 class="section">Powers of ten</h3>
+  <ol class="skills">
+    <li><a href="counters/progression.html?skill=w-reach">×10 · reach</a></li>
+    <li><a href="counters/progression.html?skill=w-count">×10 · how many</a></li>
+    <li><a href="counters/progression.html?skill=d-reach">×10 decimals · reach</a></li>
+    <li><a href="counters/progression.html?skill=d-count">×10 decimals · how many</a></li>
+    <li><a href="counters/progression.html?skill=mp-times">Moving point ×10</a></li>
+    <li><a href="counters/progression.html?skill=mp-divide">Moving point ÷10</a></li>
+    <li><a href="counters/progression.html?skill=mixed">× and ÷ by 10ⁿ</a></li>
+    <li><a href="counters/progression.html?skill=sci-big">Big → scientific</a></li>
+    <li><a href="counters/progression.html?skill=sci-small">Small → scientific</a></li>
+    <li><a href="counters/progression.html?skill=sci-back">Scientific → decimal</a></li>
+    <li><a href="counters/progression.html?skill=sci-mixed">Mixed</a></li>
+  </ol>
+  <h3 class="section">Fractions and units</h3>
+  <ol class="skills">
+    <li><a href="fractions/progression.html?skill=num">Cancel numbers</a></li>
+    <li><a href="fractions/progression.html?skill=unit">Cancel units</a></li>
+    <li><a href="fractions/progression.html?skill=split">Split to cancel</a></li>
+    <li><a href="fractions/progression.html?skill=mixed">Mixed canceling</a></li>
+    <li><a href="fractions/progression.html?skill=p10">10ᵃ / 10ᵇ</a></li>
+    <li><a href="fractions/progression.html?skill=forms">1,000 and 10ⁿ</a></li>
+    <li><a href="fractions/progression.html?skill=neg">Negative powers</a></li>
+    <li><a href="fractions/progression.html?skill=up">Build up a fraction</a></li>
+    <li><a href="fractions/progression.html?skill=down">Reduce a fraction</a></li>
+    <li><a href="fractions/progression.html?skill=any">Reach any goal</a></li>
+    <li><a href="fractions/progression.html?skill=metric">Metric units</a></li>
+    <li><a href="fractions/progression.html?skill=imperial">Imperial and time</a></li>
+    <li><a href="fractions/progression.html?skill=two">Two-step conversions</a></li>
+    <li><a href="fractions/progression.html?skill=rate">Rates</a></li>
+    <li><a href="fractions/progression.html?skill=cubic">Cubic units</a></li>
+  </ol>
+  <h3 class="section">Free practice</h3>
+  <ol class="skills">
+    <li><a href="counters/times-10-counter-exercises.html">×10</a></li>
+    <li><a href="counters/times-10-decimal-counter-exercises.html">×10 decimals</a></li>
+    <li><a href="counters/times-10-moving-point-counter-exercises.html">Moving point ×10</a></li>
+    <li><a href="counters/divide-10-moving-point-counter-exercises.html">Moving point ÷10</a></li>
+    <li><a href="counters/times-10-to-the-n-counter-exercises.html">Scientific notation</a></li>
+    <li><a href="fractions/fraction-board-exercises.html">Fraction board</a></li>
+    <li><a href="fractions/unit-conversion-exercises.html">Unit conversion</a></li>
+  </ol>
+</main>
+</body>
+</html>
