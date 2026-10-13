@@ -35,7 +35,7 @@
   function decimal(ip, fl) {
     const i = ip ? nz() + Array.from({ length: ip - 1 }, dg).join('') : '0';
     let f = Array.from({ length: fl - 1 }, dg).join('') + nz();
-    if (!ip && Math.random() < 0.4) f = '0' + f.slice(1);  // sometimes 0.0…
+    if (!ip && fl > 1 && Math.random() < 0.4) f = '0' + f.slice(1);  // sometimes 0.0…
     return norm(fl ? i + '.' + f : i);
   }
 

@@ -1,0 +1,881 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>× 10ⁿ Counter</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: one screen; fixed digit tiles (fading at both edges) followed by "× 10" and an exponent tile; the point hops as the exponent changes, so the value never changes */
+:root {
+  --bg: #EEF2F7;
+  --ink: #13203A;
+  --muted: #566682;
+  --line: #CDD6E3;
+  --accent: #2648C9;
+  --on-accent: #FFFFFF;
+  --tape: #F2B630;
+  --tape-ink: #2E2200;
+  --tile: #1B2436;
+  --tile-top: #222D42;
+  --tile-ink: #F4F1E8;
+  --hinge: #0B1120;
+  --f-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --tw: clamp(24px, 5.6vw, 58px);
+  --th: calc(var(--tw) * 1.42);
+  --gap: clamp(12px, 2.4vw, 22px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B1120; --ink: #E4EAF4; --muted: #95A4BF; --line: #26344F;
+    --accent: #8AA8FF; --on-accent: #0B1120; --tape: #F2B630; --tape-ink: #2E2200;
+    --tile: #1E2A40; --tile-top: #26344D; --tile-ink: #F4F1E8; --hinge: #060A14;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B1120; --ink: #E4EAF4; --muted: #95A4BF; --line: #26344F;
+  --accent: #8AA8FF; --on-accent: #0B1120; --tape: #F2B630; --tape-ink: #2E2200;
+  --tile: #1E2A40; --tile-top: #26344D; --tile-ink: #F4F1E8; --hinge: #060A14;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-mono); }
+.stage {
+  min-height: 100%;
+  display: flex; flex-direction: column; justify-content: center; gap: 24px;
+  padding-inline: 16px; padding-block: 24px;
+  max-width: 72rem; margin: 0 auto;
+}
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+.counterwrap { position: relative; }
+.counter {
+  position: relative;
+  height: calc(var(--th) + 3rem);
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 16%, #000 84%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 16%, #000 84%, transparent 100%);
+}
+.display { padding-bottom: 2.6rem; }
+.band {
+  position: absolute; left: 0; top: 0; z-index: 8; pointer-events: none;
+  opacity: 0;
+}
+.band .bracket {
+  height: 10px; border: 2px solid var(--tape); border-top: 0; border-radius: 0 0 6px 6px;
+  transform-origin: 50% 0;
+}
+.band .label {
+  position: absolute; left: 50%; top: 14px; transform: translateX(-50%);
+  white-space: nowrap; font-weight: 700; font-size: clamp(0.95rem, 2.3vw, 1.3rem);
+  display: flex; gap: 0.35em; align-items: baseline;
+}
+.band .num { color: var(--ink); }
+.band .fac { color: var(--tape-ink); background: var(--tape); border-radius: 999px; padding: 0 8px; opacity: 0; }
+.row .tile.lift { transform: translateY(-4px) scale(1.07); box-shadow: 0 0 0 3px var(--tape), 0 10px 18px rgba(10,20,40,0.22); }
+.row .tile { transition: transform var(--lift, 0.35s) ease, box-shadow var(--lift, 0.35s) ease; }
+.row {
+  position: absolute; top: 2.2rem; left: 0;
+  display: flex; gap: var(--gap);
+}
+.tile {
+  position: relative; flex: none;
+  width: var(--tw); height: var(--th);
+  border-radius: 7px;
+  background: linear-gradient(var(--tile-top) 50%, var(--tile) 50%);
+  color: var(--tile-ink);
+  font-weight: 700; font-size: calc(var(--tw) * 1.02);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 0 rgba(0,0,0,0.25), 0 6px 14px rgba(10,20,40,0.18);
+  transition: box-shadow 0.25s;
+}
+.tile::after {
+  content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 2px;
+  background: var(--hinge); transform: translateY(-1px);
+}
+.tile.passed { box-shadow: 0 0 0 3px var(--tape), 0 6px 14px rgba(10,20,40,0.18); }
+.counterwrap.editing .tile.typed { box-shadow: 0 0 0 2px var(--tape), 0 6px 14px rgba(10,20,40,0.18); }
+
+.dot {
+  position: absolute; z-index: 3;
+  top: calc(var(--th) * 0.8);
+  width: calc(var(--tw) * 0.3); height: calc(var(--tw) * 0.3);
+  margin-left: calc(var(--tw) * -0.15);
+  border-radius: 50%; background: var(--tape);
+  box-shadow: 0 0 0 3px var(--bg);
+}
+.dot.big { transform: scale(1.3); box-shadow: 0 0 0 3px var(--bg), 0 0 0 calc(var(--tw) * 0.14) color-mix(in srgb, var(--tape) 35%, transparent); }
+.caret {
+  position: absolute; z-index: 2; top: 0; width: 3px; height: var(--th);
+  margin-left: -1.5px; border-radius: 2px; background: var(--tape);
+  opacity: 0; pointer-events: none;
+}
+.counterwrap.editing .caret { opacity: 1; animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+.edit {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  opacity: 0; border: 0; padding: 0; margin: 0;
+  font-size: 16px; color: transparent; caret-color: transparent; background: transparent;
+  cursor: text;
+}
+
+.display { position: relative; display: flex; align-items: flex-start; gap: clamp(8px, 2vw, 18px); }
+.band .pl, .band .pr { color: var(--ink); opacity: 0; }
+.band .pl { margin-right: -0.25em; }
+.band .pr { margin-left: -0.25em; }
+.stepcap { text-align: center; margin: 0; min-height: 1.5em; font-family: var(--f-mono); font-size: 0.95rem; color: var(--ink); }
+.stepcap b { background: color-mix(in srgb, var(--tape) 35%, transparent); padding: 0 4px; border-radius: 3px; }
+.stepcap .n { color: var(--muted); margin-right: 6px; }
+.quiet {
+  display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap;
+  font-size: 0.85rem; color: var(--muted);
+}
+.quiet .sep { width: 1px; height: 22px; background: var(--line); }
+.stepbtn {
+  width: 40px; height: 40px; border-radius: 50%; border: 0;
+  background: transparent; color: var(--accent); box-shadow: inset 0 0 0 1.5px var(--accent);
+  font-weight: 700; font-size: 1.3rem; line-height: 1;
+}
+.stepbtn:disabled { opacity: 0.35; cursor: not-allowed; }
+.stepbtn[hidden] { display: none !important; }
+.switch { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; font-size: 0.9rem; }
+.switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.switch .track { width: 46px; height: 26px; border-radius: 13px; background: var(--line); position: relative; transition: background 0.2s; flex: none; }
+.switch .track::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: var(--bg); transition: transform 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+.switch input:checked + .track { background: var(--accent); }
+.switch input:checked + .track::after { transform: translateX(20px); }
+.switch input:focus-visible + .track { outline: 3px solid var(--accent); outline-offset: 2px; }
+.speed { display: inline-flex; align-items: center; gap: 10px; }
+.speed input { width: min(150px, 40vw); accent-color: var(--accent); }
+.speed output { min-width: 2.8em; font-variant-numeric: tabular-nums; }
+.hint.nope { color: var(--ink); }
+.chip {
+  position: absolute; left: 0; top: 0; z-index: 10;
+  padding: 2px 10px; border-radius: 999px;
+  background: var(--tape); color: var(--tape-ink);
+  font-weight: 700; font-size: clamp(0.9rem, 2.2vw, 1.25rem); white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(10,20,40,0.25);
+  pointer-events: none; opacity: 0;
+}
+.same sup { font-size: 0.7em; }
+.display .counterwrap { flex: 1; min-width: 0; }
+.factor {
+  flex: none; display: flex; align-items: flex-start; gap: clamp(4px, 1vw, 10px);
+  padding-top: 2.2rem;
+}
+.times {
+  height: var(--th); display: flex; align-items: center;
+  font-weight: 700; font-size: calc(var(--tw) * 0.9); color: var(--ink); white-space: nowrap;
+}
+.expwrap { position: relative; margin-top: calc(var(--th) * -0.28); }
+.exp {
+  position: relative; display: flex; align-items: center; justify-content: center;
+  min-width: calc(var(--tw) * 1.15); height: calc(var(--th) * 0.62); padding: 0 calc(var(--tw) * 0.14);
+  border-radius: 6px; border: 0;
+  background: linear-gradient(var(--tile-top) 50%, var(--tile) 50%); color: var(--tape);
+  font-weight: 700; font-size: calc(var(--tw) * 0.62);
+  box-shadow: 0 2px 0 rgba(0,0,0,0.25), 0 6px 14px rgba(10,20,40,0.18);
+  cursor: text;
+}
+.exp::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 2px; background: var(--hinge); transform: translateY(-1px); }
+.exp.editing { box-shadow: 0 0 0 2px var(--tape), 0 6px 14px rgba(10,20,40,0.18); }
+.expedit {
+  position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; border: 0; padding: 0;
+  font-size: 16px; background: transparent; color: transparent; caret-color: transparent; cursor: text;
+}
+.same { text-align: center; font-size: 1.05rem; color: var(--ink); margin: 0; min-height: 1.5em; font-variant-numeric: tabular-nums; opacity: 0; transition: opacity 0.3s; }
+.same.on { opacity: 1; }
+.same b { color: var(--ink); }
+.btn.div { background: transparent; color: var(--accent); box-shadow: inset 0 0 0 2px var(--accent); }
+@media (max-width: 520px) {
+  .display { gap: 6px; }
+}
+.buttons { display: flex; justify-content: center; gap: 16px; }
+.btn {
+  -webkit-user-select: none; user-select: none; touch-action: manipulation;
+  min-width: 96px; height: 64px; padding: 0 14px; border-radius: 12px;
+  border: 0; background: var(--accent); color: var(--on-accent);
+  font-size: 1.7rem; font-weight: 700; line-height: 1;
+}
+.btn:hover { filter: brightness(1.08); }
+.btn:active { transform: translateY(1px); }
+.btn:disabled { opacity: 0.35; cursor: not-allowed; filter: none; transform: none; }
+.reset {
+  align-self: center; width: 44px; height: 44px; padding: 0; border-radius: 50%; font-size: 1.3rem !important;
+  border: 0; background: transparent; color: var(--ink); opacity: 0.7;
+  box-shadow: inset 0 0 0 1px var(--line); font-size: 0.95rem;
+}
+.reset:hover { opacity: 1; box-shadow: inset 0 0 0 1px var(--accent); }
+.hint { text-align: center; font-size: 0.85rem; color: var(--muted); min-height: 1.3em; margin: 0; transition: opacity 0.3s; }
+.hint:empty { opacity: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .counterwrap.editing .caret { animation: none; }
+}
+</style>
+<style>
+/* embedded in progression.html: counter and its buttons only */
+html, body { height: auto; }
+.stage { min-height: 0; padding-block: 4px 12px; gap: 14px; }
+#reset, #hint, .quiet, #stepCap { display: none !important; }
+.edit:disabled { pointer-events: none; cursor: default; }
+</style>
+
+<div class="stage">
+  <div class="display" id="display">
+    <span class="chip" id="chip" aria-hidden="true">× 10</span>
+    <div class="band" id="band" aria-hidden="true"><div class="bracket"></div><div class="label"><span class="pl">(</span><span class="num"></span><span class="fac"></span><span class="pr">)</span></div></div>
+  <div class="counterwrap" id="wrap">
+    <div class="counter" id="counter" aria-hidden="true">
+      <div class="row" id="row"><span class="dot" id="dot"></span><span class="caret" id="caret"></span></div>
+    </div>
+    <input class="edit" id="edit" type="text" inputmode="decimal" maxlength="17" autocomplete="off" spellcheck="false" aria-label="Digits. Type a new number.">
+  </div>
+  <div class="factor" aria-label="times ten to the power">
+    <span class="times">× 10</span>
+    <span class="expwrap">
+      <span class="exp" id="exp"><span id="expText">0</span></span>
+      <input class="expedit" id="expEdit" type="text" inputmode="numeric" maxlength="3" autocomplete="off" aria-label="Exponent. Type a new power of ten.">
+    </span>
+  </div>
+  </div>
+  <p class="same" id="same" aria-live="polite"></p>
+  <p class="stepcap" id="stepCap" hidden></p>
+  <div class="buttons">
+    <button type="button" class="btn div" id="div10" aria-label="Factor out one tenth">÷10</button>
+    <button type="button" class="btn" id="mul10" aria-label="Factor out ten">×10</button>
+    <button type="button" class="reset" id="reset" aria-label="Reset" title="Reset">↺</button>
+  </div>
+  <p class="hint" id="hint">Tap the digits to type a number.</p>
+  <div class="quiet">
+    <label class="switch" for="stepToggle" title="Step through one stage at a time">
+      <input id="stepToggle" type="checkbox">
+      <span class="track"></span>
+      <span>Steps</span>
+    </label>
+    <button type="button" class="stepbtn" id="prevStep" aria-label="Previous step" hidden>‹</button>
+    <button type="button" class="stepbtn" id="nextStep" aria-label="Next step" hidden>›</button>
+    <span class="sep" aria-hidden="true"></span>
+    <label class="speed" for="speed">
+      <span>Speed</span>
+      <input type="range" id="speed" min="0.25" max="3" step="0.05" value="1">
+      <output id="speedOut" for="speed">1×</output>
+    </label>
+  </div>
+</div>
+
+<script>
+(function () {
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const INT = 8, FRAC = 8, N = INT + FRAC;   // tiles: 8 before the starting point, 8 after
+  const HOME = INT;                          // the point starts in the middle gap; exponent = HOME - P
+  const HOP = 480;
+  let speed = 1;
+  const T = ms => ms / speed;               // every step of the animation is scaled by the speed scrubber
+  const speedIn = document.getElementById('speed'), speedOut = document.getElementById('speedOut');
+  speedIn.addEventListener('input', () => {
+    speed = parseFloat(speedIn.value);
+    speedOut.textContent = (Math.round(speed * 100) / 100) + '×';
+  });
+
+  const wrap = document.getElementById('wrap');
+  const counter = document.getElementById('counter');
+  const row = document.getElementById('row');
+  const dot = document.getElementById('dot');
+  const caret = document.getElementById('caret');
+  const edit = document.getElementById('edit');
+  const hint = document.getElementById('hint');
+  const mulBtn = document.getElementById('mul10');
+  const divBtn = document.getElementById('div10');
+  const expEl = document.getElementById('exp');
+  const expText = document.getElementById('expText');
+  const expEdit = document.getElementById('expEdit');
+  const same = document.getElementById('same');
+  const SUP = n => String(n).replace('-', '\u2212');
+
+  let digits = new Array(N).fill(0);
+  let P = HOME;                              // point sits before tile P (P = N means after the last tile)
+  let pan = 0;
+  let moving = false;
+
+  const tiles = [];
+  for (let i = 0; i < N; i++) {
+    const t = document.createElement('div');
+    t.className = 'tile';
+    t.innerHTML = '<span>0</span>';
+    row.insertBefore(t, dot);
+    tiles.push(t);
+  }
+
+  function gapPx() { return parseFloat(getComputedStyle(row).columnGap) || 12; }
+  function gapX(p) {
+    const g = gapPx();
+    if (p <= 0) return tiles[0].offsetLeft - g / 2;
+    if (p >= N) return tiles[N - 1].offsetLeft + tiles[N - 1].offsetWidth + g / 2;
+    return tiles[p].offsetLeft - g / 2;
+  }
+  function placeDot(p) { dot.style.left = gapX(p) + 'px'; }
+  // Pan the whole row only when the point would leave the clear middle of the view (small screens).
+  function panTo(p, animate) {
+    const W = counter.clientWidth, x = gapX(p);
+    const homeOffset = W * 0.45 - gapX(HOME);
+    let off = homeOffset;
+    const lo = W * 0.2, hi = W * 0.8;
+    if (x + off > hi) off = hi - x;
+    if (x + off < lo) off = lo - x;
+    const first = digits.findIndex(d => d);
+    if (first >= 0 && tiles[first].offsetLeft + off < W * 0.06) off = W * 0.06 - tiles[first].offsetLeft;
+    pan = off;
+    row.style.transition = animate && !reduceMotion ? 'transform 0.45s ease' : 'none';
+    row.style.transform = `translateX(${Math.round(pan)}px)`;
+  }
+  function render() {
+    tiles.forEach((t, i) => { t.firstChild.textContent = digits[i]; });
+    placeDot(P);
+    refreshButtons();
+    expText.textContent = SUP(HOME - P);
+    showSame();
+  }
+  // The digits times 10^exponent always equal the same number. Show that number in plain form.
+  function showSame() {
+    const k = HOME - P;
+    const all = digits.join('');
+    const pt = HOME;                         // undo the factoring: the point goes back to its home gap
+    const ip = all.slice(0, pt).replace(/^0+(?=\d)/, '') || '0';
+    const fp = all.slice(pt).replace(/0+$/, '');
+    same.classList.remove('on');           // at rest the counter itself says it all
+  }
+  function layout() { render(); panTo(P, false); markTyped(); }
+  window.addEventListener('resize', layout);
+
+  function valueText() {
+    const ip = digits.slice(0, P).join('').replace(/^0+(?=\d)/, '') || '0';
+    const fp = digits.slice(P).join('').replace(/0+$/, '');
+    return fp ? ip + '.' + fp : ip;
+  }
+
+  // ---------- ×10 and ÷10: the exponent changes and the point hops the other way ----------
+  // ×10 on the exponent means ÷10 on the digits (point hops left); ÷10 means ×10 on the digits (point hops right).
+  function flipExp() {
+    if (reduceMotion) return;
+    expEl.animate([
+      { transform: 'rotateX(0deg)' }, { transform: 'rotateX(-90deg)', offset: 0.5 }, { transform: 'rotateX(0deg)' }
+    ], { duration: T(300), easing: 'ease-in-out' });
+  }
+  const display = document.getElementById('display');
+  const chip = document.getElementById('chip');
+  const sup = t => `10<sup>${t}</sup>`;
+  const rel = el => {
+    const r = el.getBoundingClientRect(), d = display.getBoundingClientRect();
+    return { x: r.left - d.left, y: r.top - d.top, w: r.width, h: r.height };
+  };
+  function hopDot(from, to, passed) {
+    if (reduceMotion) return Promise.resolve();
+    const lift = -0.9 * tiles[0].offsetHeight;
+    const a = dot.animate([
+      { left: from + 'px', transform: 'translateY(0)' },
+      { left: (from + to) / 2 + 'px', transform: `translateY(${lift}px)`, offset: 0.5 },
+      { left: to + 'px', transform: 'translateY(0)' }
+    ], { duration: T(HOP), easing: 'ease-in-out' });
+    setTimeout(() => passed.classList.add('passed'), T(HOP) * 0.35);
+    setTimeout(() => passed.classList.remove('passed'), T(HOP) * 1.4);
+    return a.finished.catch(() => {});
+  }
+  // One button press, in four steps:
+  //   1. the point hops, which factors a 10 (or a 1/10) out of the digits: 125 → 12.5 × 10
+  //   2. that factor flies over to the power of ten: 12.5 × 10ⁿ × 10
+  //   3. the exponents combine: 10ⁿ⁺¹
+  //   4. and simplify: 10³
+  // ×10 and ÷10 stay off until a number has been typed in (0, 0.5 or 0.000 all count)
+  let entered = false;
+  function refreshButtons() {
+    const busy = moving || animating || (op && op.stage < STEPS);
+    mulBtn.disabled = !entered || busy || P <= 0;
+    divBtn.disabled = !entered || busy || P >= N;
+  }
+  let nopeTimer = null;
+  function nope(text) {
+    hint.textContent = text;
+    hint.classList.add('nope');
+    if (!reduceMotion) wrap.animate(
+      [{ transform: 'translateX(0)' }, { transform: 'translateX(-8px)' }, { transform: 'translateX(7px)' }, { transform: 'translateX(-4px)' }, { transform: 'translateX(0)' }],
+      { duration: 320, easing: 'ease-out' });
+    clearTimeout(nopeTimer);
+    nopeTimer = setTimeout(() => { hint.classList.remove('nope'); restHint(); }, 2000);
+  }
+  function restHint() {
+    if (!op) idleCaption();
+    if (editing) return;
+    hint.textContent = entered ? '' : 'Tap the digits to type a number.';
+  }
+  // ---- the bracket under the digits ----
+  const band = document.getElementById('band');
+  const bandNum = band.querySelector('.num'), bandFac = band.querySelector('.fac'), bandBracket = band.querySelector('.bracket');
+  const bandL = band.querySelector('.pl'), bandR = band.querySelector('.pr');
+  const stepCap = document.getElementById('stepCap');
+  const stepToggle = document.getElementById('stepToggle');
+  const prevBtn = document.getElementById('prevStep'), nextBtn = document.getElementById('nextStep');
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  function valueAt(p) {
+    const ip = digits.slice(0, p).join('').replace(/^0+(?=\d)/, '') || '0';
+    const fp = digits.slice(p).join('').replace(/0+$/, '');
+    return fp ? ip + '.' + fp : ip;
+  }
+  // the tiles that spell out the number when the point is at gap p (always including the ones place)
+  function spanAt(p) {
+    let lo = p - 1, hi = p - 1;
+    const first = digits.findIndex(d => d), last = digits.length - 1 - [...digits].reverse().findIndex(d => d);
+    if (first >= 0) { lo = Math.min(lo, first); hi = Math.max(hi, last); }
+    return [Math.max(0, lo), Math.min(N - 1, Math.max(hi, lo))];
+  }
+  function placeBand(lo, hi, animate) {
+    const a = rel(tiles[lo]), b = rel(tiles[hi]);
+    const x = a.x - 4, w = b.x + b.w - a.x + 8, y = a.y + a.h + 8;
+    const to = { transform: `translate(${x}px, ${y}px)`, width: w + 'px' };
+    if (animate && !reduceMotion) {
+      band.animate([{ transform: band.style.transform || to.transform, width: band.style.width || to.width }, to], { duration: T(350), easing: 'ease-in-out' });
+    }
+    band.style.transform = to.transform; band.style.width = to.width;
+  }
+  function setLift(lo, hi) { tiles.forEach((t, i) => t.classList.toggle('lift', lo != null && i >= lo && i <= hi)); }
+  function liftTiles(lo, hi) {
+    document.documentElement.style.setProperty('--lift', T(350) / 1000 + 's');
+    const list = [];
+    for (let i = lo; i <= hi; i++) list.push(tiles[i]);
+    return Promise.all(list.map((t, k) => wait(T(70) * k).then(() => t.classList.add('lift')))).then(() => wait(T(350)));
+  }
+  const fadeIn = (el, ms, dx) => el.animate([{ opacity: 0, transform: `translateX(${dx || 0}px)` }, { opacity: 1, transform: 'translateX(0)' }], { duration: T(ms), easing: 'ease-out', fill: 'forwards' }).finished.catch(() => {});
+  const fadeOut = (el, ms) => el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: T(ms), fill: 'forwards' }).finished.catch(() => {});
+
+  // ---- one factoring, as five steps ----
+  //   1. the digits light up and the bracket names the number:   125
+  //   2. the point hops, splitting off a factor:                  (12.5 × 10) × 10²
+  //   3. regroup: the factor joins the power of ten:              12.5 × (10² × 10)
+  //   4. the exponents combine:                                   12.5 × 10⁽²⁺¹⁾
+  //   5. simplify:                                                12.5 × 10³
+  const STEPS = 5;
+  let op = null;                             // the factoring in progress, if any
+  let animating = false;
+  let stepMode = false;
+
+  function makeOp(dir) {
+    const o = { dir, P0: P, P1: P + dir, n: HOME - P, stage: 0 };
+    o.op = dir < 0 ? '× 10' : '÷ 10';
+    o.sign = dir < 0 ? '+' : '−';
+    o.d0 = valueAt(o.P0); o.d1 = valueAt(o.P1);
+    o.plain = valueAt(HOME);
+    o.n2 = o.n - dir;
+    return o;
+  }
+  function lineFor(o, s) {
+    const tail = '';
+    const n = SUP(o.n);
+    if (s <= 1) return `${o.d0} × ${sup(n)}${tail}`;
+    if (s === 2) return `(${o.d1} ${o.op}) × ${sup(n)}${tail}`;
+    if (s === 3) return `${o.d1} × (${sup(n)} ${o.op})${tail}`;
+    if (s === 4) return `${o.d1} × ${sup(`(${n}${o.sign}1)`)}${tail}`;
+    return `${o.d1} × ${sup(SUP(o.n2))}${tail}`;
+  }
+  function captionFor(o, s) {
+    const tag = `<span class="n">${s}/${STEPS}</span>`;
+    const n = SUP(o.n);
+    if (s === 1) return `${tag}The digits spell <b>${o.d0}</b>.`;
+    if (s === 2) return o.dir < 0
+      ? `${tag}Move the point one place left. That splits off a 10: ${o.d0} = (${o.d1} × 10).`
+      : `${tag}Move the point one place right. That splits off a 1/10: ${o.d0} = (${o.d1} ÷ 10).`;
+    if (s === 3) return `${tag}Regroup: the ${o.op} joins the power of ten.`;
+    if (s === 4) return o.dir < 0
+      ? `${tag}Times 10 adds 1 to the exponent: 10<sup>(${n}+1)</sup>.`
+      : `${tag}Divided by 10 subtracts 1 from the exponent: 10<sup>(${n}−1)</sup>.`;
+    if (s === 5) return `${tag}Simplify: 10<sup>${SUP(o.n2)}</sup>. Still the same number.`;
+    return '';
+  }
+  function idleCaption() {
+    stepCap.innerHTML = '';
+  }
+  function chipSpot(o) {
+    chip.textContent = o.op;
+    const cw = chip.offsetWidth, ch = chip.offsetHeight, e = rel(expEl);
+    return { x: e.x + e.w / 2 - cw / 2, y: e.y - ch - 8, cw, ch };
+  }
+  function cancelAnims() {
+    [chip, band, bandFac, bandNum, bandBracket, bandL, bandR].forEach(el => el.getAnimations().forEach(x => x.cancel()));
+  }
+  // Draw step s exactly, with no animation (used for Back, and to settle after each animated step).
+  function renderStage(o, s) {
+    cancelAnims();
+    P = s >= 2 ? o.P1 : o.P0;
+    placeDot(P);
+    if (s === 1 || s === 2) {
+      const [lo, hi] = spanAt(s === 1 ? o.P0 : o.P1);
+      setLift(lo, hi);
+      bandNum.textContent = s === 1 ? o.d0 : o.d1;
+      bandFac.textContent = o.op;
+      bandFac.style.opacity = bandL.style.opacity = bandR.style.opacity = s === 2 ? '1' : '0';
+      placeBand(lo, hi, false);
+      band.style.opacity = '1';
+    } else {
+      setLift(null);
+      band.style.opacity = '0';
+    }
+    if (s === 3) {
+      const c = chipSpot(o);
+      chip.style.transform = `translate(${c.x}px, ${c.y}px)`;
+      chip.style.opacity = '1';
+    } else {
+      chip.style.opacity = '0';
+    }
+    expText.textContent = s <= 3 ? SUP(o.n) : s === 4 ? `${SUP(o.n)}${o.sign}1` : SUP(o.n2);
+    same.innerHTML = lineFor(o, s);
+    same.classList.toggle('on', s > 0);
+    o.stage = s;
+    updateStepUI();
+  }
+  // Animate from step s-1 to step s, then settle on step s exactly.
+  async function forward(o, s) {
+    animating = true;
+    updateStepUI(); refreshButtons();
+    same.innerHTML = lineFor(o, s);
+    same.classList.add('on');
+    if (!reduceMotion) {
+      if (s === 1) {
+        const [lo, hi] = spanAt(o.P0);
+        bandNum.textContent = o.d0; bandFac.textContent = o.op;
+        bandFac.style.opacity = bandL.style.opacity = bandR.style.opacity = '0';
+        placeBand(lo, hi, false);
+        band.style.opacity = '1';
+        band.animate([{ opacity: 0 }, { opacity: 1 }], { duration: T(400) });
+        bandBracket.animate([{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], { duration: T(500), easing: 'ease-out' });
+        await liftTiles(lo, hi);
+      } else if (s === 2) {
+        const from = gapX(o.P0), to = gapX(o.P1);
+        const passed = o.dir < 0 ? tiles[o.P0 - 1] : tiles[o.P0];
+        P = o.P1; placeDot(P);
+        await hopDot(from, to, passed);
+        const [lo, hi] = spanAt(o.P0), [lo2, hi2] = spanAt(o.P1);
+        if (lo2 !== lo || hi2 !== hi) { setLift(lo2, hi2); placeBand(lo2, hi2, true); }
+        await fadeOut(bandNum, 180);
+        bandNum.textContent = o.d1;
+        await fadeIn(bandNum, 220);
+        bandL.style.opacity = bandR.style.opacity = '1';
+        fadeIn(bandL, 300); fadeIn(bandR, 300);
+        await fadeIn(bandFac, 450, -10);
+      } else if (s === 3) {
+        chip.textContent = o.op;
+        const f = rel(bandFac), c = chipSpot(o);
+        const startX = f.x + f.w / 2 - c.cw / 2, startY = f.y + f.h / 2 - c.ch / 2;
+        bandFac.getAnimations().forEach(x => x.cancel());
+        bandFac.style.opacity = '0';
+        chip.style.opacity = '1';
+        chip.style.transform = `translate(${startX}px, ${startY}px)`;
+        fadeOut(band, 500);
+        setLift(null);
+        await chip.animate([
+          { transform: `translate(${startX}px, ${startY}px)` },
+          { transform: `translate(${(startX + c.x) / 2}px, ${Math.min(startY, c.y) - 50}px)`, offset: 0.5 },
+          { transform: `translate(${c.x}px, ${c.y}px)` }
+        ], { duration: T(900), easing: 'ease-in-out', fill: 'forwards' }).finished.catch(() => {});
+      } else if (s === 4) {
+        const c = chipSpot(o);
+        chip.animate([{ opacity: 1, transform: `translate(${c.x}px, ${c.y}px) scale(1)` }, { opacity: 0, transform: `translate(${c.x}px, ${c.y + c.ch}px) scale(0.3)` }],
+          { duration: T(400), easing: 'ease-in', fill: 'forwards' });
+        await wait(T(250));
+        flipExp();
+        await wait(T(150));
+        expText.textContent = `${SUP(o.n)}${o.sign}1`;
+        await wait(T(300));
+      } else if (s === 5) {
+        flipExp();
+        await wait(T(150));
+        expText.textContent = SUP(o.n2);
+        await wait(T(250));
+      }
+    }
+    if (op === o) renderStage(o, s);
+    animating = false;
+    updateStepUI(); refreshButtons();
+  }
+  const PAUSE = { 1: 500, 2: 600, 3: 450, 4: 900 };
+  async function runRest() {
+    const o = op;
+    while (op === o && o.stage < STEPS && !stepMode) {
+      await wait(T(PAUSE[o.stage] || 300));
+      if (op !== o || stepMode) return;
+      await forward(o, o.stage + 1);
+    }
+    if (op === o && o.stage === STEPS && !stepMode) { await wait(T(250)); if (op === o) finishOp(); }
+  }
+  function finishOp() {
+    if (!op) return;
+    renderStage(op, STEPS);
+    op = null;
+    panTo(P, true);
+    edit.value = valueText();
+    showSame();
+    idleCaption();
+    refreshButtons(); updateStepUI();
+  }
+  // Leave any unfinished factoring in a clean state (used before typing, reset, or typing an exponent).
+  function settleOp() {
+    if (!op) return;
+    if (op.stage < 2) { renderStage(op, 0); op = null; showSame(); idleCaption(); refreshButtons(); updateStepUI(); }
+    else finishOp();
+  }
+  function updateStepUI() {
+    prevBtn.hidden = nextBtn.hidden = !stepMode;
+    prevBtn.disabled = !op || animating;
+    nextBtn.disabled = !op || animating;
+    nextBtn.textContent = op && op.stage === STEPS ? '✓' : '›';
+  }
+
+  // The ×10 / ÷10 buttons start a factoring. In step-by-step mode it pauses after each step.
+  async function hop(dir, quick) {           // dir = -1: point left (factor out 10); dir = +1: point right (factor out 1/10)
+    if (animating || moving) return;
+    if (op) { if (op.stage < STEPS) return; finishOp(); }
+    if (!entered) { nope('Type a number first.'); return; }
+    if ((dir < 0 && P <= 0) || (dir > 0 && P >= N)) return;
+    if (editing) edit.blur();
+    if (quick || reduceMotion) {
+      moving = true;
+      refreshButtons();
+      const from = gapX(P), to = gapX(P + dir);
+      const passed = dir < 0 ? tiles[P - 1] : tiles[P];
+      P += dir;
+      placeDot(P);
+      if (!reduceMotion) { flipExp(); await hopDot(from, to, passed); }
+      expText.textContent = SUP(HOME - P);
+      moving = false;
+      refreshButtons();
+      panTo(P, true);
+      edit.value = valueText();
+      showSame();
+      return;
+    }
+    op = makeOp(dir);
+    refreshButtons();
+    await forward(op, 1);
+    if (!stepMode) runRest();
+  }
+  nextBtn.addEventListener('click', () => {
+    if (!op || animating) return;
+    if (op.stage < STEPS) forward(op, op.stage + 1);
+    else finishOp();
+  });
+  prevBtn.addEventListener('click', () => {
+    if (!op || animating) return;
+    if (op.stage > 1) renderStage(op, op.stage - 1);
+    else { renderStage(op, 0); op = null; showSame(); idleCaption(); refreshButtons(); updateStepUI(); }
+  });
+  stepToggle.addEventListener('change', () => {
+    stepMode = stepToggle.checked;
+    updateStepUI();
+    if (!stepMode && op && !animating) runRest();
+  });
+  [mulBtn, divBtn].forEach(b => b.addEventListener('pointerdown', () => { if (editing) edit.blur(); }));
+  mulBtn.addEventListener('click', () => hop(-1));
+  divBtn.addEventListener('click', () => hop(1));
+  document.addEventListener('keydown', e => {
+    if (e.target === edit || e.target === expEdit) return;
+    if (e.target.closest('button') && (e.key === 'Enter' || e.key === ' ')) return;
+    if (e.key === 'ArrowUp' || e.key === '*' || e.key === 'x') { e.preventDefault(); hop(-1); }
+    else if (e.key === 'ArrowDown' || e.key === '/') { e.preventDefault(); hop(1); }
+  });
+
+  // ---------- typing the exponent: the point hops to match, one gap at a time ----------
+  let expBefore = 0;
+  expEdit.addEventListener('focus', () => {
+    settleOp();
+    if (!entered) { expEdit.blur(); nope('Type a number first.'); return; }
+    expBefore = HOME - P;
+    expEl.classList.add('editing');
+    expEdit.value = String(expBefore);
+    hint.textContent = '';
+    setTimeout(() => { try { expEdit.select(); } catch (_) {} }, 0);
+  });
+  expEdit.addEventListener('input', () => {
+    const v = expEdit.value.replace(/[^0-9-]/g, '').replace(/(?!^)-/g, '');
+    expEdit.value = v;
+    expText.textContent = v === '' || v === '-' ? SUP(v || '…') : SUP(v);
+  });
+  async function applyExp() {
+    if (!entered) return;
+    const v = parseInt(expEdit.value, 10);
+    expEl.classList.remove('editing');
+    restHint();
+    if (isNaN(v)) { expText.textContent = SUP(HOME - P); return; }
+    const target = Math.max(HOME - N, Math.min(HOME, v));
+    expText.textContent = SUP(HOME - P);
+    while (HOME - P !== target) {
+      await hop(HOME - P < target ? -1 : 1, true);
+    }
+  }
+  expEdit.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); expEdit.blur(); }
+    else if (e.key === 'Escape') { e.preventDefault(); expEdit.value = String(expBefore); expEdit.blur(); }
+  });
+  expEdit.addEventListener('blur', applyExp);
+
+  // ---------- reset ----------
+  document.getElementById('reset').addEventListener('click', () => {
+    if (editing) edit.blur();
+    if (op) { cancelAnims(); setLift(null); band.style.opacity = '0'; chip.style.opacity = '0'; op = null; animating = false; updateStepUI(); }
+    digits = new Array(N).fill(0);
+    const from = gapX(P);
+    P = HOME;
+    render();
+    if (!reduceMotion) dot.animate([{ left: from + 'px' }, { left: gapX(P) + 'px' }], { duration: 400, easing: 'ease-in-out' });
+    panTo(P, true);
+    edit.value = valueText();
+    entered = false;
+    refreshButtons();
+    restHint();
+    idleCaption();
+  });
+
+  // ---------- typing ----------
+  // Click left of the point to type the whole number; click right of it (or press ".") to type the decimals.
+  // The point stays where it is, and only the part being typed is highlighted.
+  let editing = false, before = null, mode = 'int', pendingMode = null;
+  const HINT_INT = '', HINT_FRAC = '';     // the highlighted tiles show what's being typed
+  const intPart = () => digits.slice(0, P).join('').replace(/^0+(?=\d)/, '');
+  const fracPart = () => digits.slice(P).join('').replace(/0+$/, '');
+
+  function writeInt(ip) {
+    const pad = ip.padStart(P, '0');
+    for (let i = 0; i < P; i++) digits[i] = +pad[i];
+    render();
+  }
+  function writeFrac(fp) {
+    const pad = fp.padEnd(N - P, '0');
+    for (let i = P; i < N; i++) digits[i] = +pad[i - P];
+    render();
+  }
+  function markTyped() {
+    let lo = -1, hi = -2, c = P;
+    if (editing) {
+      if (mode === 'int') {
+        const len = Math.max(1, edit.value.length);
+        lo = P - len; hi = P - 1; c = P;
+      } else {
+        const len = edit.value.length;
+        lo = P; hi = P + len - 1; c = P + len;
+      }
+    }
+    tiles.forEach((t, i) => t.classList.toggle('typed', editing && i >= lo && i <= hi));
+    caret.style.left = gapX(c) + 'px';
+    dot.classList.toggle('big', editing && mode === 'frac');
+  }
+  function pulsePoint() {
+    if (reduceMotion) return;
+    dot.animate([{ transform: 'scale(1)' }, { transform: 'scale(2.1)' }, { transform: 'scale(1.3)' }], { duration: 420, easing: 'ease-out' });
+  }
+  function enterMode(m, selectAll) {
+    mode = m;
+    edit.value = m === 'int' ? intPart() : fracPart();
+    if (m === 'int' && edit.value === '0') edit.value = '0';
+    hint.textContent = m === 'int' ? HINT_INT : HINT_FRAC;
+    markTyped();
+    setTimeout(() => {
+      try {
+        if (selectAll) edit.select();
+        else edit.setSelectionRange(edit.value.length, edit.value.length);
+      } catch (_) {}
+    }, 0);
+  }
+  function sideOf(clientX) {
+    const r = row.getBoundingClientRect();
+    return clientX - r.left < gapX(P) ? 'int' : 'frac';
+  }
+  edit.addEventListener('pointerdown', e => {
+    const m = sideOf(e.clientX);
+    if (editing) { e.preventDefault(); if (m !== mode) enterMode(m, true); }
+    else pendingMode = m;
+  });
+  edit.addEventListener('focus', () => {
+    settleOp();
+    editing = true;
+    before = { digits: digits.slice(), P, entered };
+    wrap.classList.add('editing');
+    enterMode(pendingMode || 'int', true);
+    pendingMode = null;
+  });
+  edit.addEventListener('input', () => {
+    let raw = edit.value;
+    if (mode === 'int') {
+      const d = raw.indexOf('.');
+      let ip = (d < 0 ? raw : raw.slice(0, d)).replace(/\D/g, '').replace(/^0+(?=\d)/, '').slice(0, P);
+      writeInt(ip);
+      if (d >= 0) {
+        // "." typed: hop over to the decimals
+        const rest = raw.slice(d + 1).replace(/\D/g, '').slice(0, N - P);
+        mode = 'frac';
+        edit.value = rest;
+        if (rest) writeFrac(rest);
+        hint.textContent = HINT_FRAC;
+        pulsePoint();
+      } else {
+        edit.value = ip;
+      }
+    } else {
+      const fp = raw.replace(/\D/g, '').slice(0, N - P);
+      edit.value = fp;
+      writeFrac(fp);
+    }
+    // anything typed counts, even 0 or 0.000; clearing everything out does not
+    entered = edit.value !== '' || mode === 'frac' || digits.some(d => d);
+    refreshButtons();
+    markTyped();
+  });
+  edit.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); edit.blur(); }
+    else if (e.key === 'Escape') {
+      e.preventDefault();
+      digits = before.digits; P = before.P; entered = before.entered;
+      edit.blur();
+      layout();
+    }
+    else if (e.key === 'Backspace' && mode === 'frac' && edit.value === '') {
+      // backspacing past the point goes back to the whole number
+      e.preventDefault();
+      enterMode('int', false);
+    }
+  });
+  edit.addEventListener('blur', () => {
+    editing = false;
+    wrap.classList.remove('editing');
+    edit.value = valueText();
+    refreshButtons();
+    restHint();
+    markTyped();
+    showSame();
+  });
+
+  edit.value = valueText();
+  layout();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
+  window.__ctr = {
+    load(s, e) {
+      if (editing) edit.blur();
+      if (op) { cancelAnims(); setLift(null); band.style.opacity = '0'; chip.style.opacity = '0'; op = null; animating = false; updateStepUI(); }
+      const [i, f = ''] = s.split('.');
+      digits = (i.padStart(HOME, '0').slice(-HOME) + f.padEnd(N - HOME, '0').slice(0, N - HOME)).split('').map(Number);
+      P = HOME - e; entered = true; moving = false;
+      render(); panTo(P, true); markTyped();
+      edit.value = valueText();
+      idleCaption(); refreshButtons();
+    },
+    read() { return { value: valueText(), exp: HOME - P }; },
+    step(dir) { return hop(dir, true); },
+    lock() {},
+    typing(on) { edit.disabled = !on; expEdit.disabled = !on; }
+  };
+  window.__ctr.typing(false);
+})();
+</script>

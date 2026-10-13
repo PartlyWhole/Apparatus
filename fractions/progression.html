@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Fraction Path</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="fraction-board.css">
+<style>
+/* One calm column: progress dots, the task, the board, a quiet row of tools, one line of feedback, one button */
+:root {
+  --bg: #EEF2F7;
+  --surface: #FFFFFF;
+  --ink: #13203A;
+  --muted: #5F6F8A;
+  --line: #D3DBE7;
+  --chip: #EAEFF6;
+  --accent: #2648C9;
+  --on-accent: #FFFFFF;
+  --amber: #F2B630;
+  --amber-text: #B07800;
+  --on-amber: #2E2200;
+  --good: #17804F;
+  --bad: #C2413A;
+  --f-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B1120; --surface: #131C2E; --ink: #E4EAF4; --muted: #95A4BF; --line: #26344F; --chip: #1C2840;
+    --accent: #8AA8FF; --on-accent: #0B1120; --amber: #F2B630; --amber-text: #F2B630; --on-amber: #2E2200;
+    --good: #4CC38A; --bad: #FF8F85;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B1120; --surface: #131C2E; --ink: #E4EAF4; --muted: #95A4BF; --line: #26344F; --chip: #1C2840;
+  --accent: #8AA8FF; --on-accent: #0B1120; --amber: #F2B630; --amber-text: #F2B630; --on-amber: #2E2200;
+  --good: #4CC38A; --bad: #FF8F85;
+  color-scheme: dark;
+}
+:root {
+  --fb-ink: var(--ink); --fb-muted: var(--muted); --fb-chip: var(--chip); --fb-surface: var(--surface); --fb-line: var(--line);
+  --fb-accent: var(--accent); --fb-amber: var(--amber); --fb-amber-text: var(--amber-text); --fb-on-amber: var(--on-amber);
+  --fb-bad: var(--bad); --fb-mono: var(--f-mono);
+}
+
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 16px; line-height: 1.5; overflow-x: hidden; }
+.page { max-width: 60rem; margin: 0 auto; padding-inline: 16px; padding-block: 20px 28px; display: flex; flex-direction: column; gap: 16px; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+sup { font-size: 0.58em; line-height: 0; position: relative; top: -0.8em; vertical-align: 0; margin-left: 0.04em; }
+
+/* top: home, progress, skip */
+.top { display: grid; grid-template-columns: 42px minmax(0, 1fr) 42px; align-items: center; gap: 8px; }
+.home, .skip {
+  width: 42px; height: 42px; border-radius: 50%; display: inline-grid; place-items: center;
+  color: var(--muted); text-decoration: none; border: 0; background: transparent; font-size: 1.2rem; line-height: 1;
+}
+.home:hover, .skip:hover { color: var(--accent); }
+.dots { display: flex; justify-content: center; align-items: center; gap: 6px; flex-wrap: wrap; }
+.dot { width: 9px; height: 9px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--line); transition: transform 0.3s, background 0.3s; }
+.dot.done { background: color-mix(in srgb, var(--accent) calc(var(--b) * 1%), var(--line)); box-shadow: none; }
+.dot.now { box-shadow: inset 0 0 0 1.5px var(--accent); background: conic-gradient(var(--accent) calc(var(--p) * 1%), transparent 0); }
+.dot.cur { transform: scale(1.45); }
+.dot.pop { animation: pop 0.6s ease-out; }
+@keyframes pop { 40% { transform: scale(2.1); } }
+
+.task { text-align: center; margin: 0; font-size: clamp(1.2rem, 3.4vw, 1.5rem); font-weight: 700; text-wrap: balance; font-family: var(--f-mono); }
+.task .w { font-family: var(--f-body); }
+.task i, .units i { font-style: italic; color: var(--accent); font-weight: 600; }
+.task .arrow { color: var(--muted); font-weight: 500; }
+.fb-vfrac, .uf { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; line-height: 1.2; }
+.fb-vfrac > span, .uf > span { padding: 0 4px; }
+.fb-vfrac > span:first-child, .uf > span:first-child { border-bottom: 2px solid currentColor; }
+.task .fb-vfrac { color: var(--accent); margin-left: 4px; }
+.tip { text-align: center; margin: -8px 0 0; color: var(--muted); font-size: 0.9rem; min-height: 0; text-wrap: balance; }
+
+.card { background: var(--surface); border-radius: 18px; box-shadow: 0 0 0 1px var(--line), 0 10px 30px rgba(10, 20, 40, 0.06); overflow-x: auto; }
+
+.below { display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; min-height: 44px; }
+.tools { display: flex; gap: 8px; }
+.icon {
+  width: 42px; height: 42px; border-radius: 50%; border: 0;
+  background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1px var(--line);
+  font-size: 1.15rem; line-height: 1;
+}
+.icon:hover:not(:disabled) { box-shadow: inset 0 0 0 1.5px var(--accent); color: var(--accent); }
+.icon:disabled { opacity: 0.3; cursor: default; }
+.pill {
+  height: 42px; padding: 0 16px; border-radius: 999px; border: 0;
+  background: transparent; color: var(--accent); box-shadow: inset 0 0 0 1.5px var(--accent); font-weight: 700;
+}
+.units { display: inline-flex; align-items: center; gap: 10px; font-family: var(--f-mono); font-size: 1.05rem; color: var(--muted); }
+.units .now, .units .want { font-weight: 700; color: var(--ink); }
+.units.match .now { color: var(--good); }
+
+.build { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.build input {
+  width: 9rem; height: 42px; padding: 0 12px; border-radius: 999px;
+  border: 0; box-shadow: inset 0 0 0 1px var(--line); background: var(--surface); font-family: var(--f-mono);
+}
+.build input:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--accent); }
+
+.tray, .unitpieces { display: contents; }
+#tray:not([hidden]) { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; }
+#numPiece { margin-right: 10px; }
+.piece {
+  display: inline-block; padding: 6px 12px; border-radius: 10px;
+  background: var(--chip); color: var(--ink); box-shadow: 0 0 0 1px var(--line);
+  font-family: var(--f-mono); font-weight: 700; font-size: 1.15rem; line-height: 1.2;
+  cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none;
+}
+.piece.u { color: var(--accent); font-style: italic; font-weight: 600; }
+.piece.num { background: transparent; color: var(--muted); box-shadow: inset 0 0 0 2px var(--line); }
+.piece:hover { box-shadow: 0 0 0 1.5px var(--accent); }
+.piece.armed { box-shadow: 0 0 0 3px var(--accent); }
+
+.hint { text-align: center; min-height: 1.4em; margin: 0; font-size: 0.9rem; color: var(--ink); transition: opacity 0.3s; }
+.hint:empty { opacity: 0; }
+.fb-feedback { text-align: center; margin: 0; min-height: 1.5em; color: var(--muted); text-wrap: balance; }
+.fb-feedback.good { color: var(--good); font-weight: 700; }
+.fb-feedback.bad { color: var(--bad); }
+.fb-feedback .fb-vfrac { font-family: var(--f-mono); }
+.actions { display: flex; justify-content: center; }
+.primary { height: 44px; min-width: 9rem; padding: 0 22px; border-radius: 999px; border: 0; background: var(--accent); color: var(--on-accent); font-weight: 700; }
+.primary:disabled { opacity: 0.4; cursor: default; }
+.wipe { align-self: center; margin-top: 8px; border: 0; background: transparent; color: var(--muted); opacity: 0.55; font-size: 0.8rem; padding: 4px 8px; }
+.wipe:hover { opacity: 1; color: var(--bad); }
+@media (max-width: 480px) {
+  .page { gap: 14px; }
+  .dot { width: 8px; height: 8px; }
+  .dots { gap: 5px; }
+}
+</style>
+
+<div class="page">
+  <div class="top">
+    <a class="home" href="../index.html" aria-label="Apparatus">←</a>
+    <div class="dots" id="dots" role="img"></div>
+    <button type="button" class="skip" id="skip" title="Skip" aria-label="Skip">→</button>
+  </div>
+  <p class="task" id="task" aria-live="polite"></p>
+  <p class="tip" id="tip" hidden></p>
+  <div class="card" id="cardF"><div id="boardF" aria-label="Fractions"></div></div>
+  <div class="card" id="cardC" hidden><div id="boardC" aria-label="Work"></div></div>
+  <div class="below">
+    <span class="units" id="units" hidden></span>
+    <div class="tools">
+      <button type="button" class="icon" id="undo" title="Undo" aria-label="Undo">↶</button>
+      <button type="button" class="icon" id="reset" title="Start over" aria-label="Start over">↺</button>
+    </div>
+    <button type="button" class="pill" id="combine" hidden>Combine</button>
+  </div>
+  <form class="build" id="build" hidden autocomplete="off">
+    <input id="factor" type="text" inputmode="numeric" placeholder="factor" aria-label="Factor to multiply by">
+    <button type="button" class="icon" data-add="num" title="Multiply (add on top)" aria-label="Multiply: add on top">↑</button>
+    <button type="button" class="icon" data-add="den" title="Divide (add on the bottom)" aria-label="Divide: add on the bottom">↓</button>
+  </form>
+  <div class="tray" id="tray" hidden>
+    <span class="piece num" id="numPiece" data-spec="#" role="button" tabindex="0" aria-label="A number. Place it, then type into it.">#</span>
+    <div class="unitpieces" id="unitPieces"></div>
+  </div>
+  <p class="hint" id="hint" role="status"></p>
+  <p class="fb-feedback" id="fbk" aria-live="polite"></p>
+  <div class="actions"><button type="button" class="primary" id="go">Check</button></div>
+  <button type="button" class="wipe" id="wipe">Reset progress</button>
+</div>
+
+<script src="fraction-board.js"></script>
+<script src="progression.js"></script>

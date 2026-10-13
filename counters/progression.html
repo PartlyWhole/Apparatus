@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Powers of Ten Practice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+:root {
+  --bg: #EEF2F7;
+  --ink: #13203A;
+  --muted: #566682;
+  --line: #CDD6E3;
+  --accent: #2648C9;
+  --on-accent: #FFFFFF;
+  --good: #1f8a4c;
+  --bad: #c2410c;
+  --f-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B1120; --ink: #E4EAF4; --muted: #95A4BF; --line: #26344F;
+    --accent: #8AA8FF; --on-accent: #0B1120; --good: #5bd08f; --bad: #fb923c;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B1120; --ink: #E4EAF4; --muted: #95A4BF; --line: #26344F;
+  --accent: #8AA8FF; --on-accent: #0B1120; --good: #5bd08f; --bad: #fb923c;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-mono); font-size: 14px; overflow-x: hidden; }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+[hidden] { display: none !important; }
+
+.wrap { max-width: 64rem; margin: 0 auto; padding: 20px 16px 32px; display: flex; flex-direction: column; gap: 14px; }
+.task { width: 100%; max-width: 40rem; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+.top { display: flex; align-items: center; gap: 16px; width: 100%; max-width: 40rem; margin: 0 auto; }
+.home { color: var(--muted); text-decoration: none; font-size: 15px; }
+.home:hover { color: var(--accent); }
+.reset { margin-left: auto; border: 0; background: transparent; color: var(--muted); font-size: 13px; padding: 4px 6px; border-radius: 8px; opacity: 0.6; }
+.reset:hover, .reset.armed { opacity: 1; color: var(--accent); }
+
+/* one dot per skill: hollow = locked, ring filling up = learning, solid = learned (deeper = longer remembered) */
+.dots { display: flex; gap: 7px; flex-wrap: wrap; }
+.dots i { width: 9px; height: 9px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--line); transition: background 0.4s, box-shadow 0.4s, transform 0.3s; }
+.dots i.l { background: conic-gradient(var(--accent) calc(var(--p) * 360deg), transparent 0); box-shadow: inset 0 0 0 1.5px var(--accent); }
+.dots i.m { background: color-mix(in srgb, var(--accent) calc(var(--p) * 100%), transparent); box-shadow: none; }
+.dots i[data-now] { transform: scale(1.35); }
+
+.row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; min-height: 48px; }
+.q { margin: 0; font-size: clamp(18px, 2.8vw, 22px); line-height: 1.5; }
+.q b { color: var(--accent); white-space: nowrap; }
+.q sup, .fb sup { font-size: 0.7em; }
+.sub { display: block; font-size: 14px; color: var(--muted); }
+.ans { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 20px; }
+.ans input {
+  font: inherit; font-size: 20px; width: 7ch; padding: 6px 10px; border-radius: 10px;
+  border: 2px solid var(--line); background: transparent; color: var(--ink);
+}
+.ans input.n { width: 4ch; text-align: center; }
+.ans input.wide { width: 13ch; }
+.ans input.exp { width: 4.5ch; font-size: 15px; padding: 3px 6px; margin-top: -14px; }
+.ans input:focus { outline: none; border-color: var(--accent); }
+.ans input:disabled { opacity: 0.6; }
+.ans .pow { display: inline-flex; align-items: flex-start; gap: 6px; white-space: nowrap; }
+.fb { margin: 0; min-height: 1.5em; font-size: 15px; line-height: 1.5; color: var(--muted); overflow-wrap: anywhere; }
+.fb.good { color: var(--good); }
+.fb.bad { color: var(--bad); }
+.actions { display: flex; gap: 8px; }
+.actions button { font-size: 14px; padding: 9px 18px; border-radius: 10px; border: 1px solid var(--accent); background: var(--accent); color: var(--on-accent); }
+.actions button:disabled { opacity: 0.4; cursor: default; }
+
+/* the counters' own pages pad 16px at the sides, so bleed into this page's gutter */
+.ctr { position: relative; margin-inline: -16px; }
+.ctr iframe { display: block; width: 100%; height: 0; border: 0; background: transparent; }
+.ctr iframe.off { position: absolute; left: 0; top: 0; visibility: hidden; pointer-events: none; }
+</style>
+
+<main class="wrap">
+  <div class="top">
+    <a class="home" href="../index.html" aria-label="Apparatus">←</a>
+    <div class="dots" id="dots" role="img"></div>
+    <button type="button" class="reset" id="reset" aria-label="Reset progress" title="Reset progress">↺</button>
+  </div>
+  <section class="task" aria-label="Problem">
+    <div class="row">
+      <p class="q" id="q"></p>
+      <div class="ans" id="ans" hidden></div>
+    </div>
+    <p class="fb" id="fb" aria-live="polite"></p>
+    <div class="actions">
+      <button type="button" id="check">Check</button>
+      <button type="button" id="next" hidden>Next →</button>
+    </div>
+  </section>
+  <div class="ctr" id="ctr"></div>
+</main>
+<script src="progression.js"></script>
+</html>
