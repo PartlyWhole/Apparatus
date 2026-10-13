@@ -80,15 +80,18 @@
         : lvl === 1 ? shiftP('reach', 'md', -1, one([wholeZ(ri(1, 4)), decimal(ri(1, 2), 1)]), ri(2, 3))
         : shiftP('count', 'md', -1, run(ri(1, 3)), ri(3, 5)) },
     { id: 'mixed', tier: 0, gen: genCalc },                               // 3.6 × 100 = ?   45 ÷ 1000 = ?
+    // scaffold: tap where the point goes so the number is from 1 to 10 (2.6, not 26. or .26)
+    { id: 'sci-point', tier: 0, quick: true, gen: lvl => lvl === 0 ? sciP('point', 2, ri(1, 3))
+        : lvl === 1 ? sciP('point', 3, one([ri(2, 5), -ri(1, 3)])) : sciP('point', ri(3, 4), one([ri(3, 7), -ri(2, 5)])) },
     { id: 'sci-big', tier: 0, gen: lvl => lvl === 0 ? sciP('toSci', 1, ri(1, 3)) : lvl === 1 ? sciP('toSci', 2, ri(2, 5)) : sciP('toSci', ri(2, 3), ri(3, 7)) },
     { id: 'sci-small', tier: 0, gen: lvl => lvl === 0 ? sciP('toSci', 1, ri(-2, -1)) : lvl === 1 ? sciP('toSci', 2, ri(-3, -1)) : sciP('toSci', ri(2, 3), ri(-5, -2)) },
     { id: 'sci-back', tier: 0, gen: lvl => lvl === 0 ? sciP('fromSci', ri(1, 2), one([1, 2, 3, -1, -2]))
         : lvl === 1 ? sciP('fromSci', 2, one([1, 2, 3, 4, -1, -2, -3, -4]))
         : sciP('fromSci', ri(2, 3), one([-5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7])) },
-    { id: 'sci-mixed', tier: 1, gen: lvl => one([genCalc, SKILLS[7].gen, SKILLS[8].gen, SKILLS[9].gen])(Math.max(1, lvl)) }
+    { id: 'sci-mixed', tier: 1, gen: lvl => one([genCalc, ...['sci-big', 'sci-small', 'sci-back'].map(id => SKILLS.find(k => k.id === id).gen)])(Math.max(1, lvl)) }
   ];
   const NAMES = { 'w-reach': '×10 · reach', 'w-count': '×10 · how many', 'd-reach': '×10 decimals · reach', 'd-count': '×10 decimals · how many',
-    'mp-times': 'Moving point ×10', 'mp-divide': 'Moving point ÷10', mixed: '× and ÷ by 10ⁿ', 'sci-big': 'Big → scientific',
+    'mp-times': 'Moving point ×10', 'mp-divide': 'Moving point ÷10', mixed: '× and ÷ by 10ⁿ', 'sci-point': 'Where the point goes', 'sci-big': 'Big → scientific',
     'sci-small': 'Small → scientific', 'sci-back': 'Scientific → decimal', 'sci-mixed': 'Mixed' };
   // ?skill=<id>: practice one skill on its own; saved progress is left alone
   const ONLY_ID = new URLSearchParams(location.search).get('skill');
@@ -282,7 +285,7 @@
   function say(html, cls) { fb.innerHTML = html; fb.className = 'fb' + (cls ? ' ' + cls : ''); }
   const opSym = p => p.dir > 0 ? '×' : '÷';
   function line(p) {
-    if (p.type === 'toSci' || p.type === 'fromSci') return `${pretty(p.plain)} = ${p.m} × ${pow(p.e)}`;
+    if (p.type === 'toSci' || p.type === 'fromSci' || p.type === 'point') return `${pretty(p.plain)} = ${p.m} × ${pow(p.e)}`;
     return `${pretty(p.s)} ${opSym(p)} ${tenTo(p.n)} = ${pretty(p.t)}`;
   }
   const input = (id, mode, label, cls) => `<input id="${id}" type="text" inputmode="${mode}" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="${label}" aria-describedby="q"${cls ? ` class="${cls}"` : ''}>`;
@@ -307,6 +310,19 @@
     } else if (p.type === 'calc') {
       q.innerHTML = `<b>${pretty(p.s)} ${opSym(p)} ${tenTo(p.n)}</b> =`;
       ans.innerHTML = input('a', 'decimal', 'Answer', 'wide');
+    } else if (p.type === 'point') {
+      // the digits with a tappable gap before, between and after them
+      q.innerHTML = `<b>${pretty(p.plain)}</b><span class="sub">Where does the point go?</span>`;
+      const d = p.m.replace('.', '');
+      ans.innerHTML = '<span class="digits">' + [...d].map((c, i) => `<button type="button" class="gap" data-i="${i}" aria-label="Point before digit ${i + 1}"></button><span>${c}</span>`).join('')
+        + `<button type="button" class="gap" data-i="${d.length}" aria-label="Point after the last digit"></button></span>`;
+      ans.querySelectorAll('.gap').forEach(b => b.addEventListener('click', () => {
+        if (!cur || cur.done || cur.showing) return;
+        ans.querySelectorAll('.gap.bad').forEach(x => x.classList.remove('bad'));
+        if (+b.dataset.i === 1) return success();
+        b.classList.add('bad');
+        fail('Try again');
+      }));
     } else if (p.type === 'toSci') {
       q.innerHTML = `<b>${pretty(p.plain)}</b> =`;
       ans.innerHTML = `${input('m', 'decimal', 'Number from 1 to 10')} <span class="pow">× 10 ${input('e', 'text', 'Power of ten', 'exp')}</span>`;
@@ -315,9 +331,10 @@
       ans.innerHTML = input('a', 'decimal', 'Answer', 'wide');
     }
     ans.hidden = !ans.innerHTML;
+    checkBtn.hidden = p.type === 'point';
     await useCounter(p.ctr);
     if (my !== token) return;
-    if (p.ctr === 'sci') C.load(p.plain, p.type === 'toSci' ? 0 : p.e);
+    if (p.ctr === 'sci') C.load(p.plain, p.type === 'fromSci' ? p.e : 0);
     else { C.load(p.s); C.lock(p.type !== 'reach'); }
     const first = ans.querySelector('input');
     if (first) first.focus({ preventScroll: true });
@@ -398,6 +415,7 @@
     const my = token, p = cur.p;
     cur.done = true;
     say(html, cls);
+    ans.querySelectorAll('.gap').forEach(b => { b.disabled = true; b.classList.toggle('good', b.dataset.i === '1'); });
     ans.querySelectorAll('input').forEach(i => { i.disabled = true; if (i.value.trim()) i.classList.add(right(i) ? 'good' : 'bad'); });
     checkBtn.hidden = true; nextBtn.hidden = false;
     nextBtn.focus({ preventScroll: true });
@@ -405,9 +423,9 @@
     if (!replay) return;
     cur.showing = true;
     if (p.ctr === 'sci') {
-      C.load(p.plain, p.type === 'toSci' ? 0 : p.e);
+      C.load(p.plain, p.type === 'fromSci' ? p.e : 0);
       await beat(600);
-      const dir = (p.type === 'toSci') === (p.e > 0) ? -1 : 1;
+      const dir = (p.type !== 'fromSci') === (p.e > 0) ? -1 : 1;
       for (let k = 0; k < Math.abs(p.e) && my === token; k++) { await C.step(dir); await beat(220); }
     } else {
       C.load(p.s);

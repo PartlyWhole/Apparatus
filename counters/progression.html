@@ -109,6 +109,14 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .switch input:checked + .track { background: var(--accent); }
 .switch input:checked + .track::after { transform: translateX(18px); }
 .switch input:focus-visible + .track { outline: 3px solid var(--accent); outline-offset: 2px; }
+.ans .digits { display: inline-flex; align-items: stretch; font-family: var(--f-mono); font-weight: 700; font-size: 34px; line-height: 1; }
+.ans .digits span { padding: 8px 1px; }
+.ans .gap { position: relative; width: 26px; min-height: 52px; padding: 0; border: 0; border-radius: 8px; background: transparent; cursor: pointer; }
+.ans .gap::after { content: ""; position: absolute; left: 50%; bottom: 9px; width: 9px; height: 9px; margin-left: -4.5px; border-radius: 50%; background: var(--line); transition: background 0.15s, transform 0.15s; }
+.ans .gap:hover:not(:disabled)::after, .ans .gap:focus-visible::after { background: var(--accent); transform: scale(1.3); }
+.ans .gap.bad::after, .ans .gap.bad:hover::after { background: var(--bad); transform: none; }
+.ans .gap.good::after { background: var(--good); transform: scale(1.3); }
+.ans .gap:disabled { cursor: default; }
 </style>
 
 <main class="wrap">
@@ -135,5 +143,5 @@ button { font: inherit; color: inherit; cursor: pointer; }
     <label class="switch" for="instant"><input id="instant" type="checkbox"><span class="track"></span><span>Instant</span></label>
   </div>
 </main>
-<script src="progression.js?v=5"></script>
+<script src="progression.js?v=6"></script>
 </html>
