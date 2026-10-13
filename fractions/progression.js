@@ -391,7 +391,7 @@
     { id: 'p10', name: '10ⁿ', tier: 1, type: 'pow', gen: l => genPow('p10', l), tip: 'Tap a power of ten to split it or move it across. Drop one on a neighbour to multiply.' },
     { id: 'forms', name: '1,000', tier: 3, type: 'pow', gen: l => genPow('forms', l), tip: 'Tap a number to rewrite it as 10ⁿ.' },
     { id: 'neg', name: '10⁻ⁿ', tier: 1, type: 'pow', gen: l => genPow('neg', l) },
-    { id: 'up', name: 'Build up', tier: 1, type: 'goal', gen: l => genGoal('up', l), tip: 'Type a factor, then ↑ top or ↓ bottom.' },
+    { id: 'up', name: 'Build up', tier: 1, type: 'goal', gen: l => genGoal('up', l), tip: 'Tap beside a number to type.' },
     { id: 'down', name: 'Reduce', tier: 1, type: 'goal', gen: l => genGoal('down', l) },
     { id: 'any', name: 'Any', tier: 2, type: 'goal', gen: l => genGoal('any', l) },
     { id: 'pmetric', name: 'Pick: metric', tier: 1, type: 'ratio', gen: genPickMetric, tip: 'Tap a card to add it. Tap a bar to flip.' },
@@ -520,6 +520,7 @@
       newProblem();
       return;
     }
+    leave();
     const h = here();
     if (d > 0 && h && !mastered(h)) { S(h).skip = true; S(h).streak = 0; }
     P.at = to; P.atStreak = 0;
@@ -532,14 +533,25 @@
   let hintTimer = null;
   function hint(t, ms) { hintEl.textContent = t; clearTimeout(hintTimer); hintTimer = setTimeout(() => { hintEl.textContent = ''; }, ms || 2400); }
 
-  const boardF = FractionBoard($('boardF'), { onHint: t => hint(t), onChange: changed });
+  const boardF = FractionBoard($('boardF'), { typeIn: () => !!cur && cur.type === 'goal' && !cur.solved, onHint: t => hint(t), onChange: changed });
 
   let givenId = null;
   const isGiven = fr => { if (givenId === null) givenId = fr.id; return fr.id === givenId; };
+  // a fraction that has had a unit keeps its numbers when the units cancel away (60 min / 1 hr · 60 s / 1 min)
+  const hadUnit = new Set();
+  const noteUnits = fr => { if ([...fr.num, ...fr.den].some(f => f.t === 'u')) hadUnit.add(fr.id); };
   function needsUnit(fr) {
     if (isGiven(fr)) return false;
+    noteUnits(fr);
+    if (hadUnit.has(fr.id)) return false;
     const all = [...fr.num, ...fr.den];
-    return all.some(f => f.t === 'n' || f.t === 'b') && !all.some(f => f.t === 'u');
+    return all.some(f => f.t === 'n' || f.t === 'b');
+  }
+  // the amount being converted is the first fraction loaded; fixed now, so a tap on a card's bar can't claim it
+  function loadGiven(go) {
+    givenId = null;
+    go();
+    givenId = convBoard().state.fracs[0].id;
   }
   const boardC = FractionBoard($('boardC'), {
     isOne: () => false,
@@ -736,7 +748,7 @@
   const board = () => (cur && isConv(cur.type) ? convBoard() : boardF);
   const fbk = $('fbk');
   // the inputs rest once a problem is solved
-  const RESTING = ['tray', 'cards', 'build', 'undo', 'reset', 'combine'];
+  const RESTING = ['tray', 'cards', 'undo', 'reset', 'combine'];
   const rest = on => RESTING.forEach(id => { $(id).inert = on; });
   function say(t, cls) { fbk.innerHTML = t; fbk.className = 'fb-feedback' + (cls ? ' ' + cls : ''); }
 
@@ -746,6 +758,7 @@
     $('combine').hidden = isConv(cur.type) || b.fractionCount() < 2;
     if (!cur.solved && fbk.classList.contains('bad')) say('');
     if (isConv(cur.type)) {
+      b.state.fracs.forEach(noteUnits);
       const m = unitsMatch();
       const u = $('units');
       u.classList.toggle('match', m.ok);
@@ -778,7 +791,6 @@
     $('cardF').hidden = conv; $('cardC').hidden = !conv || ratio; $('cardR').hidden = !ratio;
     $('tray').hidden = !conv || ratio; cardsEl.hidden = !ratio; $('units').hidden = !conv;
     if (window.cheatsheet) window.cheatsheet.show(conv);
-    $('build').hidden = cur.type !== 'goal';
     $('combine').hidden = true;
     const s = S(skill.id);
     const tip = skill.tip && s.seen < 2 && !cur.review ? skill.tip : '';
@@ -792,9 +804,8 @@
       cur.target = sides(cur.to);
       $('task').innerHTML = `${quantityHTML(cur.q)} <span class="arrow">→</span> ${unitsFracHTML(cur.target.top, cur.target.bot)}`;
       if (ratio) fillCards(cur.cards); else fillTray(cur);
-      givenId = null;
-      convBoard().load([cur.q]);
-      givenId = convBoard().state.fracs[0].id;   // the amount being converted, fixed now (a tap on a card's bar must not claim it)
+      hadUnit.clear();
+      loadGiven(() => convBoard().load([cur.q]));
     } else {
       $('task').innerHTML = TYPES[cur.type].task(cur);
       boardF.load(cur.spec);
@@ -802,13 +813,24 @@
     drawDots();
   }
 
+  // walking away from a problem after a failed Check still counts it wrong
+  function leave() { if (cur && !cur.solved && cur.wrong) finish(false); }
   function finish(ok) {
     if (cur.graded) return false;
     cur.graded = true;
     return grade(cur.id, ok, cur.review);
   }
+  // a cancel (or an "= 1" fraction being removed) only changes the board once its animation ends: check what it leaves
+  const settling = () => { const r = $(isConv(cur.type) ? (cur.type === 'ratio' ? 'boardR' : 'boardC') : 'boardF'); return !!r.querySelector('.fb-x, .fb-asone') || [...r.querySelectorAll('.fb-frac')].some(el => el.getAnimations().some(a => a.playState === 'running')); };
+  let checkSoon = null;
   function check() {
     if (!cur || cur.solved) return;
+    if (settling()) {
+      const p = cur;
+      clearTimeout(checkSoon);
+      checkSoon = setTimeout(() => { if (cur === p) check(); }, 80);
+      return;
+    }
     const [ok, msg] = isConv(cur.type) ? checkConv() : TYPES[cur.type].check(board().state, cur);
     if (!ok) { cur.wrong = true; say(msg, 'bad'); return; }
     cur.solved = true;
@@ -823,7 +845,8 @@
   $('prev').addEventListener('click', () => move(-1));
   $('next').addEventListener('click', () => move(1));
   $('undo').addEventListener('click', () => board().undo());
-  $('reset').addEventListener('click', () => board().reset());
+  // start over reloads the amount as a new fraction: it is still the given one
+  $('reset').addEventListener('click', () => { if (cur && isConv(cur.type)) loadGiven(() => board().reset()); else board().reset(); });
   $('combine').addEventListener('click', () => board().combine());
   document.addEventListener('keydown', e => {
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z' && !e.target.closest('input')) { e.preventDefault(); if (cur && !cur.solved) board().undo(); }
@@ -834,16 +857,6 @@
     if (e.target.closest && e.target.closest('input, textarea, select, button, a, [role="button"], [tabindex], .fb-pop')) return;
     if (!$('go').disabled) { e.preventDefault(); $('go').click(); }
   });
-  const factor = $('factor');
-  function addTo(row) {
-    const v = factor.value.trim();
-    if (!v) { factor.focus(); return; }
-    if (!/^\d+$/.test(v) || !boardF.add(v, row)) { say('Use a whole number.', 'bad'); return; }
-    factor.value = ''; factor.focus();
-  }
-  document.querySelectorAll('[data-add]').forEach(b => b.addEventListener('click', () => addTo(b.dataset.add)));
-  // Enter in the factor box: add it on top; with the box empty, Check
-  $('build').addEventListener('submit', e => { e.preventDefault(); if (factor.value.trim()) addTo('num'); else $('go').click(); });
   $('wipe').addEventListener('click', () => {
     if (!window.confirm('Reset progress?')) return;
     P = fresh(); saveP(); newProblem();
@@ -886,7 +899,7 @@
     paceUI();
     if (ONLY) return;
     buildDots();
-    if (cur && !cur.solved) newProblem(); else drawDots();
+    if (cur && !cur.solved) { leave(); newProblem(); } else drawDots();
   }
   document.querySelectorAll('[data-pace]').forEach(b => b.addEventListener('click', () => {
     const u = new URL(location.href);
@@ -896,7 +909,7 @@
   paceUI();
 
   if (/[?&]debug\b/.test(location.search)) {
-    window.prog = { get P() { return P; }, set P(x) { P = x; }, get cur() { return cur; }, get T() { return T; }, get ACTIVE() { return ACTIVE; }, SKILLS, boardF, boardC, boardR, fresh, front, here, nextSkill, grade, level, make, newProblem, check, isDue, saveP, setPace, tune, move, chain, loadConv: specs => { givenId = null; convBoard().load(specs); givenId = convBoard().state.fracs[0].id; } };
+    window.prog = { get P() { return P; }, set P(x) { P = x; }, get cur() { return cur; }, get T() { return T; }, get ACTIVE() { return ACTIVE; }, SKILLS, boardF, boardC, boardR, fresh, front, here, nextSkill, grade, level, make, newProblem, check, isDue, saveP, setPace, tune, move, chain, loadConv: specs => loadGiven(() => convBoard().load(specs)) };
   }
   newProblem();
 })();

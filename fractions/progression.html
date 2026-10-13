@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500;600;700&display=swap">
-<link rel="stylesheet" href="fraction-board.css?v=3">
+<link rel="stylesheet" href="fraction-board.css?v=4">
 <style>
 /* One calm column: progress dots, the task, the board, a quiet row of tools, one line of feedback, one button */
 :root {
@@ -114,13 +114,6 @@ sup { font-size: 0.58em; line-height: 0; position: relative; top: -0.8em; vertic
 .units .now, .units .want { font-weight: 700; color: var(--ink); }
 .units.match .now { color: var(--good); }
 
-.build { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
-.build input {
-  width: 9rem; height: 42px; padding: 0 12px; border-radius: 999px;
-  border: 0; box-shadow: inset 0 0 0 1px var(--line); background: var(--surface); font-family: var(--f-mono);
-}
-.build input:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--accent); }
-
 .tray, .unitpieces { display: contents; }
 #tray:not([hidden]) { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; }
 #numPiece { margin-right: 10px; }
@@ -211,11 +204,6 @@ sup { font-size: 0.58em; line-height: 0; position: relative; top: -0.8em; vertic
     </div>
     <button type="button" class="pill" id="combine" hidden>Combine</button>
   </div>
-  <form class="build" id="build" hidden autocomplete="off">
-    <input id="factor" type="text" inputmode="numeric" placeholder="factor" aria-label="Factor to multiply by">
-    <button type="button" class="icon" data-add="num" title="Multiply (add on top)" aria-label="Multiply: add on top">↑</button>
-    <button type="button" class="icon" data-add="den" title="Divide (add on the bottom)" aria-label="Divide: add on the bottom">↓</button>
-  </form>
   <div class="tray" id="tray" hidden>
     <span class="piece num" id="numPiece" data-spec="#" role="button" tabindex="0" aria-label="A number. Place it, then type into it.">#</span>
     <div class="unitpieces" id="unitPieces"></div>
@@ -229,6 +217,6 @@ sup { font-size: 0.58em; line-height: 0; position: relative; top: -0.8em; vertic
   <button type="button" class="wipe" id="wipe">Reset progress</button>
 </div>
 
-<script src="fraction-board.js?v=3"></script>
+<script src="fraction-board.js?v=4"></script>
 <script src="cheatsheet.js?v=3"></script>
-<script src="progression.js?v=5"></script>
+<script src="progression.js?v=6"></script>

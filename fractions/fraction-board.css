@@ -185,3 +185,7 @@
 /* a piece picked up by a tap: the open spots say "put it here" */
 .fb.fb-armed .fb-newfrac .fb-slot,
 .fb.fb-armed .fb-frac.fb-noden:not(.fb-locked) > .fb-den { border-color: color-mix(in srgb, var(--fb-accent) 55%, transparent); outline-color: color-mix(in srgb, var(--fb-accent) 55%, transparent); }
+
+/* typeIn: a tap beside a row's factors types a new number there */
+.fb.fb-typein-hot { cursor: text; }
+.fb-caret.fb-caret-soft { opacity: 0.45; }

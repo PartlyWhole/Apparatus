@@ -21,8 +21,10 @@
  *   split: false                 no menu for breaking a factor apart
  *   trash: true                  a trash can in the corner; factors dropped on it are removed (if canRemove allows)
  *   canFlip(fr, isOne)           which fractions a tap on the bar may flip (default: those equal to 1)
+ *   typeIn: true | fn(fr)        a tap in a row beside its factors (not on one) puts a new number there, typed in place
  * board.dragExternal(spec, pointerEvent, sourceEl) and board.arm(spec, sourceEl) let a host page feed in new factors
  * (drag from a tray, or tap a tray piece then tap a spot on the board).
+ * board.idle() resolves once an animated change (a cancel, a "= 1" removal) has landed on the board.
  */
 (function () {
   'use strict';
@@ -159,6 +161,14 @@
     let history = [];
     let initial = [];
     let busy = false;
+    let gen = 0;                                 // bumped by load(): async work started before it is dropped
+    let idleWaiters = [];
+    function setBusy(v) {
+      busy = v;
+      if (!v && idleWaiters.length) { const w = idleWaiters; idleWaiters = []; w.forEach(r => r()); }
+    }
+    let pend = null;                             // a blank put in only for typing (typeIn): not part of the work until a number is typed
+    const strip = (s, id) => { s.fracs.forEach(fr => ['num', 'den'].forEach(r => { fr[r] = fr[r].filter(f => f.id !== id); })); return s; };
     let selected = null;                         // token id
     const listeners = [];
     const hint = t => { if (opts.onHint) opts.onHint(t); };
@@ -238,7 +248,10 @@
       return r;
     }
     function render() {
-      if (editing) { const ed = editing; editing = null; ed.inp.remove(); }
+      if (editing) {
+        const ed = editing; editing = null; ed.inp.remove();
+        if (pend && pend.id === ed.id) { strip(state, pend.id); pend = null; }
+      }
       closePop();
       root.innerHTML = '';
       if (!state.fracs.length) {
@@ -341,7 +354,8 @@
     }
     function commit(next, spawn, before) {
       before = before || rects();
-      history.push(clone(state));
+      history.push(pend ? strip(clone(state), pend.id) : clone(state));
+      if (pend) { strip(next, pend.id); pend = null; }
       if (history.length > 200) history.shift();
       // a fraction with nothing on either side is 1/1: drop it
       next.fracs = next.fracs.filter(fr => fr.num.length || fr.den.length);
@@ -396,6 +410,20 @@
       inp.remove();
       el.classList.remove('fb-editing');
       if (loc) el.innerHTML = html(loc.f);
+      if (pend && pend.id === id) {
+        // a number typed into a new spot: one step of work if it's a number, otherwise the spot just goes away
+        pend = null;
+        strip(state, id);
+        const ok = save && loc && /^\d*\.?\d+$/.test(v) && /[1-9]/.test(v);
+        if (!ok) { if (save && v !== '') hint('Type a number.'); render(); fit(false); return; }
+        const n = N(v);
+        const next = clone(state);
+        const fr = next.fracs.find(x => x.id === loc.fr.id);
+        if (!fr) { render(); fit(false); return; }
+        fr[loc.row].splice(loc.i, 0, { id, t: 'n', d: n.d, s: n.s });
+        commit(next);
+        return;
+      }
       if (!save || !loc) return;
       let f;
       if (v === '') { if (loc.f.t === 'b') return; f = { id, t: 'b' }; }
@@ -478,26 +506,29 @@
     }
     async function cancel(aId, bId) {
       if (busy) return;
-      busy = true;
+      setBusy(true);
+      const g = gen;
       deselect();
       const els = [aId, bId].map(id => root.querySelector(`[data-id="${id}"]`));
       els.forEach(el => el.classList.add('fb-x'));
       await wait(380);
+      if (g !== gen) return;
       els.forEach(el => { el.classList.remove('fb-x'); el.classList.add('fb-asone'); el.textContent = '1'; });
       if (!reduceMotion) els.forEach(el => el.animate([{ opacity: 0.2 }, { opacity: 1 }], { duration: 220 }));
       await wait(520);
+      if (g !== gen) return;
       if (!reduceMotion) await Promise.all(els.map(el => el.animate([{ opacity: 1, transform: 'scale(1)' }, { opacity: 0, transform: 'scale(0.3)' }], { duration: 260, fill: 'forwards' }).finished.catch(() => {})));
+      if (g !== gen) return;
       const before = rects();
       const next = clone(state);
       next.fracs.forEach(fr => ['num', 'den'].forEach(row => { fr[row] = fr[row].filter(f => f.id !== aId && f.id !== bId); }));
-      busy = false;
+      setBusy(false);
       commit(next, null, before);
     }
     async function merge(dragId, targetId, ghostRect) {
       const a = find(dragId).f, b = find(targetId).f;
       const p = product(b, a);
       if (!p) return false;
-      busy = true;
       deselect();
       const target = root.querySelector(`[data-id="${targetId}"]`);
       const before = rects();
@@ -506,19 +537,22 @@
       next.fracs.forEach(fr => ['num', 'den'].forEach(row => {
         fr[row] = fr[row].filter(f => f.id !== dragId).map(f => f.id === targetId ? Object.assign(p.f, { id: targetId }) : f);
       }));
-      busy = false;
       commit(next, null, before);
       // show the multiplication for a moment, then its result
       const el = root.querySelector(`[data-id="${targetId}"]`);
       if (el && !reduceMotion) {
-        busy = true;
+        setBusy(true);
+        const g = gen;
         const final = el.innerHTML;
         el.innerHTML = p.expr;
         await wait(800);
+        if (g !== gen) return true;
         await el.animate([{ transform: 'scaleY(1)' }, { transform: 'scaleY(0.1)' }], { duration: 140, easing: 'ease-in' }).finished.catch(() => {});
+        if (g !== gen) return true;
         el.innerHTML = final;
         await el.animate([{ transform: 'scaleY(0.1)' }, { transform: 'scaleY(1)' }], { duration: 160, easing: 'ease-out' }).finished.catch(() => {});
-        busy = false;
+        if (g !== gen) return true;
+        setBusy(false);
       }
       return true;
     }
@@ -542,16 +576,18 @@
     }
     async function removeOne(fid) {
       if (busy) return;
-      busy = true;
+      setBusy(true);
+      const g = gen;
       deselect();
       const el = root.querySelector(`.fb-frac[data-fid="${fid}"]`);
       if (el && !reduceMotion) {
         await el.animate([{ opacity: 1, transform: 'scale(1)' }, { opacity: 0, transform: 'scale(0.5)' }], { duration: 380, easing: 'ease-in', fill: 'forwards' }).finished.catch(() => {});
       }
+      if (g !== gen) return;
       const before = rects();
       const next = clone(state);
       next.fracs = next.fracs.filter(fr => fr.id !== fid);
-      busy = false;
+      setBusy(false);
       commit(next, null, before);
     }
     function canFlip(fr) { return opts.canFlip ? opts.canFlip(fr, isOne(fr)) : isOne(fr); }
@@ -662,9 +698,22 @@
       deselect();
     }
     root.addEventListener('pointerdown', e => {
+      tiDown = null;
       if (busy) return;
-      const tok = e.target.closest('.fb-tok');
-      if (!tok) { if (!e.target.closest('.fb-pop')) deselect(); return; }
+      let tok = e.target.closest('.fb-tok');
+      if (!tok) {
+        // a tap on empty space beside a row may start typing a new number there (on click), unless it is closing something
+        if (opts.typeIn && !editing && !selected && !pop && e.isPrimary && (e.pointerType !== 'mouse' || e.button === 0)) tiDown = { x: e.clientX, y: e.clientY };
+        if (!e.target.closest('.fb-pop')) deselect();
+        return;
+      }
+      if (editing) {
+        // finish the number being typed first; the board redraws, so find the factor again
+        const id = tok.dataset.id;
+        finishEdit(true);
+        tok = root.querySelector(`.fb-tok[data-id="${id}"]`);
+        if (!tok || busy) return;
+      }
       e.preventDefault();
       tok.focus({ preventScroll: true });
       drag = { id: tok.dataset.id, row: tok.dataset.row, fid: tok.dataset.fid, x0: e.clientX, y0: e.clientY, started: false, tok, pid: e.pointerId };
@@ -694,6 +743,7 @@
     async function endDrag(e) {
       if (!drag || e.pointerId !== drag.pid) return;
       const d = drag; drag = null;
+      const g = gen;
       try { root.releasePointerCapture(e.pointerId); } catch (_) {}
       if (!d.started) { tap(d.id); return; }
       clearTargets();
@@ -714,6 +764,7 @@
         if (outside && loc && opts.canRemove && opts.canRemove(loc.f, loc.fr)) {
           if (!reduceMotion) await d.ghost.animate([{ opacity: 1 }, { opacity: 0, transform: d.ghost.style.transform + ' scale(0.6)' }], { duration: 220, fill: 'forwards' }).finished.catch(() => {});
           d.ghost.remove();
+          if (g !== gen) return;
           const next = clone(state);
           next.fracs.forEach(fr => ['num', 'den'].forEach(r => { fr[r] = fr[r].filter(f => f.id !== d.id); }));
           commit(next);
@@ -744,6 +795,7 @@
           { transform: `translate(${tr.left + tr.width / 2 - ghostRect.width * 0.15}px, ${tr.top + tr.height / 2 - ghostRect.height * 0.15}px) scale(0.3)`, opacity: 0 }
         ], { duration: 260, easing: 'ease-in', fill: 'forwards' }).finished.catch(() => {});
         d.ghost.remove();
+        if (g !== gen) return;
         const next = clone(state);
         next.fracs.forEach(fr => ['num', 'den'].forEach(r => { fr[r] = fr[r].filter(f => f.id !== d.id); }));
         commit(next);
@@ -889,6 +941,7 @@
     }
     root.addEventListener('pointerdown', e => {
       if (!armed) return;
+      tiDown = null;
       e.preventDefault();
       e.stopImmediatePropagation();
       const t = insertTargetAt(e.clientX, e.clientY);
@@ -902,6 +955,66 @@
       if (!armed || e.pointerType !== 'mouse') return;
       clearTargets();
       showInsert(insertTargetAt(e.clientX, e.clientY));
+    });
+
+    // ---------- typeIn: tap beside the factors in a row to type a new number there ----------
+    let tiDown = null;
+    const typeInOn = fr => !!opts.typeIn && (typeof opts.typeIn !== 'function' || !!opts.typeIn(fr)) && !(opts.locked && opts.locked(fr));
+    function typeInAt(x, y) {
+      let best = null, bd = Infinity;
+      root.querySelectorAll('.fb-frac').forEach(el => {
+        const fr = state.fracs.find(f => f.id === el.dataset.fid);
+        if (!fr || !typeInOn(fr)) return;
+        const r = el.getBoundingClientRect();
+        const dx = x < r.left ? r.left - x : x > r.right ? x - r.right : 0;
+        const dy = y < r.top ? r.top - y : y > r.bottom ? y - r.bottom : 0;
+        if (dy > 24 || dx > 56) return;                 // close beside a fraction (in px, a finger's reach)
+        if (dx < bd) { bd = dx; best = el; }
+      });
+      if (!best) return null;
+      const den = best.querySelector(':scope > .fb-den');
+      const bar = best.querySelector('.fb-bar').getBoundingClientRect();
+      const row = den && den.getClientRects().length && y >= bar.top + bar.height / 2 ? 'den' : 'num';
+      const rowEl = best.querySelector(':scope > .fb-' + row);
+      const toks = [...rowEl.querySelectorAll('.fb-tok')];
+      let index = toks.findIndex(t => { const r = t.getBoundingClientRect(); return x < r.left + r.width / 2; });
+      if (index < 0) index = toks.length;
+      return { fid: best.dataset.fid, row, index, rowEl };
+    }
+    function startTypeIn(t) {
+      const fr = state.fracs.find(x => x.id === t.fid);
+      if (!fr) return;
+      deselect();
+      clearTargets();
+      root.classList.remove('fb-typein-hot');
+      const f = { id: nid(), t: 'b' };
+      fr[t.row].splice(Math.min(t.index, fr[t.row].length), 0, f);
+      pend = { id: f.id };
+      render();
+      fit(false);
+      editToken(f.id);
+    }
+    root.addEventListener('click', e => {
+      const d = tiDown; tiDown = null;
+      if (!d || busy || armed || editing || drag || !opts.typeIn) return;
+      if (Math.hypot(e.clientX - d.x, e.clientY - d.y) > 10) return;
+      if (e.target.closest('.fb-tok, .fb-barhit, .fb-onetag, .fb-pop, .fb-trash')) return;
+      const t = typeInAt(e.clientX, e.clientY);
+      if (t) startTypeIn(t);
+    });
+    // with a mouse, a faint caret shows where a click would type
+    root.addEventListener('pointermove', e => {
+      if (!opts.typeIn || e.pointerType !== 'mouse' || drag || armed || busy || editing) return;
+      clearTargets();
+      const over = e.target.closest && e.target.closest('.fb-tok, .fb-barhit, .fb-onetag, .fb-pop, .fb-trash');
+      const t = over ? null : typeInAt(e.clientX, e.clientY);
+      root.classList.toggle('fb-typein-hot', !!t);
+      if (t) { showCaret(t.rowEl, t.index, null); caret.classList.add('fb-caret-soft'); }
+    });
+    root.addEventListener('pointerleave', () => {
+      if (!opts.typeIn || drag || armed) return;
+      root.classList.remove('fb-typein-hot');
+      if (caret && caret.classList.contains('fb-caret-soft')) clearTargets();
     });
 
     function tap(id) {
@@ -941,6 +1054,9 @@
     // ---------- public ----------
     const api = {
       load(spec) {
+        gen++;
+        setBusy(false);
+        pend = null;
         initial = spec.slice();
         history = [];
         selected = null;
@@ -991,7 +1107,8 @@
       arm, disarm,
       isOne,
       value, valueHTML,
-      get state() { return clone(state); },
+      get state() { return pend ? strip(clone(state), pend.id) : clone(state); },
+      idle: () => busy ? new Promise(r => idleWaiters.push(r)) : Promise.resolve(),
       on(fn) { listeners.push(fn); }
     };
     return api;
