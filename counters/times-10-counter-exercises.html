@@ -152,22 +152,23 @@ button { font: inherit; color: inherit; cursor: pointer; }
 <div class="stage">
   <section class="ex" aria-label="Exercises">
     <div class="ex-top">
-      <a class="ex-home" href="../index.html">← Apparatus</a>
+      <a class="ex-home" href="../index.html" aria-label="Apparatus">←</a>
       <span class="ex-score" id="exScore"></span>
     </div>
     <div class="ex-tabs">
-      <button type="button" data-mode="make" aria-pressed="true">Reach the number</button>
-      <button type="button" data-mode="count" aria-pressed="false">How many times?</button>
+      <button type="button" data-mode="make" aria-pressed="true">Reach</button>
+      <button type="button" data-mode="count" aria-pressed="false">How many?</button>
     </div>
-    <p class="ex-q" id="exQ"></p>
-    <p class="ex-help" id="exHelp"></p>
-    <div class="ex-answer" id="exAnswer" hidden></div>
+    <div class="ex-row">
+      <p class="ex-q" id="exQ"></p>
+      <div class="ex-answer" id="exAnswer" hidden></div>
+    </div>
     <p class="ex-fb" id="exFb" aria-live="polite"></p>
     <div class="ex-actions">
       <button type="button" class="primary" id="exCheck">Check</button>
-      <button type="button" id="exRetry">Start over</button>
-      <button type="button" id="exShow">Show me</button>
-      <button type="button" id="exNext">New problem</button>
+      <button type="button" id="exRetry" title="Start over" aria-label="Start over">↺</button>
+      <button type="button" id="exShow">Show</button>
+      <button type="button" id="exNext">Next →</button>
     </div>
   </section>
   <div class="counterwrap" id="wrap">

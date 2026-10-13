@@ -17,9 +17,10 @@
   border: 0; background: transparent; padding: 8px 14px; border-radius: 8px; font-size: 14px; color: var(--muted);
 }
 .ex-tabs button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
+.ex-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .ex-q { margin: 0; font-size: clamp(17px, 2.6vw, 22px); line-height: 1.5; color: var(--ink); }
 .ex-q b { color: var(--accent); white-space: nowrap; }
-.ex-help { margin: -6px 0 0; font-size: 13px; color: var(--muted); }
+.ex-sub { display: block; font-size: 14px; color: var(--muted); margin-top: 2px; }
 .ex-answer { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 20px; }
 .ex-answer[hidden] { display: none; }
 .ex-answer input {

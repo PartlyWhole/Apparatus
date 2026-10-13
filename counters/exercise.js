@@ -52,7 +52,7 @@
 
   let mode, prob, steps, scored, done, showing = false;
   let right = 0, total = 0, streak = 0;
-  const q = $('exQ'), help = $('exHelp'), ans = $('exAnswer'), fb = $('exFb');
+  const q = $('exQ'), ans = $('exAnswer'), fb = $('exFb');
   const retryBtn = $('exRetry'), showBtn = $('exShow'), checkBtn = $('exCheck'), nextBtn = $('exNext');
 
   function say(html, cls) { fb.innerHTML = html; fb.className = 'ex-fb' + (cls ? ' ' + cls : ''); }
@@ -60,7 +60,7 @@
     if (scored) return;
     scored = true; total++;
     if (ok) { right++; streak++; } else streak = 0;
-    $('exScore').textContent = `${right}/${total} correct` + (streak > 1 ? ` · streak ${streak}` : '');
+    $('exScore').textContent = `${right}/${total}`;
   }
   function busy(on) {
     [retryBtn, showBtn, checkBtn, nextBtn].forEach(b => { b.disabled = on; });
@@ -92,7 +92,7 @@
   window.__ctrStep = () => {
     if (showing || !cfg || mode !== 'make' || done) return;
     steps++;
-    say(`${op}10 pressed ${steps} ${steps === 1 ? 'time' : 'times'}. Press Check when you think you're there.`);
+    say('');
   };
 
   // ---------- scientific notation ----------
@@ -119,32 +119,26 @@
       prob = cfg.gen();
       const s = `<b>${pretty(prob.s)}</b>`, t = `<b>${pretty(target())}</b>`;
       if (mode === 'make') {
-        q.innerHTML = `Start with ${s}. Press ${op}10 until you reach ${t}.`;
-        help.textContent = `Press ${op}10 on the counter, then press Check.`;
+        q.innerHTML = `${s} → ${t}`;
         ans.hidden = true; checkBtn.hidden = false;
       } else {
-        q.innerHTML = `How many times do you ${verb} ${s} by 10 to get ${t}?`;
-        help.textContent = 'Type your answer. Then the counter will show you.';
+        q.innerHTML = `${s} → ${t}<span class="ex-sub">How many ${op}10?</span>`;
         ans.hidden = false; checkBtn.hidden = false; retryBtn.hidden = true;
-        ans.innerHTML = `<input id="exN" type="text" inputmode="numeric" autocomplete="off" aria-label="Number of times"> <span>times</span>`;
+        ans.innerHTML = `<input id="exN" type="text" inputmode="numeric" autocomplete="off" aria-label="How many times" style="width:5ch">`;
       }
       loadShift();
     } else {
       prob = genSci();
       ans.hidden = false; checkBtn.hidden = false; retryBtn.hidden = false;
-      retryBtn.textContent = 'Reset counter';
       if (mode === 'make') {
-        q.innerHTML = `Write <b>${pretty(prob.plain)}</b> in scientific notation.`;
-        help.textContent = 'Use ×10 and ÷10 until the digits are between 1 and 10.';
+        q.innerHTML = `<b>${pretty(prob.plain)}</b> =`;
         ans.innerHTML = `<input id="exM" type="text" inputmode="decimal" autocomplete="off" aria-label="Number between 1 and 10"> <span class="pow">× 10 <input id="exE" class="exp" type="text" inputmode="numeric" autocomplete="off" aria-label="Power of ten"></span>`;
       } else {
-        q.innerHTML = `Write <b>${prob.m} × ${pow(prob.e)}</b> as a decimal.`;
-        help.textContent = 'Use ×10 and ÷10 until the power of ten is 0.';
+        q.innerHTML = `<b>${prob.m} × ${pow(prob.e)}</b> =`;
         ans.innerHTML = `<input id="exD" type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer" style="width:14ch">`;
       }
       loadSci();
     }
-    if (cfg) retryBtn.textContent = 'Start over';
     ans.querySelectorAll('input').forEach(i => i.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); check(); } }));
     const first = ans.querySelector('input');
     if (first && !ans.hidden) first.focus({ preventScroll: true });
@@ -156,42 +150,42 @@
       const v = C.read().value, t = target();
       if (steps === prob.n) {
         done = true; C.lock(true); score(true);
-        say(`✓ ${steps} ${steps === 1 ? 'time' : 'times'}: ${chain()}`, 'good');
+        say(`✓ ${chain()}`, 'good');
         retryBtn.hidden = true; showBtn.hidden = true; checkBtn.hidden = true;
       } else if (steps < prob.n) {
-        say(`You have ${pretty(v)}. Not there yet: keep going.`, 'bad');
+        say('Not yet', 'bad');
       } else {
         score(false); C.lock(true);
-        say(`You have ${pretty(v)}. That went past ${pretty(t)}. Press Start over and try again.`, 'bad');
+        say('Too far', 'bad');
       }
       return;
     }
     if (cfg) {
       const v = $('exN').value.trim();
-      if (!/^\d+$/.test(v)) { say('Type a whole number.', 'bad'); return; }
+      if (!/^\d+$/.test(v)) return;
       if (+v === prob.n) {
         score(true);
-        say(`✓ Yes, ${prob.n} ${prob.n === 1 ? 'time' : 'times'}: ${chain()}`, 'good');
+        say(`✓ ${chain()}`, 'good');
         show(false);
       } else {
         score(false);
-        say(`Not ${v}. Count how many places each digit has to move. Try again.`, 'bad');
+        say('Try again', 'bad');
       }
       return;
     }
     if (mode === 'make') {
       const m = norm($('exM').value), e = parseInt($('exE').value.replace('−', '-'), 10);
-      if (!m || isNaN(e)) { say('Fill in both boxes.', 'bad'); return; }
+      if (!m || isNaN(e)) return;
       if (m === prob.m && e === prob.e) { done = true; score(true); say(`✓ ${sciLine()}`, 'good'); return; }
       score(false);
-      if (shift(m, e) === prob.plain) say(`${m} × ${pow(e)} is equal to ${pretty(prob.plain)}, but the first number must be at least 1 and less than 10.`, 'bad');
-      else say(`${m} × ${pow(e)} = ${pretty(shift(m, e))}, not ${pretty(prob.plain)}. Try again.`, 'bad');
+      if (shift(m, e) === prob.plain) say('Equal, but the first number must be from 1 to 10', 'bad');
+      else say('Try again', 'bad');
     } else {
       const d = norm($('exD').value);
-      if (!d) { say('Type a number.', 'bad'); return; }
+      if (!d) return;
       if (d === prob.plain) { done = true; score(true); say(`✓ ${sciLine()}`, 'good'); return; }
       score(false);
-      say(`Not ${pretty(d)}. Try again.`, 'bad');
+      say('Try again', 'bad');
     }
   }
 
@@ -205,7 +199,7 @@
       C.load(prob.s);
       await wait(700);
       for (let k = 0; k < prob.n; k++) { await stepUnlocked(); await wait(350); }
-      if (reveal) say(`${prob.n} ${prob.n === 1 ? 'time' : 'times'}: ${chain()}`);
+      if (reveal) say(chain());
       C.lock(true);
     } else {
       loadSci();
