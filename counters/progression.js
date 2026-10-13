@@ -231,7 +231,7 @@
   }
 
   // ---------- counters ----------
-  const SRC = { w: 'embed-times-10.html', d: 'embed-times-10-decimal.html', mt: 'embed-times-10-moving-point.html', md: 'embed-divide-10-moving-point.html', sci: 'embed-times-10-to-the-n.html' };
+  const SRC = { w: 'embed-times-10.html?v=2', d: 'embed-times-10-decimal.html?v=2', mt: 'embed-times-10-moving-point.html?v=2', md: 'embed-divide-10-moving-point.html?v=2', sci: 'embed-times-10-to-the-n.html?v=2' };
   const box = $('ctr'), frames = {};
   function frame(key) {
     if (frames[key]) return frames[key];
@@ -243,7 +243,7 @@
       const fit = () => { if (!el.classList.contains('off')) el.style.height = Math.ceil(stage.getBoundingClientRect().height) + 'px'; };
       f.fit = fit;
       try { new w.ResizeObserver(fit).observe(stage); } catch (_) {}
-      w.__ctrStep = onStep;
+      w.__ctrStep = () => onStep(w);
       w.document.addEventListener('keydown', e => {   // Enter in the counter checks / moves on, like everywhere else
         if (e.key !== 'Enter' || e.target.closest('input, textarea, [contenteditable]')) return;
         e.preventDefault(); e.stopPropagation(); onEnter();
@@ -276,10 +276,17 @@
   }
   async function stepUnlocked(dir) {           // the flip counters' step ignores the lock; the moving-point ones need it lifted
     if (!/^m/.test(cur.p.ctr)) return C.step(dir);
-    const was = W.__ctrLocked;
-    W.__ctrLocked = false;
+    const w = W, my = token, was = w.__ctrLocked;
+    w.__ctrLocked = false;
     await C.step(dir);
-    W.__ctrLocked = was;
+    if (my === token) w.__ctrLocked = was;     // a newer problem has set its own lock
+  }
+  // ×10 / ÷10 presses so far on a reach problem, read off the counter itself (so a step still finishing from a
+  // replay or an earlier problem can't be miscounted); -1 if the counter isn't on the way
+  function pressed() {
+    const p = cur.p, v = norm(C.read().value);
+    for (let k = 0; k <= 12; k++) if (shift(p.s, p.dir * k) === v) return k;
+    return -1;
   }
 
   // ---------- one problem ----------
@@ -322,7 +329,7 @@
       ans.innerHTML = '<span class="digits">' + [...d].map((c, i) => `<button type="button" class="gap" data-i="${i}" aria-label="Point before digit ${i + 1}"></button><span>${c}</span>`).join('')
         + `<button type="button" class="gap" data-i="${d.length}" aria-label="Point after the last digit"></button></span>`;
       ans.querySelectorAll('.gap').forEach(b => b.addEventListener('click', () => {
-        if (!cur || cur.done || cur.showing) return;
+        if (!cur || !cur.ready || cur.done || cur.showing) return;
         ans.querySelectorAll('.gap.bad').forEach(x => x.classList.remove('bad'));
         if (+b.dataset.i === 1) return success();
         b.classList.add('bad');
@@ -339,22 +346,23 @@
     checkBtn.hidden = p.type === 'point';
     await useCounter(p.ctr);
     if (my !== token) return;
-    if (p.ctr === 'sci') C.load(p.plain, p.type === 'fromSci' ? p.e : 0);
+    if (p.ctr === 'sci') { C.load(p.plain, p.type === 'fromSci' ? p.e : 0); C.lock(false); }
     else { C.load(p.s); C.lock(p.type !== 'reach'); }
+    cur.ready = true;
     const first = ans.querySelector('input');
     if (first) first.focus({ preventScroll: true });
     else checkBtn.focus({ preventScroll: true });
   }
 
-  function onStep() {
-    if (!cur || cur.showing || cur.done || cur.p.type !== 'reach') return;
-    cur.steps++;
+  function onStep(w) {
+    if (w !== W || !cur || !cur.ready || cur.showing || cur.done || cur.p.type !== 'reach') return;
+    cur.steps = pressed();
     say('');
     if (cur.steps > cur.p.n) { C.lock(true); fail('Too far'); }
   }
 
   function check() {
-    if (!cur || cur.done || cur.showing) return;
+    if (!cur || !cur.ready || cur.done || cur.showing) return;
     const p = cur.p;
     if (p.type === 'reach') {
       if (cur.counting) {                      // reached it: now say how many presses it took
@@ -362,15 +370,18 @@
         if (!/^\d+$/.test(v)) return;
         return +v === p.n ? success() : fail('Try again');
       }
-      if (cur.steps === p.n) return askCount();
-      if (cur.steps < p.n) return say('Not yet', 'bad');
+      const k = pressed();
+      if (k === p.n) return askCount();
+      if (k >= 0 && k < p.n) return say('Not yet', 'bad');
       return;
     }
     if (p.type === 'sciReach') {
       const r = C.read(), v = norm(r.value);
       if (v === p.m && r.exp === p.e) return success();
-      // still 10 or more: keep going; below 1: went too far
-      return +v >= 10 ? say('Not yet', 'bad') : fail('Too far');
+      // the exponent is on its way from 0 to p.e: keep going; past it: too far; the other way: wrong
+      const toward = p.e > 0 ? r.exp >= 0 : r.exp <= 0;
+      if (toward && Math.abs(r.exp) < Math.abs(p.e)) return say('Not yet', 'bad');
+      return fail(toward ? 'Too far' : 'Try again');
     }
     if (p.type === 'count') {
       const v = $('a').value.trim();
@@ -435,9 +446,11 @@
     cur.showing = true;
     if (p.ctr === 'sci') {
       C.load(p.plain, p.type === 'fromSci' ? p.e : 0);
+      C.lock(true);                              // only the replay moves the point
       await beat(600);
       const dir = (p.type !== 'fromSci') === (p.e > 0) ? -1 : 1;
       for (let k = 0; k < Math.abs(p.e) && my === token; k++) { await C.step(dir); await beat(220); }
+      if (my === token) C.lock(false);
     } else {
       C.load(p.s);
       await beat(600);
@@ -454,7 +467,7 @@
   document.addEventListener('keydown', e => {
     if (e.key === 'Enter' && !e.target.closest('button, a')) { e.preventDefault(); onEnter(); return; }
     // the counter's own keys (↑ ×10, ↓ ÷10) work from anywhere outside a text box
-    if (W && /^(ArrowUp|ArrowDown|x|\*|\/)$/.test(e.key) && !e.metaKey && !e.ctrlKey && !e.altKey && !e.target.closest('input, textarea, select')) {
+    if (W && /^(ArrowUp|ArrowDown|x|\*|\/)$/.test(e.key) && !e.metaKey && !e.ctrlKey && !e.altKey && !e.target.closest('input:not([type=checkbox]), textarea, select')) {
       e.preventDefault();
       W.document.body.dispatchEvent(new W.KeyboardEvent('keydown', { key: e.key, bubbles: true, cancelable: true }));
     }

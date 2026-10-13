@@ -405,7 +405,7 @@ html, body { height: auto; }
   // ×10 and ÷10 stay off until a number has been typed in (0, 0.5 or 0.000 all count)
   let entered = false;
   function refreshButtons() {
-    const busy = moving || animating || (op && op.stage < STEPS);
+    const busy = moving || animating || (op && op.stage < STEPS) || !!window.__ctrLocked;
     mulBtn.disabled = !entered || busy || P <= 0;
     divBtn.disabled = !entered || busy || P >= N;
   }
@@ -608,6 +608,7 @@ html, body { height: auto; }
       }
     }
     if (op === o) renderStage(o, s);
+    else if (!op) setLift(null);
     animating = false;
     updateStepUI(); refreshButtons();
   }
@@ -646,7 +647,7 @@ html, body { height: auto; }
 
   // The ×10 / ÷10 buttons start a factoring. In step-by-step mode it pauses after each step.
   async function hop(dir, quick) {           // dir = -1: point left (factor out 10); dir = +1: point right (factor out 1/10)
-    if (animating || moving) return;
+    if (animating || moving || (window.__ctrLocked && !quick)) return;
     if (op) { if (op.stage < STEPS) return; finishOp(); }
     if (!entered) { nope('Type a number first.'); return; }
     if ((dir < 0 && P <= 0) || (dir > 0 && P >= N)) return;
@@ -882,7 +883,7 @@ html, body { height: auto; }
     },
     read() { return { value: valueText(), exp: HOME - P }; },
     step(dir) { return hop(dir, true); },
-    lock() {},
+    lock(on) { window.__ctrLocked = on; refreshButtons(); },
     speed(v, on) { setSpeed(v); setInstant(!!on); },
     typing(on) { edit.disabled = !on; expEdit.disabled = !on; }
   };

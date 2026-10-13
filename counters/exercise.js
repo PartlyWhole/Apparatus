@@ -50,7 +50,7 @@
     }
   };
 
-  let mode, prob, steps, scored, done, counting = false, showing = false;
+  let mode, prob, scored, done, counting = false, showing = false;
   let right = 0, total = 0, streak = 0;
   const q = $('exQ'), ans = $('exAnswer'), fb = $('exFb');
   const retryBtn = $('exRetry'), showBtn = $('exShow'), checkBtn = $('exCheck'), nextBtn = $('exNext');
@@ -95,14 +95,19 @@
       : `${pretty(prob.s)} ${op} ${pow(prob.n)} = ${t}`;
   }
   function loadShift() {
-    steps = 0; done = false;
+    done = false;
     if (counting) { counting = false; ans.hidden = true; ans.innerHTML = ''; q.querySelector('.ex-sub')?.remove(); }
     C.load(prob.s);
     C.lock(mode === 'count');
   }
+  // presses so far, read off the counter itself: a press still finishing after ↺ or a new problem can't be miscounted
+  function presses() {
+    const v = norm(C.read().value);
+    for (let k = 0; k <= 12; k++) if (shift(prob.s, cfg.up ? k : -k) === v) return k;
+    return -1;
+  }
   window.__ctrStep = () => {
     if (showing || !cfg || mode !== 'make' || done) return;
-    steps++;
     say('');
   };
 
@@ -123,7 +128,7 @@
 
   // ---------- one problem ----------
   function newProblem() {
-    showing = false; scored = false; done = false;
+    showing = false; scored = false; done = false; counting = false;
     say('');
     retryBtn.hidden = false; showBtn.hidden = false;
     if (cfg) {
@@ -161,7 +166,7 @@
       // reached the number: now say how many presses it took
       const v = $('exN').value.trim();
       if (!/^\d+$/.test(v)) return;
-      if (+v === steps) {
+      if (+v === prob.n) {
         done = true; score(true);
         say(`✓ ${chain()}`, 'good');
         finish();
@@ -173,6 +178,7 @@
       return;
     }
     if (cfg && mode === 'make') {
+      const steps = presses();
       if (steps === prob.n) {
         counting = true; C.lock(true); say('');
         q.insertAdjacentHTML('beforeend', `<span class="ex-sub">How many ${op}10?</span>`);
@@ -181,7 +187,7 @@
         const i = $('exN');
         i.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); check(); } });
         i.focus({ preventScroll: true });
-      } else if (steps < prob.n) {
+      } else if (steps >= 0 && steps < prob.n) {
         say('Not yet', 'bad');
       } else {
         score(false); C.lock(true);
@@ -226,20 +232,22 @@
     showing = true; busy(true);
     if (reveal) score(false);
     if (cfg) {
-      steps = 0;
       C.load(prob.s);
+      C.lock(true);                 // only the replay moves the counter
       await wait(700);
       for (let k = 0; k < prob.n; k++) { await stepUnlocked(); await wait(350); }
       if (reveal) say(chain());
       C.lock(true);
     } else {
       loadSci();
+      C.lock(true);
       await wait(700);
       // 'make': factor out 10s (dir -1) for a positive power; 'count': undo the power the other way
       const n = Math.abs(prob.e);
       const dir = (mode === 'make') === (prob.e > 0) ? -1 : 1;
       for (let k = 0; k < n; k++) { await stepUnlocked(dir); await wait(250); }
       if (reveal) say(sciLine());
+      C.lock(false);
     }
     done = true; showing = false; busy(false);
     finish();
@@ -262,10 +270,12 @@
     else loadSci();
   });
 
-  // Enter anywhere outside a control: Check, or Next once the problem is finished
+  // Enter anywhere outside a control: Check, or Next once the problem is finished. The counter's ×10 / ÷10 keep
+  // focus after a click, so Enter there checks too rather than pressing again (↑ / ↓ press)
   document.addEventListener('keydown', e => {
-    if (e.key !== 'Enter' || showing || e.target.closest('button, input, a, label')) return;
+    if (e.key !== 'Enter' || e.target.closest('button:not(#mul10):not(#div10), input, a, label')) return;
     e.preventDefault();
+    if (showing) return;
     if (done) newProblem(); else check();
   });
 
