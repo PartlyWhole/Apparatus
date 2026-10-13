@@ -703,7 +703,7 @@
       let tok = e.target.closest('.fb-tok');
       if (!tok) {
         // a tap on empty space beside a row may start typing a new number there (on click), unless it is closing something
-        if (opts.typeIn && !editing && !selected && !pop && e.isPrimary && (e.pointerType !== 'mouse' || e.button === 0)) tiDown = { x: e.clientX, y: e.clientY };
+        if (opts.typeIn && !selected && !pop && e.isPrimary && (e.pointerType !== 'mouse' || e.button === 0)) tiDown = { x: e.clientX, y: e.clientY };
         if (!e.target.closest('.fb-pop')) deselect();
         return;
       }
@@ -996,9 +996,11 @@
     }
     root.addEventListener('click', e => {
       const d = tiDown; tiDown = null;
-      if (!d || busy || armed || editing || drag || !opts.typeIn) return;
+      if (!d || busy || armed || drag || !opts.typeIn) return;
       if (Math.hypot(e.clientX - d.x, e.clientY - d.y) > 10) return;
       if (e.target.closest('.fb-tok, .fb-barhit, .fb-onetag, .fb-pop, .fb-trash')) return;
+      if (editing) finishEdit(true);            // (a tap doesn't always blur the number being typed)
+      if (busy) return;
       const t = typeInAt(e.clientX, e.clientY);
       if (t) startTypeIn(t);
     });

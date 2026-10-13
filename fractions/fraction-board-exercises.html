@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500;600;700&display=swap">
-<link rel="stylesheet" href="fraction-board.css?v=3">
+<link rel="stylesheet" href="fraction-board.css?v=5">
 <style>
 /* Layout: one calm column; scene tabs, a single line of guidance, the board on a card, and a quiet row of tools */
 :root {
@@ -92,13 +92,6 @@ button { cursor: pointer; }
 }
 .pill[hidden] { display: none; }
 
-.build { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
-.build[hidden] { display: none; }
-.build input {
-  width: 9rem; height: 42px; padding: 0 12px; border-radius: 999px;
-  border: 0; box-shadow: inset 0 0 0 1px var(--line); background: var(--surface); font-family: var(--f-mono);
-}
-.build input:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--accent); }
 
 .hint { text-align: center; min-height: 1.4em; margin: 0; font-size: 0.9rem; color: var(--ink); transition: opacity 0.3s; }
 .hint:empty { opacity: 0; }
@@ -137,11 +130,6 @@ button { cursor: pointer; }
     </div>
     <button type="button" class="pill" id="combine" hidden>Combine</button>
   </div>
-  <form class="build" id="build" hidden autocomplete="off">
-    <input id="factor" type="text" inputmode="numeric" placeholder="factor" aria-label="Factor to multiply by">
-    <button type="button" class="icon" data-row="num" title="Multiply (add on top)" aria-label="Multiply: add on top">↑</button>
-    <button type="button" class="icon" data-row="den" title="Divide (add on the bottom)" aria-label="Divide: add on the bottom">↓</button>
-  </form>
   <p class="hint" id="hint" role="status"></p>
   <p class="fb-feedback" id="fbk" aria-live="polite"></p>
   <div class="actions">
@@ -150,7 +138,7 @@ button { cursor: pointer; }
   </div>
 </div>
 
-<script src="fraction-board.js?v=3"></script>
+<script src="fraction-board.js?v=5"></script>
 <script>
 (function () {
   const ri = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
@@ -234,7 +222,7 @@ button { cursor: pointer; }
     if (t.count > 1) return [false, 'Not one power of ten yet.'];
     if (t.count === 1) {
       const only = st.fracs.flatMap(fr => [...fr.num, ...fr.den]).find(f => !isUnity(f));
-      if (only.t === 'n') return [false, `Write ${fh(only)} as a power of ten.`];
+      if (only.t === 'n' && FractionBoard.internals.pow10Of(only) !== 1) return [false, `Write ${fh(only)} as a power of ten.`];
     }
     return [true, 'Done.'];
   }
@@ -263,17 +251,20 @@ button { cursor: pointer; }
   const EX = [
     { name: 'Cancel', task: () => 'Simplify', say: '', gen: genCancel, check: checkCancel },
     { name: 'Powers of ten', task: () => 'Simplify to one power of ten', say: '', gen: genPowers, check: checkPowers },
-    { name: 'Goal', task: () => `Make <span class="goal">${fracHTML(goal[0], goal[1])}</span>`, say: '', gen: genGoal, check: checkGoal, build: true }
+    { name: 'Goal', task: () => `Make <span class="goal">${fracHTML(goal[0], goal[1])}</span>`, say: '', gen: genGoal, check: checkGoal, typeIn: true }
   ];
 
   const hintEl = document.getElementById('hint');
   let hintTimer = null;
   const board = FractionBoard(document.getElementById('board'), {
+    typeIn: () => !!EX[cur].typeIn,
     onHint(t) { hintEl.textContent = t; clearTimeout(hintTimer); hintTimer = setTimeout(() => { hintEl.textContent = ''; }, 2200); },
     onChange(b) {
       document.getElementById('undo').disabled = !b.canUndo();
       document.getElementById('combine').hidden = b.fractionCount() < 2;
-      if (!solved) say('');
+      // any change to the work makes a shown result stale
+      if (solved) { solved = false; document.getElementById('check').disabled = false; }
+      say('');
     }
   });
 
@@ -289,7 +280,6 @@ button { cursor: pointer; }
     const spec = ex.gen();
     solved = false; scored = false;
     document.getElementById('task').innerHTML = ex.task();
-    document.getElementById('build').hidden = !ex.build;
     document.getElementById('check').disabled = false;
     hintEl.textContent = '';
     board.load(spec);
@@ -302,7 +292,9 @@ button { cursor: pointer; }
     b.addEventListener('click', () => { cur = i; [...tabs.children].forEach((x, j) => x.setAttribute('aria-selected', String(j === i))); newProblem(); });
     tabs.appendChild(b);
   });
-  document.getElementById('check').addEventListener('click', () => {
+  document.getElementById('check').addEventListener('click', async () => {
+    // a cancel still animating hasn't reached the board yet: check what it will be
+    await board.idle();
     if (solved) return;
     const [ok, msg] = EX[cur].check(board.state);
     if (ok) { solved = true; document.getElementById('check').disabled = true; }
@@ -317,16 +309,6 @@ button { cursor: pointer; }
   document.addEventListener('keydown', e => {
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z' && !e.target.closest('input')) { e.preventDefault(); board.undo(); }
   });
-  const factor = document.getElementById('factor');
-  function addTo(row) {
-    const v = factor.value.trim();
-    if (!v) { factor.focus(); return; }
-    if (!board.add(v, row)) { say('Use a whole number.', 'bad'); return; }
-    factor.value = ''; factor.focus();
-  }
-  document.querySelectorAll('.build [data-row]').forEach(b => b.addEventListener('click', () => addTo(b.dataset.row)));
-  document.getElementById('build').addEventListener('submit', e => { e.preventDefault(); addTo('num'); });
-
   tabs.children[0].click();
 })();
 </script>

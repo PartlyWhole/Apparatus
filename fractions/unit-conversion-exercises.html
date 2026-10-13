@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=JetBrains+Mono:wght@500;600;700&display=swap">
-<link rel="stylesheet" href="fraction-board.css?v=3">
+<link rel="stylesheet" href="fraction-board.css?v=5">
 <style>
 /* Layout: one calm column; the problem, the fraction board, where the units stand, then a tray of conversion factors (each a fraction equal to 1) */
 :root {
@@ -83,7 +83,7 @@ sup { font-size: 0.58em; line-height: 0; position: relative; top: -0.8em; vertic
 .units { display: inline-flex; align-items: center; gap: 10px; font-family: var(--f-mono); font-size: 1.05rem; color: var(--muted); }
 .units .now, .units .want { font-weight: 700; color: var(--ink); }
 .units .arrow { color: var(--muted); }
-.units.match .now { color: var(--good); }
+.units.match .now, .units.match .now i { color: var(--good); }
 .tick { color: var(--good); font-weight: 700; }
 .icon {
   width: 42px; height: 42px; border-radius: 50%; border: 0; background: transparent;
@@ -166,7 +166,7 @@ sup { font-size: 0.58em; line-height: 0; position: relative; top: -0.8em; vertic
   <p class="hint" id="hint" role="status"></p>
 </div>
 
-<script src="fraction-board.js?v=3"></script>
+<script src="fraction-board.js?v=5"></script>
 <script src="cheatsheet.js?v=3"></script>
 <script>
 (function () {
@@ -284,16 +284,22 @@ sup { font-size: 0.58em; line-height: 0; position: relative; top: -0.8em; vertic
   }
   // The amount being converted is fixed; everything else on the board is the student's own work.
   // Nothing checks whether a fraction they build is a true conversion factor: the answer at the end tells them.
+  // The board always starts as just the amount (loadBoard), so the first fraction drawn after a load is it.
   let givenId = null;
   const isGiven = fr => {
-    if (givenId === null) givenId = fr.id;   // the first fraction drawn after loading is the amount being converted
+    if (givenId === null) givenId = fr.id;
     return fr.id === givenId;
   };
+  // every (re)load makes new fraction ids, so the amount is found again each time (Start over too)
+  function loadBoard(spec) { givenId = null; hadUnit = new Set(); board.load([spec]); }
   // A fraction the student builds can't be numbers alone (like # / #): it needs at least one unit somewhere.
+  // Once it has had one, it's a real conversion factor: after its units cancel (60 min / 1 hr · 60 s / 1 min) it may be just numbers.
+  let hadUnit = new Set();
   function needsUnit(fr) {
     if (isGiven(fr)) return false;
     const all = [...fr.num, ...fr.den];
-    return all.some(f => f.t === 'n' || f.t === 'b') && !all.some(f => f.t === 'u');
+    if (all.some(f => f.t === 'u')) { hadUnit.add(fr.id); return false; }
+    return all.some(f => f.t === 'n' || f.t === 'b') && !hadUnit.has(fr.id);
   }
   const board = FractionBoard(document.getElementById('board'), {
     isOne: () => false,
@@ -323,7 +329,9 @@ sup { font-size: 0.58em; line-height: 0; position: relative; top: -0.8em; vertic
     st.fracs.forEach(fr => { fr.num.forEach(f => { if (f.t === 'u') top.push(f); }); fr.den.forEach(f => { if (f.t === 'u') bot.push(f); }); });
     return { top, bot };
   }
-  const sameKeys = (a, b) => { const x = a.map(key).sort(), y = b.map(key).sort(); return x.length === y.length && x.every((v, i) => v === y[i]); };
+  // the same units on a side, however they're split up (m·m·m is m³)
+  const powers = list => { const m = {}; list.forEach(f => { m[f.u] = (m[f.u] || 0) + f.k; }); return Object.keys(m).filter(u => m[u]).sort().map(u => u + '^' + m[u]).join(' '); };
+  const sameKeys = (a, b) => powers(a) === powers(b);
   function update() {
     if (!target) return;
     const now = boardUnits();
@@ -430,14 +438,13 @@ sup { font-size: 0.58em; line-height: 0; position: relative; top: -0.8em; vertic
     document.getElementById('result').hidden = true;
     showHeader();
     fillTray(p);
-    givenId = null;
-    board.load([p.q]);
+    loadBoard(p.q);
     update();
   }
   document.getElementById('next').addEventListener('click', load);
   document.getElementById('nextAfter').addEventListener('click', load);
   document.getElementById('undo').addEventListener('click', () => board.undo());
-  document.getElementById('reset').addEventListener('click', () => board.reset());
+  document.getElementById('reset').addEventListener('click', () => loadBoard(prob.q));
   document.addEventListener('keydown', e => {
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); board.undo(); }
   });
