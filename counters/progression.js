@@ -83,6 +83,9 @@
     // scaffold: tap where the point goes so the number is from 1 to 10 (2.6, not 26. or .26)
     { id: 'sci-point', tier: 0, quick: true, gen: lvl => lvl === 0 ? sciP('point', 2, ri(1, 3))
         : lvl === 1 ? sciP('point', 3, one([ri(2, 5), -ri(1, 3)])) : sciP('point', ri(3, 4), one([ri(3, 7), -ri(2, 5)])) },
+    // scaffold: use ×10 / ÷10 on the counter until the number is from 1 to 10; typing comes in the next skills
+    { id: 'sci-move', tier: 0, gen: lvl => lvl === 0 ? sciP('sciReach', 2, ri(1, 3))
+        : lvl === 1 ? sciP('sciReach', 2, -ri(1, 3)) : sciP('sciReach', ri(2, 3), one([ri(2, 5), -ri(2, 4)])) },
     { id: 'sci-big', tier: 0, gen: lvl => lvl === 0 ? sciP('toSci', 1, ri(1, 3)) : lvl === 1 ? sciP('toSci', 2, ri(2, 5)) : sciP('toSci', ri(2, 3), ri(3, 7)) },
     { id: 'sci-small', tier: 0, gen: lvl => lvl === 0 ? sciP('toSci', 1, ri(-2, -1)) : lvl === 1 ? sciP('toSci', 2, ri(-3, -1)) : sciP('toSci', ri(2, 3), ri(-5, -2)) },
     { id: 'sci-back', tier: 0, gen: lvl => lvl === 0 ? sciP('fromSci', ri(1, 2), one([1, 2, 3, -1, -2]))
@@ -91,7 +94,7 @@
     { id: 'sci-mixed', tier: 1, gen: lvl => one([genCalc, ...['sci-big', 'sci-small', 'sci-back'].map(id => SKILLS.find(k => k.id === id).gen)])(Math.max(1, lvl)) }
   ];
   const NAMES = { 'w-reach': '×10 · reach', 'w-count': '×10 · how many', 'd-reach': '×10 decimals · reach', 'd-count': '×10 decimals · how many',
-    'mp-times': 'Moving point ×10', 'mp-divide': 'Moving point ÷10', mixed: '× and ÷ by 10ⁿ', 'sci-point': 'Where the point goes', 'sci-big': 'Big → scientific',
+    'mp-times': 'Moving point ×10', 'mp-divide': 'Moving point ÷10', mixed: '× and ÷ by 10ⁿ', 'sci-point': 'Where the point goes', 'sci-move': 'Move the point', 'sci-big': 'Big → scientific',
     'sci-small': 'Small → scientific', 'sci-back': 'Scientific → decimal', 'sci-mixed': 'Mixed' };
   // ?skill=<id>: practice one skill on its own; saved progress is left alone
   const ONLY_ID = new URLSearchParams(location.search).get('skill');
@@ -285,7 +288,7 @@
   function say(html, cls) { fb.innerHTML = html; fb.className = 'fb' + (cls ? ' ' + cls : ''); }
   const opSym = p => p.dir > 0 ? '×' : '÷';
   function line(p) {
-    if (p.type === 'toSci' || p.type === 'fromSci' || p.type === 'point') return `${pretty(p.plain)} = ${p.m} × ${pow(p.e)}`;
+    if (p.type === 'toSci' || p.type === 'fromSci' || p.type === 'point' || p.type === 'sciReach') return `${pretty(p.plain)} = ${p.m} × ${pow(p.e)}`;
     return `${pretty(p.s)} ${opSym(p)} ${tenTo(p.n)} = ${pretty(p.t)}`;
   }
   const input = (id, mode, label, cls) => `<input id="${id}" type="text" inputmode="${mode}" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="${label}" aria-describedby="q"${cls ? ` class="${cls}"` : ''}>`;
@@ -310,6 +313,8 @@
     } else if (p.type === 'calc') {
       q.innerHTML = `<b>${pretty(p.s)} ${opSym(p)} ${tenTo(p.n)}</b> =`;
       ans.innerHTML = input('a', 'decimal', 'Answer', 'wide');
+    } else if (p.type === 'sciReach') {
+      q.innerHTML = `<b>${pretty(p.plain)}</b><span class="sub">1 ≤ number < 10</span>`;
     } else if (p.type === 'point') {
       // the digits with a tappable gap before, between and after them
       q.innerHTML = `<b>${pretty(p.plain)}</b><span class="sub">Where does the point go?</span>`;
@@ -360,6 +365,12 @@
       if (cur.steps === p.n) return askCount();
       if (cur.steps < p.n) return say('Not yet', 'bad');
       return;
+    }
+    if (p.type === 'sciReach') {
+      const r = C.read(), v = norm(r.value);
+      if (v === p.m && r.exp === p.e) return success();
+      // still 10 or more: keep going; below 1: went too far
+      return +v >= 10 ? say('Not yet', 'bad') : fail('Too far');
     }
     if (p.type === 'count') {
       const v = $('a').value.trim();
