@@ -522,6 +522,7 @@
     const conv = cur.type === 'conv';
     $('cardF').hidden = conv; $('cardC').hidden = !conv;
     $('tray').hidden = !conv; $('units').hidden = !conv;
+    if (window.cheatsheet) window.cheatsheet.show(conv);
     $('build').hidden = cur.type !== 'goal';
     $('combine').hidden = true;
     const s = S(skill.id);
