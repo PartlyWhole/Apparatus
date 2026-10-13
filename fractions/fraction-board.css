@@ -1,0 +1,177 @@
+/* Fraction Board: a reusable product-of-fractions workspace.
+   The host page sets these tokens (theme-aware):
+   --fb-ink, --fb-muted, --fb-chip, --fb-surface, --fb-line, --fb-accent, --fb-amber, --fb-amber-text, --fb-on-amber, --fb-bad, --fb-mono */
+
+.fb {
+  position: relative;
+  display: flex; flex-wrap: nowrap; align-items: center; justify-content: safe center;
+  gap: 0.55em 0.42em;
+  /* everything inside is sized in em, so one font size (set by the board to fit its width) scales it all */
+  font-size: var(--fb-fs, clamp(1.35rem, 4vw, 2.1rem));
+  padding: 34px 12px 40px;
+  min-height: 240px;
+  font-family: var(--fb-mono, ui-monospace, Menlo, Consolas, monospace);
+  color: var(--fb-ink);
+  -webkit-user-select: none; user-select: none;
+}
+.fb-frac {
+  position: relative;
+  display: inline-flex; flex-direction: column; align-items: center;
+  padding: 0.24em 0.3em;
+  border-radius: 0.42em;
+  transition: box-shadow 0.3s, background-color 0.3s;
+}
+.fb-row {
+  display: flex; align-items: center; justify-content: center;
+  gap: 0.12em;
+  min-height: 1.95em; min-width: 1.9em;
+  padding: 0.12em 0.18em;
+  border-radius: 0.3em;
+}
+.fb-barhit { align-self: stretch; padding: 0.2em 0; cursor: pointer; border-radius: 4px; }
+.fb-bar { height: 3px; margin: 0 2px; border-radius: 2px; background: var(--fb-ink); transition: background 0.15s; }
+.fb-frac.fb-is-one .fb-barhit:hover .fb-bar { background: var(--fb-amber); }
+.fb-times { color: var(--fb-muted); font-size: 0.9em; line-height: 1; }
+.fb-dot { color: var(--fb-muted); font-size: 0.67em; padding: 0 1px; }
+.fb-empty {
+  color: var(--fb-muted); opacity: 0.4;
+  font-size: 1em; font-weight: 700; padding: 0.18em;
+}
+
+.fb-tok {
+  position: relative;
+  display: inline-block; white-space: nowrap;
+  padding: 0.18em 0.36em;
+  border-radius: 0.3em;
+  background: var(--fb-chip);
+  color: var(--fb-ink);
+  font-size: 1em; font-weight: 700; line-height: 1.15;
+  cursor: grab; touch-action: none;
+  transform-origin: 0 0;
+  transition: box-shadow 0.15s;
+}
+.fb-tok:focus-visible { outline: 3px solid var(--fb-accent); outline-offset: 2px; }
+.fb-tok sup, .fb-pop sup {
+  font-size: 0.55em; line-height: 0; vertical-align: 0;
+  position: relative; top: -0.82em; margin-left: 0.04em;
+  color: var(--fb-amber-text);
+}
+.fb-tok.fb-u { color: var(--fb-accent); font-style: italic; font-weight: 600; }
+.fb-tok.fb-u sup { color: var(--fb-accent); }
+.fb-tok.fb-sel { box-shadow: 0 0 0 3px var(--fb-accent); }
+.fb-tok.fb-dragging { opacity: 0.18; }
+.fb-tok.fb-t-cancel { box-shadow: 0 0 0 3px var(--fb-amber); }
+.fb-tok.fb-t-merge { box-shadow: 0 0 0 3px var(--fb-accent); }
+.fb-tok.fb-t-bad { box-shadow: 0 0 0 3px var(--fb-bad); }
+.fb-tok.fb-asone { background: transparent; color: var(--fb-muted); }
+.fb-tok.fb-x::after {
+  content: ""; position: absolute; left: -2px; right: -2px; top: 50%; height: 3px; border-radius: 2px;
+  background: var(--fb-amber);
+  transform: rotate(-18deg) scaleX(0); transform-origin: 0 50%;
+  animation: fb-slash 0.3s ease-out forwards;
+}
+@keyframes fb-slash { to { transform: rotate(-18deg) scaleX(1); } }
+
+.fb-frac.fb-is-one { background: color-mix(in srgb, var(--fb-amber) 12%, transparent); box-shadow: inset 0 0 0 2px var(--fb-amber); }
+.fb-onetag {
+  position: absolute; left: 50%; bottom: -15px; transform: translateX(-50%);
+  border: 0; border-radius: 999px; padding: 2px 11px;
+  background: var(--fb-amber); color: var(--fb-on-amber);
+  font: inherit; font-size: 0.85rem; font-weight: 700; cursor: pointer; white-space: nowrap;
+}
+
+.fb-newfrac {
+  display: none; align-items: center; gap: 0.42em;
+  padding: 0.24em 0.3em 0.24em 0; border-radius: 0.42em;
+  color: var(--fb-muted);
+}
+.fb.fb-on-drag .fb-newfrac { display: inline-flex; }
+.fb-newfrac .fb-ghostfrac { display: inline-flex; flex-direction: column; align-items: center; gap: 0.18em; }
+.fb-newfrac .fb-slot { width: 1.75em; height: 1.6em; border: 2px dashed var(--fb-line); border-radius: 0.3em; }
+.fb-newfrac .fb-ghostbar { width: 2.1em; height: 3px; border-radius: 2px; background: var(--fb-line); }
+.fb-newfrac.fb-hot { color: var(--fb-accent); }
+.fb-newfrac .fb-slot.fb-hot { border-color: var(--fb-accent); background: color-mix(in srgb, var(--fb-accent) 10%, transparent); }
+.fb-newfrac.fb-hot .fb-ghostbar { background: var(--fb-accent); }
+
+.fb-ghost {
+  position: fixed; left: 0; top: 0; z-index: 1000; margin: 0;
+  pointer-events: none;
+  box-shadow: 0 12px 26px rgba(10, 20, 40, 0.28);
+}
+.fb-caret { position: absolute; width: 3px; border-radius: 2px; background: var(--fb-accent); pointer-events: none; z-index: 5; }
+
+.fb-pop {
+  position: absolute; z-index: 30;
+  display: flex; gap: 6px; padding: 6px;
+  border-radius: 12px;
+  background: var(--fb-surface);
+  box-shadow: 0 10px 26px rgba(10, 20, 40, 0.18), 0 0 0 1px var(--fb-line);
+  transform: translate(-50%, -100%);
+  white-space: nowrap;
+}
+.fb-pop button {
+  border: 0; border-radius: 8px; padding: 6px 10px;
+  background: var(--fb-chip); color: var(--fb-ink);
+  font: inherit; font-size: 1.05rem; font-weight: 600; cursor: pointer;
+}
+.fb-pop button:hover, .fb-pop button:focus-visible { background: color-mix(in srgb, var(--fb-accent) 18%, var(--fb-chip)); }
+
+.fb-shake { animation: fb-shake 0.32s ease-out; }
+@keyframes fb-shake { 20% { translate: -7px 0; } 45% { translate: 6px 0; } 70% { translate: -3px 0; } 100% { translate: 0 0; } }
+
+.fb-one-alone { font-size: 1.15em; font-weight: 700; color: var(--fb-muted); }
+
+@media (prefers-reduced-motion: reduce) {
+  .fb-tok.fb-x::after { animation: none; transform: rotate(-18deg); }
+  .fb-shake { animation: none; }
+}
+
+/* factors fed in from the host page, and fractions that are still being built */
+.fb-ghost { font-family: var(--fb-mono, ui-monospace, Menlo, Consolas, monospace); }
+.fb.fb-armed { cursor: copy; }
+.fb-frac.fb-draft .fb-bar { background: repeating-linear-gradient(90deg, var(--fb-muted) 0 8px, transparent 8px 13px); }
+.fb-frac.fb-frac-bad { box-shadow: inset 0 0 0 2px var(--fb-bad); }
+.fb-drafttag {
+  position: absolute; left: 50%; bottom: -14px; transform: translateX(-50%);
+  border-radius: 999px; padding: 1px 10px; white-space: nowrap;
+  background: var(--fb-surface); color: var(--fb-muted); box-shadow: 0 0 0 1px var(--fb-line);
+  font-size: 0.8rem; font-weight: 700;
+}
+
+/* a blank number, and typing into a number in place */
+.fb-tok.fb-b { color: var(--fb-muted); background: transparent; outline: 2px dashed var(--fb-muted); outline-offset: -2px; }
+.fb-tok.fb-editing { outline: none; background: var(--fb-chip); color: var(--fb-ink); box-shadow: 0 0 0 2px var(--fb-accent); cursor: text; }
+.fb-edit {
+  display: inline-block; margin: 0; padding: 0; border: 0; outline: none; background: transparent;
+  font: inherit; color: inherit; text-align: center; caret-color: var(--fb-accent);
+  min-width: 1.3ch;
+  -webkit-user-select: text; user-select: text; touch-action: auto;
+}
+.fb-lifted { opacity: 0.35; }
+.fb-ghost.fb-b { outline: 2px dashed var(--fb-muted); outline-offset: -2px; background: var(--fb-surface); }
+
+/* bare factors: nothing underneath until something is dragged there.
+   A group with no bottom takes no extra room, so it sits centred on its neighbours' fraction bars like
+   any number written next to a fraction; while dragging, a drop spot floats underneath without moving anything. */
+.fb.fb-bare { padding-bottom: 3em; }
+.fb-frac.fb-noden > .fb-barhit, .fb-frac.fb-noden > .fb-den { display: none; }
+.fb.fb-on-drag .fb-frac.fb-noden:not(.fb-locked) > .fb-barhit {
+  display: block; position: absolute; left: 10px; right: 10px; top: calc(100% - 6px);
+}
+.fb.fb-on-drag .fb-frac.fb-noden:not(.fb-locked) > .fb-barhit .fb-bar { background: var(--fb-line); }
+.fb.fb-on-drag .fb-frac.fb-noden:not(.fb-locked) > .fb-den {
+  display: flex; position: absolute; left: 50%; top: calc(100% + 14px); transform: translateX(-50%);
+  outline: 2px dashed var(--fb-line); outline-offset: -2px;
+}
+.fb-frac.fb-noden > .fb-drafttag { bottom: auto; top: -14px; }
+
+/* the trash can, tucked into the corner */
+.fb-trash {
+  position: absolute; right: 10px; bottom: 10px; z-index: 4;
+  width: 42px; height: 42px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--fb-muted); opacity: 0.45;
+  transition: opacity 0.2s, transform 0.2s, color 0.2s, background-color 0.2s;
+}
+.fb.fb-on-drag .fb-trash { opacity: 0.85; }
+.fb-trash.fb-hot { opacity: 1; color: var(--fb-bad); transform: scale(1.18); background: color-mix(in srgb, var(--fb-bad) 12%, transparent); }

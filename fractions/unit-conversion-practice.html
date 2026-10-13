@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Unit Conversion Practice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=JetBrains+Mono:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="fraction-board.css">
+<style>
+/* Layout: one calm column; the problem, the fraction board, where the units stand, then a tray of conversion factors (each a fraction equal to 1) */
+:root {
+  --bg: #EEF2F7;
+  --surface: #FFFFFF;
+  --ink: #13203A;
+  --muted: #5F6F8A;
+  --line: #D3DBE7;
+  --chip: #EAEFF6;
+  --accent: #2648C9;
+  --on-accent: #FFFFFF;
+  --amber: #F2B630;
+  --amber-text: #B07800;
+  --on-amber: #2E2200;
+  --good: #17804F;
+  --bad: #C2413A;
+  --f-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --f-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B1120; --surface: #131C2E; --ink: #E4EAF4; --muted: #95A4BF; --line: #26344F; --chip: #1C2840;
+    --accent: #8AA8FF; --on-accent: #0B1120; --amber: #F2B630; --amber-text: #F2B630; --on-amber: #2E2200;
+    --good: #4CC38A; --bad: #FF8F85;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B1120; --surface: #131C2E; --ink: #E4EAF4; --muted: #95A4BF; --line: #26344F; --chip: #1C2840;
+  --accent: #8AA8FF; --on-accent: #0B1120; --amber: #F2B630; --amber-text: #F2B630; --on-amber: #2E2200;
+  --good: #4CC38A; --bad: #FF8F85;
+  color-scheme: dark;
+}
+:root {
+  --fb-ink: var(--ink); --fb-muted: var(--muted); --fb-chip: var(--chip); --fb-surface: var(--surface); --fb-line: var(--line);
+  --fb-accent: var(--accent); --fb-amber: var(--amber); --fb-amber-text: var(--amber-text); --fb-on-amber: var(--on-amber);
+  --fb-bad: var(--bad); --fb-mono: var(--f-mono);
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 16px; line-height: 1.5; }
+.page { max-width: 62rem; margin: 0 auto; padding-inline: 16px; padding-block: 24px 40px; display: flex; flex-direction: column; gap: 18px; }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+sup { font-size: 0.58em; line-height: 0; position: relative; top: -0.8em; vertical-align: 0; margin-left: 0.04em; }
+
+/* the problem */
+.prob { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; }
+.ask { text-align: center; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.src { font-family: var(--f-mono); font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.src .done { color: var(--good); margin-left: 6px; }
+.ask h1 { margin: 0; font-family: var(--f-display); font-weight: 700; font-size: clamp(1.35rem, 4vw, 2rem); line-height: 1.3; text-wrap: balance; }
+.q { font-family: var(--f-mono); font-weight: 700; white-space: nowrap; }
+.q i, .uf i { font-style: italic; color: var(--accent); font-weight: 600; }
+.uf { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; line-height: 1.15; font-size: 0.85em; }
+.uf > span { padding: 0 3px; }
+.uf > span:first-child { border-bottom: 2px solid currentColor; }
+.nav {
+  width: 44px; height: 44px; border-radius: 50%; border: 0; background: transparent;
+  box-shadow: inset 0 0 0 1px var(--line); font-size: 1.4rem; line-height: 1; color: var(--ink);
+}
+.nav:hover { box-shadow: inset 0 0 0 1.5px var(--accent); color: var(--accent); }
+
+.card { background: var(--surface); border-radius: 18px; box-shadow: 0 0 0 1px var(--line), 0 10px 30px rgba(10,20,40,0.06); overflow-x: auto; }
+
+/* where the units stand */
+.status { display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; min-height: 56px; }
+.units { display: inline-flex; align-items: center; gap: 10px; font-family: var(--f-mono); font-size: 1.05rem; color: var(--muted); }
+.units .now, .units .want { font-weight: 700; color: var(--ink); }
+.units .arrow { color: var(--muted); }
+.units.match .now { color: var(--good); }
+.tick { color: var(--good); font-weight: 700; }
+.icon {
+  width: 42px; height: 42px; border-radius: 50%; border: 0; background: transparent;
+  box-shadow: inset 0 0 0 1px var(--line); font-size: 1.15rem; line-height: 1;
+}
+.icon:hover:not(:disabled) { box-shadow: inset 0 0 0 1.5px var(--accent); color: var(--accent); }
+.icon:disabled { opacity: 0.3; cursor: default; }
+.calc {
+  height: 44px; padding: 0 20px; border-radius: 999px; border: 0;
+  background: var(--accent); color: var(--on-accent); font-weight: 700;
+}
+.calc[hidden] { display: none; }
+
+.result {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  font-family: var(--f-mono);
+}
+.result[hidden] { display: none; }
+.result .ans { font-size: clamp(1.5rem, 5vw, 2.3rem); font-weight: 700; background: color-mix(in srgb, var(--amber) 30%, transparent); padding: 2px 14px; border-radius: 10px; }
+.result .book { font-size: 0.85rem; color: var(--muted); }
+.result .next { margin-top: 6px; border: 0; background: transparent; color: var(--accent); font-weight: 700; padding: 6px 10px; border-radius: 8px; }
+
+/* the tray of conversion factors */
+.tray { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.trayhead { text-align: center; font-size: 0.85rem; color: var(--muted); margin: 0; text-wrap: balance; }
+.tray { align-items: center; }
+.unitpieces { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.traysep { width: 1px; height: 30px; background: var(--line); }
+.piece {
+  display: inline-block; padding: 6px 12px; border-radius: 10px;
+  background: var(--chip); color: var(--ink); box-shadow: 0 0 0 1px var(--line);
+  font-family: var(--f-mono); font-weight: 700; font-size: 1.15rem; line-height: 1.2;
+  cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none;
+}
+.piece.u { color: var(--accent); font-style: italic; font-weight: 600; }
+.piece.num { background: transparent; color: var(--muted); box-shadow: inset 0 0 0 2px var(--line); }
+.piece:hover { box-shadow: 0 0 0 1.5px var(--accent); }
+.piece.armed { box-shadow: 0 0 0 3px var(--accent); }
+.piece.off { opacity: 0.35; cursor: default; }
+
+.hint { text-align: center; min-height: 1.4em; margin: 0; font-size: 0.9rem; color: var(--ink); transition: opacity 0.3s; }
+.hint:empty { opacity: 0; }
+@media (max-width: 480px) {
+  .prob { gap: 6px; }
+  .nav { width: 38px; height: 38px; }
+}
+</style>
+
+<div class="page">
+  <header class="prob">
+    <button type="button" class="nav" id="prev" aria-label="Previous problem">‹</button>
+    <div class="ask">
+      <span class="src" id="src"></span>
+      <h1 id="ask"></h1>
+    </div>
+    <button type="button" class="nav" id="next" aria-label="Next problem">›</button>
+  </header>
+
+  <div class="card"><div id="board" aria-label="Work"></div></div>
+
+  <div class="status">
+    <span class="units" id="units" aria-live="polite"></span>
+    <button type="button" class="calc" id="calc" hidden>Calculate</button>
+    <button type="button" class="icon" id="undo" title="Undo" aria-label="Undo">↶</button>
+    <button type="button" class="icon" id="reset" title="Start over" aria-label="Start over">↺</button>
+  </div>
+
+  <div class="result" id="result" hidden aria-live="polite">
+    <span class="ans" id="ans"></span>
+    <span class="book" id="book"></span>
+    <button type="button" class="next" id="nextAfter">Next problem ›</button>
+  </div>
+
+  <p class="trayhead">Drag a # and a unit next to the amount, then drag more underneath to make a fraction. Tap a # to type; tap a bar to flip.</p>
+  <div class="tray" id="tray">
+    <span class="piece num" data-spec="#" role="button" tabindex="0" aria-label="A number. Place it, then type into it.">#</span>
+    <span class="traysep" aria-hidden="true"></span>
+    <div class="unitpieces" id="unitPieces"></div>
+  </div>
+  <p class="hint" id="hint" role="status"></p>
+</div>
+
+<script src="fraction-board.js"></script>
+<script>
+(function () {
+  // ---------- units: size in SI base units, and what they measure ----------
+  const UNITS = {
+    m: ['L', 1], km: ['L', 1e3], cm: ['L', 1e-2], mm: ['L', 1e-3], 'µm': ['L', 1e-6],
+    in: ['L', 0.0254], ft: ['L', 0.3048], yd: ['L', 0.9144], mi: ['L', 1609.344],
+    s: ['T', 1], min: ['T', 60], hr: ['T', 3600], dy: ['T', 86400], yr: ['T', 31536000],
+    g: ['M', 1], kg: ['M', 1e3], mg: ['M', 1e-3], 'µg': ['M', 1e-6],
+    L: ['L3', 1e-3], mL: ['L3', 1e-6], 'µL': ['L3', 1e-9], gal: ['L3', 0.003785411784],
+    W: ['P', 1], kW: ['P', 1e3], MW: ['P', 1e6], J: ['E', 1], kJ: ['E', 1e3]
+  };
+  // what a unit token measures, as a family name for picking factors
+  function family(u, k) {
+    const d = UNITS[u] && UNITS[u][0];
+    if (!d) return null;
+    if (d === 'L3' || (d === 'L' && k === 3)) return 'volume';
+    return { L: 'length', T: 'time', M: 'mass', P: 'power', E: 'energy' }[d];
+  }
+
+  // Chapter 8's own problems, with the answers printed in the book
+  const PROBLEMS = [
+    { src: 'Example 8.1', q: '560 mi', to: 'm', book: '901,040 m' },
+    { src: 'Example 8.3', q: '225 m / s', to: 'km / s', book: '0.225 km/s' },
+    { src: 'Example 8.4', q: '55 min', to: 'yr', book: '0.000105 yr' },
+    { src: 'Example 8.5', q: '3.17 gal / min', to: 'L / s', book: '0.20 L/s' },
+    { src: 'Learning Check 8.4 · 1', q: '12.5 in', to: 'cm', book: '31.75 cm' },
+    { src: 'Learning Check 8.4 · 2', q: '358 g', to: 'kg', book: '0.358 kg' },
+    { src: 'Learning Check 8.4 · 3', q: '4500 s', to: 'hr', book: '1.25 hr' },
+    { src: 'Learning Check 8.4 · 4', q: '7700 gal / min', to: 'L / s', book: '485.7 L/s' },
+    { src: 'Learning Check 8.4 · 5', q: '10.6 µm', to: 'm', book: '0.0000106 m' },
+    { src: 'Learning Check 8.4 · 6', q: '61.77 m', to: 'mm', book: '61,770 mm' },
+    { src: 'Learning Check 8.4 · 7', q: '73 m^3', to: 'L', book: '73,000 L' },
+    { src: 'Learning Check 8.4 · 8', q: '5.5 kg / min', to: 'g / s', book: '91.7 g/s' },
+    { src: 'Learning Check 8.4 · 9', q: '9.950 yr', to: 's', book: '313,783,200 s' },
+    { src: 'Learning Check 8.4 · 10', q: '0.97450 m', to: 'µm', book: '974,500 µm' },
+    { src: 'Learning Check 8.4 · 11', q: '0.5677 kg', to: 'mg', book: '567,700 mg' },
+    { src: 'Learning Check 8.4 · 12', q: '205 MW', to: 'W', book: '205,000,000 W' },
+    { src: 'Exercise 5a', q: '35 mi / hr', to: 'm / s', book: '15.64 m/s' },
+    { src: 'Exercise 5b', q: '2300 mL', to: 'cm^3', book: '2,300 cm³' },
+    { src: 'Exercise 5c', q: '345 mg', to: 'kg', book: '0.000345 kg' },
+    { src: 'Exercise 5d', q: '370000 W', to: 'MW', book: '0.37 MW' },
+    { src: 'Exercise 5e', q: '9.11 L', to: 'µL', book: '9,110,000 µL' },
+    { src: 'Exercise 5f', q: '14.4 cm / s', to: 'm / s', book: '0.144 m/s' },
+    { src: 'Exercise 5g', q: '350 L', to: 'cm^3', book: '350,000 cm³' },
+    { src: 'Exercise 5h', q: '62 g / hr', to: 'mg / s', book: '17.22 mg/s' },
+    { src: 'Exercise 5i', q: '67.2 L', to: 'm^3', book: '0.0672 m³' },
+    { src: 'Exercise 5j', q: '0.385 L / s', to: 'gal / min', book: '6.10 gpm' },
+    { src: 'Exercise 5k', q: '745 mm', to: 'cm', book: '74.5 cm' },
+    { src: 'Exercise 5l', q: '57900 cm^3', to: 'm^3', book: '0.0579 m³' }
+  ];
+
+  const pf = FractionBoard.parseFactor, fh = FractionBoard.html;
+  const unitHTML = f => `<i>${fh(f)}</i>`;
+  // "top / bottom" → the units on each side, as "name^k" keys
+  function sides(spec) {
+    const [t, b = ''] = spec.split('/');
+    const list = s => s.split(/\s+/).filter(Boolean).map(pf).filter(f => f && f.t === 'u');
+    return { top: list(t), bot: list(b) };
+  }
+  const key = f => `${f.u}^${f.k}`;
+  function unitsFracHTML(top, bot) {
+    const t = top.length ? top.map(unitHTML).join('·') : '1';
+    if (!bot.length) return t;
+    return `<span class="uf"><span>${t}</span><span>${bot.map(unitHTML).join('·')}</span></span>`;
+  }
+  function quantityHTML(spec) {
+    const [t, b = ''] = spec.split('/');
+    const parts = t.split(/\s+/).filter(Boolean).map(pf);
+    const num = parts.filter(f => f.t !== 'u').map(fh).join(' ');
+    const top = parts.filter(f => f.t === 'u');
+    const bot = b.split(/\s+/).filter(Boolean).map(pf);
+    return `<span class="q">${num} ${unitsFracHTML(top, bot)}</span>`;
+  }
+
+  // a fraction is 1 when its top and bottom are the same amount (within rounding, e.g. 1,609 m vs 1 mi)
+  function isOne(fr) {
+    const all = [...fr.num, ...fr.den];
+    if (all.some(f => f.t === 'b')) return false;          // a blank still needs its number
+    if (!all.some(f => f.t === 'u')) return null;
+    let v = 1;
+    const dims = {};
+    const val = f => f.t === 'n' ? Number(f.d) / 10 ** f.s : f.t === 'p' ? 10 ** f.e : 1;
+    for (const [list, sgn] of [[fr.num, 1], [fr.den, -1]]) {
+      for (const f of list) {
+        if (f.t === 'u') {
+          const info = UNITS[f.u];
+          if (!info) return null;
+          let [d, size] = info;
+          let k = f.k;
+          if (d === 'L3') { d = 'L'; k *= 3; }
+          dims[d] = (dims[d] || 0) + sgn * k;
+          v *= Math.pow(info[1], sgn * f.k);
+        } else {
+          v *= Math.pow(val(f), sgn);
+        }
+      }
+    }
+    if (Object.values(dims).some(x => x !== 0)) return false;
+    return Math.abs(v - 1) < 2e-3;
+  }
+
+  // ---------- board ----------
+  const hintEl = document.getElementById('hint');
+  let hintTimer = null;
+  function hint(t, ms) {
+    hintEl.textContent = t;
+    clearTimeout(hintTimer);
+    hintTimer = setTimeout(() => { hintEl.textContent = ''; }, ms || 2600);
+  }
+  // The amount being converted is fixed; everything else on the board is the student's own work.
+  // Nothing checks whether a fraction they build is a true conversion factor: the answer at the end tells them.
+  let givenId = null;
+  const isGiven = fr => {
+    if (givenId === null) givenId = fr.id;   // the first fraction drawn after loading is the amount being converted
+    return fr.id === givenId;
+  };
+  // A fraction the student builds can't be numbers alone (like # / #): it needs at least one unit somewhere.
+  function needsUnit(fr) {
+    if (isGiven(fr)) return false;
+    const all = [...fr.num, ...fr.den];
+    return all.some(f => f.t === 'n' || f.t === 'b') && !all.some(f => f.t === 'u');
+  }
+  const board = FractionBoard(document.getElementById('board'), {
+    isOne: () => false,
+    bareFactors: true,
+    trash: true,
+    removeHint: 'The amount you\'re converting stays.',
+    fracClass: fr => needsUnit(fr) ? 'fb-draft' : '',
+    fracTag: fr => needsUnit(fr) ? 'needs a unit' : '',
+    split: false,
+    crossMove: false,
+    crossMoveHint: 'Keep each factor in its own fraction.',
+    locked: isGiven,
+    lockedHint: 'Leave the amount as it is. Start a new fraction to its right.',
+    canRemove: (f, fr) => !isGiven(fr),
+    canEdit: (f, fr) => !isGiven(fr),
+    canFlip: fr => !isGiven(fr),
+    onHint: t => hint(t),
+    onDisarm: () => document.querySelectorAll('.piece.armed').forEach(p => p.classList.remove('armed')),
+    onChange: update
+  });
+
+  let idx = 0, target = null, solved = new Set(), shown = false;
+  try { JSON.parse(localStorage.getItem('uc-solved') || '[]').forEach(i => solved.add(i)); } catch (_) {}
+
+  function boardUnits() {
+    const st = board.state;
+    const top = [], bot = [];
+    st.fracs.forEach(fr => { fr.num.forEach(f => { if (f.t === 'u') top.push(f); }); fr.den.forEach(f => { if (f.t === 'u') bot.push(f); }); });
+    return { top, bot };
+  }
+  const sameKeys = (a, b) => { const x = a.map(key).sort(), y = b.map(key).sort(); return x.length === y.length && x.every((v, i) => v === y[i]); };
+  function update() {
+    if (!target) return;
+    const now = boardUnits();
+    const fr = board.state.fracs;
+    const blanks = fr.some(f => [...f.num, ...f.den].some(g => g.t === 'b'));
+    const unfinished = fr.some(needsUnit);
+    const match = !blanks && !unfinished && sameKeys(now.top, target.top) && sameKeys(now.bot, target.bot);
+    const u = document.getElementById('units');
+    u.classList.toggle('match', match);
+    u.innerHTML = `<span class="now">${unitsFracHTML(now.top, now.bot)}</span><span class="arrow">→</span><span class="want">${unitsFracHTML(target.top, target.bot)}</span>${match ? '<span class="tick">✓</span>' : ''}`;
+    document.getElementById('calc').hidden = !match || shown;
+    if (!match && shown) { shown = false; document.getElementById('result').hidden = true; }
+    document.getElementById('undo').disabled = !board.canUndo();
+  }
+
+  // ---------- the answer ----------
+  const commas = s => { const [i, f] = s.split('.'); return i.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + (f ? '.' + f : ''); };
+  function decimal(n, d) {
+    // exact when it ends (and isn't too long); otherwise four significant figures
+    let k = 0, dd = d;
+    while (dd % 2n === 0n) { dd /= 2n; k++; }
+    let j = 0; while (dd % 5n === 0n) { dd /= 5n; j++; }
+    if (dd === 1n) {
+      const places = Math.max(k, j);
+      const s = (n * 10n ** BigInt(places) / d).toString().padStart(places + 1, '0');
+      const out = places ? s.slice(0, s.length - places) + '.' + s.slice(s.length - places) : s;
+      const sig = out.replace('.', '').replace(/^0+/, '').length;
+      const trimmed = out.includes('.') ? out.replace(/0+$/, '').replace(/\.$/, '') : out;
+      if (sig <= 10) return commas(trimmed);
+    }
+    const x = Number(n) / Number(d);
+    const mag = Math.floor(Math.log10(Math.abs(x)));
+    if (mag >= 3) return commas(String(Math.round(x / 10 ** (mag - 3)) * 10 ** (mag - 3)));
+    return commas(x.toFixed(Math.max(0, 3 - mag)));
+  }
+  document.getElementById('calc').addEventListener('click', () => {
+    const v = board.value();
+    document.getElementById('ans').innerHTML = `${decimal(v.n, v.d)} ${unitsFracHTML(target.top, target.bot)}`;
+    document.getElementById('book').textContent = 'Book: ' + PROBLEMS[idx].book;
+    document.getElementById('result').hidden = false;
+    document.getElementById('calc').hidden = true;
+    shown = true;
+    solved.add(idx);
+    try { localStorage.setItem('uc-solved', JSON.stringify([...solved])); } catch (_) {}
+    showHeader();
+  });
+
+  // ---------- tray of pieces ----------
+  const PIECES = {
+    length: ['mi', 'yd', 'ft', 'in', 'km', 'm', 'cm', 'mm', 'µm'],
+    time: ['yr', 'dy', 'hr', 'min', 's'],
+    mass: ['kg', 'g', 'mg', 'µg'],
+    volume: ['gal', 'm^3', 'L', 'mL', 'µL', 'cm^3'],
+    power: ['MW', 'kW', 'W'],
+    energy: ['kJ', 'J']
+  };
+  const unitPieces = document.getElementById('unitPieces');
+  function fillTray(p) {
+    const fams = new Set();
+    [p.q, p.to].forEach(spec => { const s = sides(spec); [...s.top, ...s.bot].forEach(f => fams.add(family(f.u, f.k))); });
+    unitPieces.innerHTML = '';
+    Object.keys(PIECES).filter(f => fams.has(f)).forEach(f => PIECES[f].forEach(spec => {
+      const el = document.createElement('span');
+      el.className = 'piece u'; el.dataset.spec = spec;
+      el.innerHTML = fh(pf(spec));
+      el.tabIndex = 0; el.setAttribute('role', 'button'); el.setAttribute('aria-label', `Unit ${spec.replace('^', ' to the ')}`);
+      wire(el);
+      unitPieces.appendChild(el);
+    }));
+  }
+  // press a piece and drag it onto the board; a quick tap picks it up for a tap on the board instead
+  function wire(el) {
+    el.addEventListener('pointerdown', e => {
+      if (e.button !== 0 && e.pointerType === 'mouse') return;
+      e.preventDefault();
+      board.dragExternal(el.dataset.spec, e, el, { onTap: () => toggleArm(el) });
+    });
+    el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleArm(el); } });
+  }
+  function toggleArm(el) {
+    const was = el.classList.contains('armed');
+    board.disarm();
+    if (was) return;
+    el.classList.add('armed');
+    board.arm(el.dataset.spec, el);
+  }
+  document.querySelectorAll('.tray > .piece').forEach(wire);
+  // ---------- problems ----------
+  function showHeader() {
+    const p = PROBLEMS[idx];
+    document.getElementById('src').innerHTML = `${p.src}${solved.has(idx) ? '<span class="done">✓</span>' : ''}`;
+    document.getElementById('ask').innerHTML = `${quantityHTML(p.q)} <span style="font-weight:500;color:var(--muted)">→</span> ${unitsFracHTML(target.top, target.bot)}`;
+  }
+  function load(i) {
+    idx = (i + PROBLEMS.length) % PROBLEMS.length;
+    const p = PROBLEMS[idx];
+    target = sides(p.to);
+    shown = false;
+    document.getElementById('result').hidden = true;
+    showHeader();
+    fillTray(p);
+    givenId = null;
+    board.load([p.q]);
+    update();
+    try { localStorage.setItem('uc-problem', String(idx)); } catch (_) {}
+  }
+  document.getElementById('prev').addEventListener('click', () => load(idx - 1));
+  document.getElementById('next').addEventListener('click', () => load(idx + 1));
+  document.getElementById('nextAfter').addEventListener('click', () => load(idx + 1));
+  document.getElementById('undo').addEventListener('click', () => board.undo());
+  document.getElementById('reset').addEventListener('click', () => board.reset());
+  document.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); board.undo(); }
+  });
+
+  let start = 0;
+  try { const s = parseInt(localStorage.getItem('uc-problem'), 10); if (s >= 0 && s < PROBLEMS.length) start = s; } catch (_) {}
+  load(start);
+})();
+</script>

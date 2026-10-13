@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>×10 Decimal Counter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: one screen; the split-flap counter centered, fading into endless leading zeros on the left, with the controls beneath */
+:root {
+  --bg: #EEF2F7;
+  --ink: #13203A;
+  --muted: #566682;
+  --line: #CDD6E3;
+  --accent: #2648C9;
+  --on-accent: #FFFFFF;
+  --tape: #F2B630;
+  --tape-ink: #2E2200;
+  --tile: #1B2436;
+  --tile-top: #222D42;
+  --tile-ink: #F4F1E8;
+  --hinge: #0B1120;
+  --f-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --tw: clamp(30px, 7.4vw, 66px);
+  --th: calc(var(--tw) * 1.42);
+  --gap: clamp(4px, 0.9vw, 8px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B1120; --ink: #E4EAF4; --muted: #95A4BF; --line: #26344F;
+    --accent: #8AA8FF; --on-accent: #0B1120; --tape: #F2B630; --tape-ink: #2E2200;
+    --tile: #1E2A40; --tile-top: #26344D; --tile-ink: #F4F1E8; --hinge: #060A14;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B1120; --ink: #E4EAF4; --muted: #95A4BF; --line: #26344F;
+  --accent: #8AA8FF; --on-accent: #0B1120; --tape: #F2B630; --tape-ink: #2E2200;
+  --tile: #1E2A40; --tile-top: #26344D; --tile-ink: #F4F1E8; --hinge: #060A14;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-mono); }
+.stage {
+  min-height: 100%;
+  display: flex; flex-direction: column; justify-content: center; gap: 24px;
+  padding-inline: 16px; padding-block: 24px;
+  max-width: 64rem; margin: 0 auto;
+}
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+.counterwrap { position: relative; }
+.counter {
+  position: relative;
+  height: calc(var(--th) + 2.4rem);
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 30%, #000 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 30%, #000 100%);
+}
+.counter.dec {
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 20%, #000 80%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 20%, #000 80%, transparent 100%);
+}
+.point { width: calc(var(--tw) * 0.36); height: var(--th); display: flex; align-items: flex-end; justify-content: center; padding-bottom: calc(var(--th) * 0.12); }
+.point i { display: block; width: calc(var(--tw) * 0.24); height: calc(var(--tw) * 0.24); border-radius: 50%; background: var(--tape); transition: transform 0.2s, box-shadow 0.2s; }
+.counterwrap.editing .col.dotted .point i { transform: scale(1.3); box-shadow: 0 0 0 calc(var(--tw) * 0.08) color-mix(in srgb, var(--tape) 35%, transparent); }
+.row {
+  position: absolute; top: 2rem; left: 0;
+  display: flex; gap: var(--gap); align-items: flex-start;
+}
+.col { position: relative; }
+.wheel {
+  position: relative;
+  width: var(--tw); height: var(--th);
+  border-radius: 7px;
+  background: var(--tile); color: var(--tile-ink);
+  font-weight: 700; font-size: calc(var(--tw) * 1.02);
+  perspective: 500px;
+  box-shadow: 0 2px 0 rgba(0,0,0,0.25), 0 6px 14px rgba(10,20,40,0.18);
+  transition: box-shadow 0.2s;
+}
+.wheel::after {
+  content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 2px;
+  background: var(--hinge); transform: translateY(-1px); z-index: 6;
+}
+.half { position: absolute; left: 0; right: 0; height: 50%; overflow: hidden; background: var(--tile); }
+.half.top { top: 0; border-radius: 7px 7px 0 0; background: var(--tile-top); }
+.half.bottom { bottom: 0; border-radius: 0 0 7px 7px; }
+.half span { position: absolute; left: 0; right: 0; height: var(--th); line-height: var(--th); text-align: center; }
+.half.top span { top: 0; }
+.half.bottom span { bottom: 0; }
+.half.flip { z-index: 4; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.half.flip.top { transform-origin: 50% 100%; }
+.half.flip.bottom { transform-origin: 50% 0%; }
+.wheel.glow { box-shadow: 0 0 0 3px var(--tape), 0 6px 14px rgba(10,20,40,0.18); }
+.carry {
+  position: absolute; top: -1.75rem; left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.78rem; font-weight: 700;
+  background: var(--tape); color: var(--tape-ink);
+  padding: 1px 7px; border-radius: 4px; white-space: nowrap;
+  opacity: 0; pointer-events: none;
+}
+
+/* Typing a number: an invisible input sits over the tiles */
+.edit {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  opacity: 0; border: 0; padding: 0; margin: 0;
+  font-size: 16px; color: transparent; caret-color: transparent; background: transparent;
+  cursor: text;
+}
+.caret {
+  position: absolute; top: 0; right: calc(var(--gap) * -1 - 3px); width: 3px; height: var(--th);
+  border-radius: 2px; background: var(--tape); opacity: 0;
+}
+.counterwrap.editing .caretat .caret { opacity: 1; animation: blink 1s steps(1) infinite; }
+.counterwrap.editing .wheel.typed { box-shadow: 0 0 0 2px var(--tape), 0 6px 14px rgba(10,20,40,0.18); }
+.counterwrap:not(.editing):hover .wheel { box-shadow: 0 0 0 1px var(--line), 0 6px 14px rgba(10,20,40,0.18); }
+.counterwrap:focus-within { outline: none; }
+@keyframes blink { 50% { opacity: 0; } }
+
+.buttons { display: flex; justify-content: center; gap: 16px; }
+.btn {
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; touch-action: manipulation;
+  min-width: 76px; height: 64px; padding: 0 14px; border-radius: 12px;
+  border: 0; background: var(--accent); color: var(--on-accent);
+  font-size: 1.7rem; font-weight: 700; line-height: 1;
+}
+.btn:hover { filter: brightness(1.08); }
+.btn:active { transform: translateY(1px); }
+.btn:disabled { opacity: 0.35; cursor: not-allowed; filter: none; transform: none; }
+.btn.minus { background: transparent; color: var(--accent); box-shadow: inset 0 0 0 2px var(--accent); }
+.reset {
+  align-self: center; height: 44px; padding: 0 16px; border-radius: 10px;
+  border: 0; background: transparent; color: var(--ink); opacity: 0.7;
+  box-shadow: inset 0 0 0 1px var(--line); font-size: 0.95rem;
+}
+.reset:hover { opacity: 1; box-shadow: inset 0 0 0 1px var(--accent); }
+.hint.nope { color: var(--ink); }
+.hint { text-align: center; font-size: 0.85rem; color: var(--muted); min-height: 1.3em; }
+@media (prefers-reduced-motion: reduce) {
+  .counterwrap.editing .caret { animation: none; }
+}
+</style>
+
+<div class="stage">
+  <div class="counterwrap" id="wrap">
+    <div class="counter dec" id="counter" aria-hidden="true">
+      <div class="row" id="row"></div>
+    </div>
+    <input class="edit" id="edit" type="text" inputmode="decimal" maxlength="13" autocomplete="off" spellcheck="false" aria-label="Counter value. Type a new number.">
+  </div>
+  <div class="buttons">
+    <button type="button" class="btn" id="mul10" aria-label="Multiply by 10">×10</button>
+    <button type="button" class="reset" id="reset">Reset</button>
+  </div>
+  <p class="hint" id="hint">Tap the number to type your own.</p>
+</div>
+<script>
+(function () {
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const HI = 7, DEC = 4;                 // places 10^7 … 10^-DEC
+  const SCALE = 10 ** DEC;                   // the value is stored as a whole number of 10^-DEC units
+  const LIMIT = 10 ** (HI + 1 + DEC);
+  const BASE_FLIP = 340;
+  let FLIP = BASE_FLIP;
+  const START = 0;
+  let value = START;
+  let gen = 0;                               // bumps whenever the value is replaced, so stale flips are skipped
+  const queue = [];
+  let busy = false;
+
+  const wrap = document.getElementById('wrap');
+  const row = document.getElementById('row');
+  const counter = document.getElementById('counter');
+  const edit = document.getElementById('edit');
+  const hint = document.getElementById('hint');
+  const wheels = {};
+  const digitAt = (u, e) => Math.floor(u / 10 ** (e + DEC)) % 10;
+  const fmt = u => {
+    const frac = DEC ? String(u % SCALE).padStart(DEC, '0').replace(/0+$/, '') : '';
+    return Math.floor(u / SCALE) + (frac ? '.' + frac : '');
+  };
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+
+  function makeCol(e) {
+    const col = document.createElement('div');
+    col.className = 'col';
+    const d = digitAt(value, e);
+    col.innerHTML = `<span class="carry"></span>
+      <div class="wheel"><span class="half top"><span>${d}</span></span><span class="half bottom"><span>${d}</span></span></div>`
+      + '<span class="caret"></span>';
+    wheels[e] = { col, el: col.querySelector('.wheel'), shown: d, anims: [] };
+    return col;
+  }
+  for (let e = HI; e >= 0; e--) row.appendChild(makeCol(e));
+  let point = null;
+  if (DEC) {
+    point = document.createElement('div');
+    point.className = 'col';
+    point.innerHTML = '<div class="point"><i></i></div><span class="caret"></span>';
+    row.appendChild(point);
+    for (let e = -1; e >= -DEC; e--) row.appendChild(makeCol(e));
+  }
+
+  // keep the ones digit near the right; higher places fade off to the left
+  function position() {
+    if (point) {
+      const p = point.offsetLeft + point.offsetWidth / 2;
+      row.style.transform = `translateX(${Math.round(counter.clientWidth * 0.58 - p)}px)`;
+      return;
+    }
+    const ones = wheels[0].col;
+    const right = Math.min(counter.clientWidth - 10, counter.clientWidth / 2 + ones.offsetWidth * 3);
+    row.style.transform = `translateX(${Math.round(right - (ones.offsetLeft + ones.offsetWidth))}px)`;
+  }
+  window.addEventListener('resize', position);
+
+  function flip(w, to) {
+    w.anims.forEach(a => { try { a.finish(); } catch (_) {} });
+    w.anims = [];
+    const from = w.shown;
+    if (from === to) return Promise.resolve();
+    const top = w.el.querySelector('.half.top:not(.flip) span');
+    const bottom = w.el.querySelector('.half.bottom:not(.flip) span');
+    w.shown = to;
+    if (reduceMotion) { top.textContent = to; bottom.textContent = to; return Promise.resolve(); }
+    top.textContent = to;
+    bottom.textContent = from;
+    const ft = document.createElement('span');
+    ft.className = 'half top flip';
+    ft.innerHTML = `<span>${from}</span>`;
+    const fb = document.createElement('span');
+    fb.className = 'half bottom flip';
+    fb.innerHTML = `<span>${to}</span>`;
+    fb.style.transform = 'rotateX(90deg)';
+    w.el.appendChild(ft); w.el.appendChild(fb);
+    const a1 = ft.animate([{ transform: 'rotateX(0deg)', filter: 'brightness(1)' }, { transform: 'rotateX(-90deg)', filter: 'brightness(0.7)' }], { duration: FLIP / 2, easing: 'ease-in', fill: 'forwards' });
+    const a2 = fb.animate([{ transform: 'rotateX(90deg)', filter: 'brightness(1.25)' }, { transform: 'rotateX(0deg)', filter: 'brightness(1)' }], { duration: FLIP / 2, delay: FLIP / 2, easing: 'ease-out', fill: 'forwards' });
+    w.anims = [a1, a2];
+    return a2.finished.catch(() => {}).then(() => {
+      bottom.textContent = to;
+      ft.remove(); fb.remove();
+      w.anims = [];
+    });
+  }
+  function carryFlash(w, label) {
+    if (reduceMotion) return;
+    const c = w.col.querySelector('.carry');
+    c.textContent = label;
+    c.animate([
+      { opacity: 0, transform: 'translate(calc(-50% + 14px), 4px)' },
+      { opacity: 1, transform: 'translate(-50%, 0)', offset: 0.3 },
+      { opacity: 1, transform: 'translate(-50%, 0)', offset: 0.75 },
+      { opacity: 0, transform: 'translate(-50%, -6px)' }
+    ], { duration: 560, easing: 'ease-out' });
+    w.el.classList.add('glow');
+    setTimeout(() => w.el.classList.remove('glow'), 340);
+  }
+
+  // Replace the whole value at once (typing, reset). Changed tiles flip in a quick sweep.
+  function changed(a, b) { const out = []; for (let e = -DEC; e <= HI; e++) if (digitAt(a, e) !== digitAt(b, e)) out.push(e); return out; }
+  function setValue(next, order, stagger) {
+    const g = ++gen;
+    const before = value;
+    value = next;
+    afterChange();
+    let places = changed(before, next);
+    if (order === 'left-to-right') places = places.reverse();
+    return Promise.all(places.map((e, i) => wait(i * stagger).then(() => { if (g === gen) return flip(wheels[e], digitAt(next, e)); })));
+  }
+  function afterChange() {
+    edit.setAttribute('aria-valuetext', fmt(value));
+    if (!editing) edit.value = fmt(value);
+    markTyped();
+    refreshButtons();
+  }
+
+  function enqueue(op) {
+    if (queue.length > 8) return;
+    queue.push(op);
+    if (!busy) pump();
+  }
+  async function pump() {
+    busy = true;
+    while (queue.length) await run(queue.shift());
+    busy = false;
+  }
+
+  // ---------- typing ----------
+  let editing = false, beforeEdit = START, lastTyped = '', dotPressed = false;
+  edit.addEventListener('beforeinput', e => { if (e.data && /[.,]/.test(e.data)) dotPressed = true; });
+  function pulsePoint() {
+    if (reduceMotion) return;
+    point.querySelector('.point i').animate(
+      [{ transform: 'scale(1)' }, { transform: 'scale(2.1)' }, { transform: 'scale(1.3)' }],
+      { duration: 420, easing: 'ease-out' });
+  }
+  let nopeTimer = null;
+  function nope(text) {
+    hint.textContent = text;
+    hint.classList.add('nope');
+    if (!reduceMotion) wrap.animate(
+      [{ transform: 'translateX(0)' }, { transform: 'translateX(-8px)' }, { transform: 'translateX(7px)' }, { transform: 'translateX(-4px)' }, { transform: 'translateX(0)' }],
+      { duration: 320, easing: 'ease-out' });
+    clearTimeout(nopeTimer);
+    nopeTimer = setTimeout(() => {
+      hint.classList.remove('nope');
+      hint.textContent = editing ? 'Type a number. Enter to finish, Esc to cancel.' : 'Tap the number to type your own.';
+    }, 1800);
+  }
+  function markTyped() {
+    // outline the places the typed number fills; the cursor sits after the last typed digit
+    let hi = -1, lo = 0;
+    const hasDot = editing && DEC > 0 && edit.value.includes('.');
+    if (editing) {
+      const [ip, fp = ''] = edit.value.split('.');
+      hi = Math.max(1, ip.replace(/^0+(?=\d)/, '').length) - 1;
+      lo = -Math.min(fp.length, DEC);
+    }
+    // just typed "." with no decimal digits yet: the cursor waits right after the point
+    const caretOnPoint = hasDot && lo === 0;
+    for (let e = -DEC; e <= HI; e++) {
+      wheels[e].el.classList.toggle('typed', editing && e <= hi && e >= lo);
+      wheels[e].col.classList.toggle('caretat', editing && e === lo && !caretOnPoint);
+    }
+    if (point) {
+      point.classList.toggle('dotted', hasDot);
+      point.classList.toggle('caretat', caretOnPoint);
+    }
+  }
+  edit.addEventListener('focus', () => {
+    editing = true;
+    beforeEdit = value;
+    queue.length = 0;
+    if (typeof stopHold === 'function') stopHold();
+    wrap.classList.add('editing');
+    edit.value = fmt(value);
+    lastTyped = edit.value;
+    hint.textContent = 'Type a number. Enter to finish, Esc to cancel.';
+    markTyped();
+    setTimeout(() => { try { edit.select(); } catch (_) {} }, 0);
+  });
+  edit.addEventListener('input', () => {
+    const typedDot = dotPressed || (!lastTyped.includes('.') && edit.value.includes('.') && edit.value.length === lastTyped.length + 1);
+    dotPressed = false;
+    if (!DEC && typedDot) nope('This counter is whole numbers only.');
+    let t = edit.value.replace(DEC ? /[^0-9.]/g : /\D/g, '');
+    const dot = t.indexOf('.');
+    let ip = dot < 0 ? t : t.slice(0, dot), fp = dot < 0 ? '' : t.slice(dot + 1).replace(/\./g, '');
+    ip = ip.replace(/^0+(?=\d)/, '').slice(0, HI + 1);
+    fp = fp.slice(0, DEC);
+    edit.value = dot < 0 ? ip : ip + '.' + fp;
+    if (point && typedDot && dot >= 0) pulsePoint();
+    lastTyped = edit.value;
+    const next = parseInt(ip || '0', 10) * SCALE + (DEC ? parseInt((fp + '0'.repeat(DEC)).slice(0, DEC), 10) : 0);
+    if (next !== value) setValue(next, 'right-to-left', 25);
+    markTyped();
+  });
+  edit.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); edit.blur(); }
+    else if (e.key === 'Escape') { e.preventDefault(); setValue(beforeEdit, 'right-to-left', 25); edit.blur(); }
+  });
+  edit.addEventListener('blur', () => {
+    editing = false;
+    wrap.classList.remove('editing');
+    edit.value = fmt(value);
+    hint.textContent = 'Tap the number to type your own.';
+    markTyped();
+  });
+
+  document.getElementById('reset').addEventListener('click', () => {
+    if (typeof stopHold === 'function') stopHold();
+    queue.length = 0;
+    FLIP = BASE_FLIP;
+    setValue(START, 'right-to-left', 60);
+  });
+
+  // ---------- ×10 ----------
+  const mulBtn = document.getElementById('mul10');
+  const canMul = u => digitAt(u, HI) === 0;          // nothing would fall off the left end
+  function refreshButtons() { mulBtn.disabled = !canMul(value); }
+  // Every digit moves one place left; the flips sweep left to right.
+  function run() { return canMul(value) ? setValue(value * 10, 'left-to-right', 70) : Promise.resolve(); }
+  mulBtn.addEventListener('pointerdown', () => { if (editing) edit.blur(); });
+  mulBtn.addEventListener('click', () => enqueue('mul'));
+  document.addEventListener('keydown', e => {
+    if (e.target === edit) return;
+    if (e.target.closest('button') && (e.key === 'Enter' || e.key === ' ')) return;
+    if (e.key === 'ArrowUp' || e.key === '*' || e.key === 'x') { e.preventDefault(); enqueue('mul'); }
+  });
+
+  edit.value = fmt(value);
+  refreshButtons();
+  position();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(position);
+})();
+</script>

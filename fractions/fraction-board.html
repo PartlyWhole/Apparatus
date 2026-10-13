@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Fraction Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="fraction-board.css">
+<style>
+/* Layout: one calm column; scene tabs, a single line of guidance, the board on a card, and a quiet row of tools */
+:root {
+  --bg: #EEF2F7;
+  --surface: #FFFFFF;
+  --ink: #13203A;
+  --muted: #5F6F8A;
+  --line: #D3DBE7;
+  --chip: #EAEFF6;
+  --accent: #2648C9;
+  --on-accent: #FFFFFF;
+  --amber: #F2B630;
+  --amber-text: #B07800;
+  --on-amber: #2E2200;
+  --bad: #C2413A;
+  --f-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B1120; --surface: #131C2E; --ink: #E4EAF4; --muted: #95A4BF; --line: #26344F; --chip: #1C2840;
+    --accent: #8AA8FF; --on-accent: #0B1120; --amber: #F2B630; --amber-text: #F2B630; --on-amber: #2E2200; --bad: #FF8F85;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B1120; --surface: #131C2E; --ink: #E4EAF4; --muted: #95A4BF; --line: #26344F; --chip: #1C2840;
+  --accent: #8AA8FF; --on-accent: #0B1120; --amber: #F2B630; --amber-text: #F2B630; --on-amber: #2E2200; --bad: #FF8F85;
+  color-scheme: dark;
+}
+:root {
+  --fb-ink: var(--ink); --fb-muted: var(--muted); --fb-chip: var(--chip); --fb-surface: var(--surface); --fb-line: var(--line);
+  --fb-accent: var(--accent); --fb-amber: var(--amber); --fb-amber-text: var(--amber-text); --fb-on-amber: var(--on-amber);
+  --fb-bad: var(--bad); --fb-mono: var(--f-mono);
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 16px; line-height: 1.5; }
+.page {
+  min-height: 100%;
+  max-width: 60rem; margin: 0 auto;
+  padding-inline: 16px; padding-block: 28px;
+  display: flex; flex-direction: column; justify-content: center; gap: 18px;
+}
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.tabs button {
+  border: 0; background: transparent; color: var(--muted);
+  padding: 7px 14px; border-radius: 999px; font-size: 0.95rem;
+}
+.tabs button:hover { color: var(--ink); }
+.tabs button[aria-selected="true"] { background: var(--surface); color: var(--ink); font-weight: 700; box-shadow: 0 0 0 1px var(--line); }
+
+.say { text-align: center; color: var(--muted); min-height: 1.5em; margin: 0; text-wrap: balance; }
+
+.card { background: var(--surface); border-radius: 18px; box-shadow: 0 0 0 1px var(--line), 0 10px 30px rgba(10, 20, 40, 0.06); overflow-x: auto; }
+
+.below { display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; min-height: 52px; }
+.value { font-family: var(--f-mono); color: var(--muted); font-size: 1.1rem; }
+.value .fb-vfrac { vertical-align: middle; }
+.fb-vfrac { display: inline-flex; flex-direction: column; align-items: center; line-height: 1.25; }
+.fb-vfrac > span { padding: 0 4px; }
+.fb-vfrac > span:first-child { border-bottom: 2px solid currentColor; }
+.value sup { font-size: 0.6em; line-height: 0; }
+.value i { color: var(--accent); }
+
+.tools { display: flex; gap: 8px; }
+.icon {
+  width: 42px; height: 42px; border-radius: 50%; border: 0;
+  background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1px var(--line);
+  font-size: 1.15rem; line-height: 1;
+}
+.icon:hover:not(:disabled) { box-shadow: inset 0 0 0 1.5px var(--accent); color: var(--accent); }
+.icon:disabled { opacity: 0.3; cursor: default; }
+.pill {
+  height: 42px; padding: 0 16px; border-radius: 999px; border: 0;
+  background: transparent; color: var(--accent); box-shadow: inset 0 0 0 1.5px var(--accent); font-weight: 700;
+}
+.pill[hidden] { display: none; }
+
+.build { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.build[hidden] { display: none; }
+.build input {
+  width: 9rem; height: 42px; padding: 0 12px; border-radius: 999px;
+  border: 0; box-shadow: inset 0 0 0 1px var(--line); background: var(--surface); font-family: var(--f-mono);
+}
+.build input:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--accent); }
+
+.hint { text-align: center; min-height: 1.4em; margin: 0; font-size: 0.9rem; color: var(--ink); transition: opacity 0.3s; }
+.hint:empty { opacity: 0; }
+</style>
+
+<div class="page">
+  <nav class="tabs" role="tablist" aria-label="Ideas" id="tabs"></nav>
+  <p class="say" id="say"></p>
+  <div class="card"><div id="board" aria-label="Fractions"></div></div>
+  <div class="below">
+    <span class="value" id="value" aria-live="polite"></span>
+    <div class="tools">
+      <button type="button" class="icon" id="undo" title="Undo" aria-label="Undo">↶</button>
+      <button type="button" class="icon" id="reset" title="Start over" aria-label="Start over">↺</button>
+    </div>
+    <button type="button" class="pill" id="combine" hidden>Combine</button>
+  </div>
+  <form class="build" id="build" hidden autocomplete="off">
+    <input id="factor" type="text" placeholder="6, 10^3, 2.5, m" aria-label="Factor to add">
+    <button type="button" class="icon" data-row="num" title="Add on top" aria-label="Add on top">↑</button>
+    <button type="button" class="icon" data-row="den" title="Add on the bottom" aria-label="Add on the bottom">↓</button>
+    <button type="button" class="icon" data-row="new" title="Add as a new fraction" aria-label="Add as a new fraction">·</button>
+  </form>
+  <p class="hint" id="hint" role="status"></p>
+</div>
+
+<script src="fraction-board.js"></script>
+<script>
+(function () {
+  const SCENES = [
+    { name: 'Cancel', say: 'Drag a factor onto its match across the bar.', spec: ['3 5 7 / 5 2'] },
+    { name: 'Equals 1', say: 'Anything over itself is 1.', spec: ['4', '10 / 10', '3 5 / 5 3'] },
+    { name: 'Any order', say: 'Slide factors anywhere along their side.', spec: ['2 / 3', '5 / 7'] },
+    { name: 'Powers of ten', say: 'Tap a factor to break it apart.', spec: ['10^5 / 10^3', '1000 / 10^2'] },
+    { name: 'Units', say: 'Units cancel the same way.', spec: ['5 m / 2 s', '4 s'] },
+    { name: 'Build', say: '', spec: ['12 10^2 / 4 10'], build: true }
+  ];
+
+  const hintEl = document.getElementById('hint');
+  let hintTimer = null;
+  const board = FractionBoard(document.getElementById('board'), {
+    onHint(t) {
+      hintEl.textContent = t;
+      clearTimeout(hintTimer);
+      hintTimer = setTimeout(() => { hintEl.textContent = ''; }, 2200);
+    },
+    onChange(b) {
+      document.getElementById('value').innerHTML = '<span>= ' + b.valueHTML() + '</span>';
+      document.getElementById('undo').disabled = !b.canUndo();
+      document.getElementById('combine').hidden = b.fractionCount() < 2;
+    }
+  });
+
+  const tabs = document.getElementById('tabs');
+  let current = 0;
+  function show(i) {
+    current = i;
+    const sc = SCENES[i];
+    [...tabs.children].forEach((b, j) => { b.setAttribute('aria-selected', String(j === i)); b.tabIndex = j === i ? 0 : -1; });
+    document.getElementById('say').textContent = sc.say;
+    document.getElementById('build').hidden = !sc.build;
+    hintEl.textContent = '';
+    board.load(sc.spec);
+    try { localStorage.setItem('fraction-board-scene', String(i)); } catch (_) {}
+  }
+  SCENES.forEach((sc, i) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.role = 'tab'; b.textContent = sc.name;
+    b.addEventListener('click', () => show(i));
+    tabs.appendChild(b);
+  });
+  tabs.addEventListener('keydown', e => {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    const n = (current + (e.key === 'ArrowRight' ? 1 : -1) + SCENES.length) % SCENES.length;
+    show(n); tabs.children[n].focus();
+  });
+
+  document.getElementById('undo').addEventListener('click', () => board.undo());
+  document.getElementById('reset').addEventListener('click', () => board.reset());
+  document.getElementById('combine').addEventListener('click', () => board.combine());
+  document.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z' && !e.target.closest('input')) { e.preventDefault(); board.undo(); }
+  });
+
+  const factor = document.getElementById('factor');
+  function addTo(row) {
+    const v = factor.value.trim();
+    if (!v) { factor.focus(); return; }
+    const ok = row === 'new' ? board.add(v, 'num', '__new') : board.add(v, row);
+    if (!ok) { board && hintEl && (hintEl.textContent = 'Try a whole number, a decimal, 10^3, or a unit like m.'); clearTimeout(hintTimer); hintTimer = setTimeout(() => { hintEl.textContent = ''; }, 2600); return; }
+    factor.value = '';
+    factor.focus();
+  }
+  document.querySelectorAll('.build [data-row]').forEach(b => b.addEventListener('click', () => addTo(b.dataset.row)));
+  document.getElementById('build').addEventListener('submit', e => { e.preventDefault(); addTo('num'); });
+
+  let start = 0;
+  try { const s = parseInt(localStorage.getItem('fraction-board-scene'), 10); if (s >= 0 && s < SCENES.length) start = s; } catch (_) {}
+  show(start);
+})();
+</script>

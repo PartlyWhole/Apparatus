@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>÷10 Moving-Point Counter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: one screen; a row of fixed digit tiles fading at both edges, with the decimal point hopping between them, controls beneath */
+:root {
+  --bg: #EEF2F7;
+  --ink: #13203A;
+  --muted: #566682;
+  --line: #CDD6E3;
+  --accent: #2648C9;
+  --on-accent: #FFFFFF;
+  --tape: #F2B630;
+  --tape-ink: #2E2200;
+  --tile: #1B2436;
+  --tile-top: #222D42;
+  --tile-ink: #F4F1E8;
+  --hinge: #0B1120;
+  --f-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --tw: clamp(24px, 5.6vw, 58px);
+  --th: calc(var(--tw) * 1.42);
+  --gap: clamp(12px, 2.4vw, 22px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B1120; --ink: #E4EAF4; --muted: #95A4BF; --line: #26344F;
+    --accent: #8AA8FF; --on-accent: #0B1120; --tape: #F2B630; --tape-ink: #2E2200;
+    --tile: #1E2A40; --tile-top: #26344D; --tile-ink: #F4F1E8; --hinge: #060A14;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B1120; --ink: #E4EAF4; --muted: #95A4BF; --line: #26344F;
+  --accent: #8AA8FF; --on-accent: #0B1120; --tape: #F2B630; --tape-ink: #2E2200;
+  --tile: #1E2A40; --tile-top: #26344D; --tile-ink: #F4F1E8; --hinge: #060A14;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-mono); }
+.stage {
+  min-height: 100%;
+  display: flex; flex-direction: column; justify-content: center; gap: 24px;
+  padding-inline: 16px; padding-block: 24px;
+  max-width: 72rem; margin: 0 auto;
+}
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+.counterwrap { position: relative; }
+.counter {
+  position: relative;
+  height: calc(var(--th) + 3rem);
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 16%, #000 84%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 16%, #000 84%, transparent 100%);
+}
+.row {
+  position: absolute; top: 2.2rem; left: 0;
+  display: flex; gap: var(--gap);
+}
+.tile {
+  position: relative; flex: none;
+  width: var(--tw); height: var(--th);
+  border-radius: 7px;
+  background: linear-gradient(var(--tile-top) 50%, var(--tile) 50%);
+  color: var(--tile-ink);
+  font-weight: 700; font-size: calc(var(--tw) * 1.02);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 0 rgba(0,0,0,0.25), 0 6px 14px rgba(10,20,40,0.18);
+  transition: box-shadow 0.25s;
+}
+.tile::after {
+  content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 2px;
+  background: var(--hinge); transform: translateY(-1px);
+}
+.tile.passed { box-shadow: 0 0 0 3px var(--tape), 0 6px 14px rgba(10,20,40,0.18); }
+.counterwrap.editing .tile.typed { box-shadow: 0 0 0 2px var(--tape), 0 6px 14px rgba(10,20,40,0.18); }
+
+.dot {
+  position: absolute; z-index: 3;
+  top: calc(var(--th) * 0.8);
+  width: calc(var(--tw) * 0.3); height: calc(var(--tw) * 0.3);
+  margin-left: calc(var(--tw) * -0.15);
+  border-radius: 50%; background: var(--tape);
+  box-shadow: 0 0 0 3px var(--bg);
+}
+.dot.big { transform: scale(1.3); box-shadow: 0 0 0 3px var(--bg), 0 0 0 calc(var(--tw) * 0.14) color-mix(in srgb, var(--tape) 35%, transparent); }
+.caret {
+  position: absolute; z-index: 2; top: 0; width: 3px; height: var(--th);
+  margin-left: -1.5px; border-radius: 2px; background: var(--tape);
+  opacity: 0; pointer-events: none;
+}
+.counterwrap.editing .caret { opacity: 1; animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+.edit {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  opacity: 0; border: 0; padding: 0; margin: 0;
+  font-size: 16px; color: transparent; caret-color: transparent; background: transparent;
+  cursor: text;
+}
+
+.buttons { display: flex; justify-content: center; gap: 16px; }
+.btn {
+  -webkit-user-select: none; user-select: none; touch-action: manipulation;
+  min-width: 96px; height: 64px; padding: 0 14px; border-radius: 12px;
+  border: 0; background: var(--accent); color: var(--on-accent);
+  font-size: 1.7rem; font-weight: 700; line-height: 1;
+}
+.btn:hover { filter: brightness(1.08); }
+.btn:active { transform: translateY(1px); }
+.btn:disabled { opacity: 0.35; cursor: not-allowed; filter: none; transform: none; }
+.reset {
+  align-self: center; height: 44px; padding: 0 16px; border-radius: 10px;
+  border: 0; background: transparent; color: var(--ink); opacity: 0.7;
+  box-shadow: inset 0 0 0 1px var(--line); font-size: 0.95rem;
+}
+.reset:hover { opacity: 1; box-shadow: inset 0 0 0 1px var(--accent); }
+.hint { text-align: center; font-size: 0.85rem; color: var(--muted); min-height: 1.3em; margin: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .counterwrap.editing .caret { animation: none; }
+}
+</style>
+
+<div class="stage">
+  <div class="counterwrap" id="wrap">
+    <div class="counter" id="counter" aria-hidden="true">
+      <div class="row" id="row"><span class="dot" id="dot"></span><span class="caret" id="caret"></span></div>
+    </div>
+    <input class="edit" id="edit" type="text" inputmode="decimal" maxlength="16" autocomplete="off" spellcheck="false" aria-label="Counter value. Type a new number.">
+  </div>
+  <div class="buttons">
+    <button type="button" class="btn" id="mul10" aria-label="Divide by 10">÷10</button>
+    <button type="button" class="reset" id="reset">Reset</button>
+  </div>
+  <p class="hint" id="hint">Tap the number to type your own.</p>
+</div>
+
+<script>
+(function () {
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const INT = 8, FRAC = 7, N = INT + FRAC;   // tiles: 8 before the starting point, 7 after
+  const HOME = INT;                          // the point starts in the gap after tile 7
+  const HOP = 480;
+
+  const wrap = document.getElementById('wrap');
+  const counter = document.getElementById('counter');
+  const row = document.getElementById('row');
+  const dot = document.getElementById('dot');
+  const caret = document.getElementById('caret');
+  const edit = document.getElementById('edit');
+  const hint = document.getElementById('hint');
+  const mulBtn = document.getElementById('mul10');
+
+  let digits = new Array(N).fill(0);
+  let P = HOME;                              // point sits before tile P (P = N means after the last tile)
+  let pan = 0;
+  let moving = false;
+
+  const tiles = [];
+  for (let i = 0; i < N; i++) {
+    const t = document.createElement('div');
+    t.className = 'tile';
+    t.innerHTML = '<span>0</span>';
+    row.insertBefore(t, dot);
+    tiles.push(t);
+  }
+
+  function gapPx() { return parseFloat(getComputedStyle(row).columnGap) || 12; }
+  function gapX(p) {
+    const g = gapPx();
+    if (p <= 0) return tiles[0].offsetLeft - g / 2;
+    if (p >= N) return tiles[N - 1].offsetLeft + tiles[N - 1].offsetWidth + g / 2;
+    return tiles[p].offsetLeft - g / 2;
+  }
+  function placeDot(p) { dot.style.left = gapX(p) + 'px'; }
+  // Pan the whole row only when the point would leave the clear middle of the view (small screens).
+  function panTo(p, animate) {
+    const W = counter.clientWidth, x = gapX(p);
+    const homeOffset = W * 0.45 - gapX(HOME);
+    let off = homeOffset;
+    const lo = W * 0.2, hi = W * 0.8;
+    if (x + off > hi) off = hi - x;
+    if (x + off < lo) off = lo - x;
+    pan = off;
+    row.style.transition = animate && !reduceMotion ? 'transform 0.45s ease' : 'none';
+    row.style.transform = `translateX(${Math.round(pan)}px)`;
+  }
+  function render() {
+    tiles.forEach((t, i) => { t.firstChild.textContent = digits[i]; });
+    placeDot(P);
+    mulBtn.disabled = P <= 0;
+  }
+  function layout() { render(); panTo(P, false); markTyped(); }
+  window.addEventListener('resize', layout);
+
+  function valueText() {
+    const ip = digits.slice(0, P).join('').replace(/^0+(?=\d)/, '') || '0';
+    const fp = digits.slice(P).join('').replace(/0+$/, '');
+    return fp ? ip + '.' + fp : ip;
+  }
+
+  // ---------- ÷10: the point hops one gap to the left ----------
+  async function divide10() {
+    if (moving || P <= 0) return;
+    if (editing) edit.blur();
+    moving = true;
+    const from = gapX(P), to = gapX(P - 1);
+    const passed = tiles[P - 1];
+    P -= 1;
+    mulBtn.disabled = P <= 0;
+    if (!reduceMotion) {
+      const lift = -0.9 * tiles[0].offsetHeight;
+      const a = dot.animate([
+        { left: from + 'px', transform: 'translateY(0)' },
+        { left: (from + to) / 2 + 'px', transform: `translateY(${lift}px)`, offset: 0.5 },
+        { left: to + 'px', transform: 'translateY(0)' }
+      ], { duration: HOP, easing: 'ease-in-out' });
+      setTimeout(() => passed.classList.add('passed'), HOP * 0.35);
+      setTimeout(() => passed.classList.remove('passed'), HOP * 1.4);
+      placeDot(P);
+      await a.finished.catch(() => {});
+    } else {
+      placeDot(P);
+    }
+    panTo(P, true);
+    edit.value = valueText();
+    moving = false;
+  }
+  mulBtn.addEventListener('pointerdown', () => { if (editing) edit.blur(); });
+  mulBtn.addEventListener('click', divide10);
+  document.addEventListener('keydown', e => {
+    if (e.target === edit) return;
+    if (e.target.closest('button') && (e.key === 'Enter' || e.key === ' ')) return;
+    if (e.key === 'ArrowDown' || e.key === '/') { e.preventDefault(); divide10(); }
+  });
+
+  // ---------- reset ----------
+  document.getElementById('reset').addEventListener('click', () => {
+    if (editing) edit.blur();
+    digits = new Array(N).fill(0);
+    const from = gapX(P);
+    P = HOME;
+    render();
+    if (!reduceMotion) dot.animate([{ left: from + 'px' }, { left: gapX(P) + 'px' }], { duration: 400, easing: 'ease-in-out' });
+    panTo(P, true);
+    edit.value = valueText();
+  });
+
+  // ---------- typing ----------
+  // Click left of the point to type the whole number; click right of it (or press ".") to type the decimals.
+  // The point stays where it is, and only the part being typed is highlighted.
+  let editing = false, before = null, mode = 'int', pendingMode = null;
+  const HINT_INT = 'Typing the whole number. Press . to type the decimals. Enter to finish, Esc to cancel.';
+  const HINT_FRAC = 'Typing the decimals. Tap left of the point for the whole number. Enter to finish, Esc to cancel.';
+  const intPart = () => digits.slice(0, P).join('').replace(/^0+(?=\d)/, '');
+  const fracPart = () => digits.slice(P).join('').replace(/0+$/, '');
+
+  function writeInt(ip) {
+    const pad = ip.padStart(P, '0');
+    for (let i = 0; i < P; i++) digits[i] = +pad[i];
+    render();
+  }
+  function writeFrac(fp) {
+    const pad = fp.padEnd(N - P, '0');
+    for (let i = P; i < N; i++) digits[i] = +pad[i - P];
+    render();
+  }
+  function markTyped() {
+    let lo = -1, hi = -2, c = P;
+    if (editing) {
+      if (mode === 'int') {
+        const len = Math.max(1, edit.value.length);
+        lo = P - len; hi = P - 1; c = P;
+      } else {
+        const len = edit.value.length;
+        lo = P; hi = P + len - 1; c = P + len;
+      }
+    }
+    tiles.forEach((t, i) => t.classList.toggle('typed', editing && i >= lo && i <= hi));
+    caret.style.left = gapX(c) + 'px';
+    dot.classList.toggle('big', editing && mode === 'frac');
+  }
+  function pulsePoint() {
+    if (reduceMotion) return;
+    dot.animate([{ transform: 'scale(1)' }, { transform: 'scale(2.1)' }, { transform: 'scale(1.3)' }], { duration: 420, easing: 'ease-out' });
+  }
+  function enterMode(m, selectAll) {
+    mode = m;
+    edit.value = m === 'int' ? intPart() : fracPart();
+    if (m === 'int' && edit.value === '0') edit.value = '0';
+    hint.textContent = m === 'int' ? HINT_INT : HINT_FRAC;
+    markTyped();
+    setTimeout(() => {
+      try {
+        if (selectAll) edit.select();
+        else edit.setSelectionRange(edit.value.length, edit.value.length);
+      } catch (_) {}
+    }, 0);
+  }
+  function sideOf(clientX) {
+    const r = row.getBoundingClientRect();
+    return clientX - r.left < gapX(P) ? 'int' : 'frac';
+  }
+  edit.addEventListener('pointerdown', e => {
+    const m = sideOf(e.clientX);
+    if (editing) { e.preventDefault(); if (m !== mode) enterMode(m, true); }
+    else pendingMode = m;
+  });
+  edit.addEventListener('focus', () => {
+    editing = true;
+    before = { digits: digits.slice(), P };
+    wrap.classList.add('editing');
+    enterMode(pendingMode || 'int', true);
+    pendingMode = null;
+  });
+  edit.addEventListener('input', () => {
+    let raw = edit.value;
+    if (mode === 'int') {
+      const d = raw.indexOf('.');
+      let ip = (d < 0 ? raw : raw.slice(0, d)).replace(/\D/g, '').replace(/^0+(?=\d)/, '').slice(0, P);
+      writeInt(ip);
+      if (d >= 0) {
+        // "." typed: hop over to the decimals
+        const rest = raw.slice(d + 1).replace(/\D/g, '').slice(0, N - P);
+        mode = 'frac';
+        edit.value = rest;
+        if (rest) writeFrac(rest);
+        hint.textContent = HINT_FRAC;
+        pulsePoint();
+      } else {
+        edit.value = ip;
+      }
+    } else {
+      const fp = raw.replace(/\D/g, '').slice(0, N - P);
+      edit.value = fp;
+      writeFrac(fp);
+    }
+    markTyped();
+  });
+  edit.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); edit.blur(); }
+    else if (e.key === 'Escape') {
+      e.preventDefault();
+      digits = before.digits; P = before.P;
+      edit.blur();
+      layout();
+    }
+    else if (e.key === 'Backspace' && mode === 'frac' && edit.value === '') {
+      // backspacing past the point goes back to the whole number
+      e.preventDefault();
+      enterMode('int', false);
+    }
+  });
+  edit.addEventListener('blur', () => {
+    editing = false;
+    wrap.classList.remove('editing');
+    edit.value = valueText();
+    hint.textContent = 'Tap the number to type your own.';
+    markTyped();
+  });
+
+  edit.value = valueText();
+  layout();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
+})();
+</script>
