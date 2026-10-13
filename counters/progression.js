@@ -209,7 +209,7 @@
 
   // ---------- progress dots ----------
   const dotsEl = $('dots');
-  dotsEl.innerHTML = SKILLS.map(() => '<i></i>').join('');
+  dotsEl.innerHTML = SKILLS.map(k => `<i title="${NAMES[k.id]}"></i>`).join('');
   function dots() {
     if (ONLY) return;
     const list = ACTIVE(), learn = visiting() || learnSkill();
@@ -221,7 +221,7 @@
       d.toggleAttribute('data-now', !!cur && cur.skill === k);
     });
     const done = list.filter(k => st.sk[k.id].box).length;
-    dotsEl.setAttribute('aria-label', `${done} of ${list.length}`);
+    dotsEl.setAttribute('aria-label', `${done} of ${list.length} learned`);
   }
 
   // ---------- counters ----------
@@ -230,7 +230,7 @@
   function frame(key) {
     if (frames[key]) return frames[key];
     const el = document.createElement('iframe');
-    el.src = SRC[key]; el.className = 'off'; el.title = 'Counter'; el.setAttribute('tabindex', '-1');
+    el.src = SRC[key]; el.className = 'off'; el.title = 'Counter';
     const f = { el, ready: null };
     f.ready = new Promise(res => el.addEventListener('load', () => {
       const w = el.contentWindow, stage = w.document.querySelector('.stage');
@@ -238,6 +238,10 @@
       f.fit = fit;
       try { new w.ResizeObserver(fit).observe(stage); } catch (_) {}
       w.__ctrStep = onStep;
+      w.document.addEventListener('keydown', e => {   // Enter in the counter checks / moves on, like everywhere else
+        if (e.key !== 'Enter' || e.target.closest('input, textarea, [contenteditable]')) return;
+        e.preventDefault(); e.stopPropagation(); onEnter();
+      }, true);
       w.__ctr.speed(speed, instant);
       res(w);
     }, { once: true }));
@@ -257,8 +261,11 @@
   async function useCounter(key) {
     const f = frame(key);
     W = await f.ready; C = W.__ctr;
+    const changed = f.el.classList.contains('off');
     Object.entries(frames).forEach(([k, g]) => g.el.classList.toggle('off', k !== key));
     f.fit();
+    if (changed && !instant && !matchMedia('(prefers-reduced-motion: reduce)').matches && f.el.animate)
+      f.el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 220, easing: 'ease-out' });
     return C;
   }
   async function stepUnlocked(dir) {           // the flip counters' step ignores the lock; the moving-point ones need it lifted
@@ -278,7 +285,7 @@
     if (p.type === 'toSci' || p.type === 'fromSci') return `${pretty(p.plain)} = ${p.m} × ${pow(p.e)}`;
     return `${pretty(p.s)} ${opSym(p)} ${tenTo(p.n)} = ${pretty(p.t)}`;
   }
-  const input = (id, mode, label, cls) => `<input id="${id}" type="text" inputmode="${mode}" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="${label}"${cls ? ` class="${cls}"` : ''}>`;
+  const input = (id, mode, label, cls) => `<input id="${id}" type="text" inputmode="${mode}" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="${label}" aria-describedby="q"${cls ? ` class="${cls}"` : ''}>`;
 
   async function newProblem() {
     const my = ++token;
@@ -349,6 +356,14 @@
     return v === want ? success() : fail('Try again');
   }
 
+  // is this answer box right on its own? (toSci has two)
+  function right(i) {
+    const p = cur.p;
+    if (i.id === 'e') return parseInt(i.value.replace(/[−–]/, '-').replace(/\s/g, ''), 10) === p.e;
+    if (i.id === 'm') return norm(i.value) === p.m;
+    if (p.type === 'count') return /^\d+$/.test(i.value.trim()) && +i.value.trim() === p.n;
+    return norm(i.value) === (p.type === 'calc' ? p.t : p.plain);
+  }
   function score(ok) { if (cur.scored) return; cur.scored = true; record(cur.skill, cur.review, cur.early, ok, cur.visit); }
   function success() {
     score(true);
@@ -357,18 +372,18 @@
   function fail(msg) {
     score(false);
     cur.tries++;
-    if (cur.tries >= 2) return finish(line(cur.p), '', true);
+    if (cur.tries >= 2) return finish(line(cur.p), 'show', true);
     say(msg, 'bad');
     const p = cur.p, my = token;
     if (p.type === 'reach') wait(900).then(() => { if (my === token && !cur.done) { cur.steps = 0; C.load(p.s); C.lock(false); } });
-    else { const i = ans.querySelector('input'); if (i) { i.select(); i.focus({ preventScroll: true }); } }
+    else { const i = [...ans.querySelectorAll('input')].find(i => !right(i)) || ans.querySelector('input'); if (i) { i.select(); i.focus({ preventScroll: true }); } }
   }
   // Show the answer line, replay it on the counter, then offer Next.
   async function finish(html, cls, replay) {
     const my = token, p = cur.p;
     cur.done = true;
     say(html, cls);
-    ans.querySelectorAll('input').forEach(i => { i.disabled = true; });
+    ans.querySelectorAll('input').forEach(i => { i.disabled = true; if (i.value.trim()) i.classList.add(right(i) ? 'good' : 'bad'); });
     checkBtn.hidden = true; nextBtn.hidden = false;
     nextBtn.focus({ preventScroll: true });
     if (p.ctr !== 'sci') C.lock(true);
@@ -391,10 +406,14 @@
   // ---------- wiring ----------
   checkBtn.addEventListener('click', check);
   nextBtn.addEventListener('click', newProblem);
+  function onEnter() { if (cur && cur.done) newProblem(); else check(); }
   document.addEventListener('keydown', e => {
-    if (e.key !== 'Enter' || e.target.closest('button, a')) return;
-    e.preventDefault();
-    if (cur && cur.done) newProblem(); else check();
+    if (e.key === 'Enter' && !e.target.closest('button, a')) { e.preventDefault(); onEnter(); return; }
+    // the counter's own keys (↑ ×10, ↓ ÷10) work from anywhere outside a text box
+    if (W && /^(ArrowUp|ArrowDown|x|\*|\/)$/.test(e.key) && !e.metaKey && !e.ctrlKey && !e.altKey && !e.target.closest('input, textarea, select')) {
+      e.preventDefault();
+      W.document.body.dispatchEvent(new W.KeyboardEvent('keydown', { key: e.key, bubbles: true, cancelable: true }));
+    }
   });
   const resetBtn = $('reset'), paceEl = $('pace');
   const showOnly = () => { dotsEl.textContent = NAMES[ONLY.id]; dotsEl.classList.add('only'); resetBtn.hidden = true; paceEl.hidden = true; };

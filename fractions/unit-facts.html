@@ -46,15 +46,15 @@ button { cursor: pointer; }
 }
 .q sup { font-size: 0.55em; }
 .q input {
-  width: 6.5ch; padding: 6px 10px; border-radius: 12px; border: 2px solid var(--line); background: var(--surface);
+  width: 6.5ch; max-width: calc(100vw - 64px); padding: 6px 10px; box-sizing: content-box; border-radius: 12px; border: 2px solid var(--line); background: var(--surface);
   font-family: var(--f-mono); font-weight: 700; font-size: inherit; text-align: center;
 }
-.q input.word { width: 6ch; }
 .q input:focus { outline: none; border-color: var(--accent); }
 .q input::placeholder { color: var(--muted); opacity: 0.45; }
 .q.ok input { border-color: var(--good); color: var(--good); }
 .q.no input { border-color: var(--bad); color: var(--bad); }
 .fb { min-height: 1.6em; margin: 0; font-family: var(--f-mono); font-size: 1.05rem; color: var(--muted); text-align: center; }
+.fb.ok { color: var(--good); font-weight: 700; }
 .fb.no { color: var(--bad); }
 .go { height: 46px; padding: 0 26px; border-radius: 999px; border: 0; background: var(--accent); color: var(--on-accent); font-weight: 700; }
 </style>
@@ -176,11 +176,11 @@ button { cursor: pointer; }
   // ---------- one card ----------
   const $ = id => document.getElementById(id);
   const q = $('q'), fb = $('fb'), go = $('go');
-  let cur = null, done = false;
+  let cur = null, done = false, turn = 0;
   function next() {
     const id = pick();
     cur = CARDS.find(c => c.id === id);
-    done = false;
+    done = false; turn++;
     const s = S(id);
     const ph = s.fresh ? showAns(cur) : '';
     q.className = 'q';
@@ -188,6 +188,10 @@ button { cursor: pointer; }
     fb.textContent = ''; fb.className = 'fb';
     go.textContent = 'Check';
     const inp = $('a');
+    // the box grows to fit what's typed (or the answer shown in it)
+    const size = () => { inp.style.width = Math.max(4, ph.length, inp.value.length) + 0.5 + 'ch'; };
+    size();
+    inp.addEventListener('input', size);
     inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); act(); } });
     inp.focus({ preventScroll: true });
   }
@@ -200,7 +204,7 @@ button { cursor: pointer; }
     done = true;
     inp.readOnly = true;
     q.classList.add(ok ? 'ok' : 'no');
-    if (ok) { fb.textContent = '✓'; go.textContent = 'Next →'; setTimeout(() => { if (done && fb.textContent === '✓') next(); }, 700); }
+    if (ok) { const t = turn; fb.textContent = '✓'; fb.className = 'fb ok'; go.textContent = 'Next →'; setTimeout(() => { if (done && t === turn) next(); }, 700); }
     else { fb.className = 'fb no'; fb.innerHTML = `${cur.q[0]} ${showAns(cur)} ${cur.q[1]}`; go.textContent = 'Next →'; go.focus({ preventScroll: true }); }
   }
   go.addEventListener('click', act);

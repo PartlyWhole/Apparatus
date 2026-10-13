@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=JetBrains+Mono:wght@500;600;700&display=swap">
-<link rel="stylesheet" href="fraction-board.css">
+<link rel="stylesheet" href="fraction-board.css?v=3">
 <style>
 /* Layout: one calm column; the problem, the fraction board, where the units stand, then a tray of conversion factors (each a fraction equal to 1) */
 :root {
@@ -154,7 +154,7 @@ sup { font-size: 0.58em; line-height: 0; position: relative; top: -0.8em; vertic
     <button type="button" class="next" id="nextAfter">Next problem ›</button>
   </div>
 
-  <p class="trayhead">Drag a # and a unit next to the amount, then drag more underneath to make a fraction. Tap a # to type; tap a bar to flip.</p>
+  <p class="trayhead">Drag pieces onto the board. Tap # to type.</p>
   <div class="tray" id="tray">
     <span class="piece num" data-spec="#" role="button" tabindex="0" aria-label="A number. Place it, then type into it.">#</span>
     <span class="traysep" aria-hidden="true"></span>
@@ -163,8 +163,8 @@ sup { font-size: 0.58em; line-height: 0; position: relative; top: -0.8em; vertic
   <p class="hint" id="hint" role="status"></p>
 </div>
 
-<script src="fraction-board.js?v=2"></script>
-<script src="cheatsheet.js"></script>
+<script src="fraction-board.js?v=3"></script>
+<script src="cheatsheet.js?v=3"></script>
 <script>
 (function () {
   // ---------- units: size in SI base units, and what they measure ----------
@@ -327,8 +327,9 @@ sup { font-size: 0.58em; line-height: 0; position: relative; top: -0.8em; vertic
     const u = document.getElementById('units');
     u.classList.toggle('match', match);
     u.innerHTML = `<span class="now">${unitsFracHTML(now.top, now.bot)}</span><span class="arrow">→</span><span class="want">${unitsFracHTML(target.top, target.bot)}</span>${match ? '<span class="tick">✓</span>' : ''}`;
-    document.getElementById('calc').hidden = !match || shown;
-    if (!match && shown) { shown = false; document.getElementById('result').hidden = true; }
+    // any change to the work makes a shown answer stale
+    if (shown) { shown = false; document.getElementById('result').hidden = true; }
+    document.getElementById('calc').hidden = !match;
     document.getElementById('undo').disabled = !board.canUndo();
   }
 

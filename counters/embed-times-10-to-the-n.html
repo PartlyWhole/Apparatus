@@ -140,13 +140,13 @@ button { font: inherit; color: inherit; cursor: pointer; }
 }
 .quiet .sep { width: 1px; height: 22px; background: var(--line); }
 .stepbtn {
-  width: 40px; height: 40px; border-radius: 50%; border: 0;
+  width: 44px; height: 44px; border-radius: 50%; border: 0;
   background: transparent; color: var(--accent); box-shadow: inset 0 0 0 1.5px var(--accent);
   font-weight: 700; font-size: 1.3rem; line-height: 1;
 }
 .stepbtn:disabled { opacity: 0.35; cursor: not-allowed; }
 .stepbtn[hidden] { display: none !important; }
-.switch { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; font-size: 0.9rem; }
+.switch { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; cursor: pointer; user-select: none; font-size: 0.9rem; }
 .switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
 .switch .track { width: 46px; height: 26px; border-radius: 13px; background: var(--line); position: relative; transition: background 0.2s; flex: none; }
 .switch .track::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: var(--bg); transition: transform 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.3); }
@@ -198,6 +198,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .btn.div { background: transparent; color: var(--accent); box-shadow: inset 0 0 0 2px var(--accent); }
 @media (max-width: 520px) {
   .display { gap: 6px; }
+  .quiet .sep { display: none; }
 }
 .buttons { display: flex; justify-content: center; gap: 16px; }
 .btn {
@@ -210,9 +211,9 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .btn:active { transform: translateY(1px); }
 .btn:disabled { opacity: 0.35; cursor: not-allowed; filter: none; transform: none; }
 .reset {
-  align-self: center; width: 44px; height: 44px; padding: 0; border-radius: 50%; font-size: 1.3rem !important;
+  align-self: center; width: 44px; height: 44px; padding: 0; border-radius: 50%;
   border: 0; background: transparent; color: var(--ink); opacity: 0.7;
-  box-shadow: inset 0 0 0 1px var(--line); font-size: 0.95rem;
+  box-shadow: inset 0 0 0 1px var(--line); font-size: 1.3rem;
 }
 .reset:hover { opacity: 1; box-shadow: inset 0 0 0 1px var(--accent); }
 .hint { text-align: center; font-size: 0.85rem; color: var(--muted); min-height: 1.3em; margin: 0; transition: opacity 0.3s; }
@@ -341,7 +342,7 @@ html, body { height: auto; }
     const first = digits.findIndex(d => d);
     if (first >= 0 && tiles[first].offsetLeft + off < W * 0.06) off = W * 0.06 - tiles[first].offsetLeft;
     pan = off;
-    row.style.transition = animate && !reduceMotion ? 'transform 0.45s ease' : 'none';
+    row.style.transition = animate && !reduceMotion ? `transform ${T(450)}ms ease` : 'none';
     row.style.transform = `translateX(${Math.round(pan)}px)`;
   }
   function render() {
@@ -690,7 +691,7 @@ html, body { height: auto; }
   mulBtn.addEventListener('click', () => hop(-1));
   divBtn.addEventListener('click', () => hop(1));
   document.addEventListener('keydown', e => {
-    if (e.target === edit || e.target === expEdit) return;
+    if (e.target.closest('input') || e.metaKey || e.ctrlKey || e.altKey) return;
     if (e.target.closest('button') && (e.key === 'Enter' || e.key === ' ')) return;
     if (e.key === 'ArrowUp' || e.key === '*' || e.key === 'x') { e.preventDefault(); hop(-1); }
     else if (e.key === 'ArrowDown' || e.key === '/') { e.preventDefault(); hop(1); }
@@ -738,7 +739,7 @@ html, body { height: auto; }
     const from = gapX(P);
     P = HOME;
     render();
-    if (!reduceMotion) dot.animate([{ left: from + 'px' }, { left: gapX(P) + 'px' }], { duration: 400, easing: 'ease-in-out' });
+    if (!reduceMotion) dot.animate([{ left: from + 'px' }, { left: gapX(P) + 'px' }], { duration: T(400), easing: 'ease-in-out' });
     panTo(P, true);
     edit.value = valueText();
     entered = false;

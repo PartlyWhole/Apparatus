@@ -66,6 +66,16 @@
     [retryBtn, showBtn, checkBtn, nextBtn].forEach(b => { b.disabled = on; });
     ans.querySelectorAll('input').forEach(i => { i.disabled = on; });
   }
+  // a problem is finished: only Next is left
+  function finish() {
+    retryBtn.hidden = true; showBtn.hidden = true; checkBtn.hidden = true;
+    nextBtn.focus({ preventScroll: true });
+  }
+  // a wrong typed answer is selected, ready to be typed over
+  function retype() {
+    const i = ans.querySelectorAll('input');
+    if (i.length === 1) i[0].select();
+  }
   async function stepUnlocked(dir) {
     const was = window.__ctrLocked;
     window.__ctrLocked = false;
@@ -151,7 +161,7 @@
       if (steps === prob.n) {
         done = true; C.lock(true); score(true);
         say(`✓ ${chain()}`, 'good');
-        retryBtn.hidden = true; showBtn.hidden = true; checkBtn.hidden = true;
+        finish();
       } else if (steps < prob.n) {
         say('Not yet', 'bad');
       } else {
@@ -170,22 +180,24 @@
       } else {
         score(false);
         say('Try again', 'bad');
+        retype();
       }
       return;
     }
     if (mode === 'make') {
       const m = norm($('exM').value), e = parseInt($('exE').value.replace('−', '-'), 10);
       if (!m || isNaN(e)) return;
-      if (m === prob.m && e === prob.e) { done = true; score(true); say(`✓ ${sciLine()}`, 'good'); return; }
+      if (m === prob.m && e === prob.e) { done = true; score(true); say(`✓ ${sciLine()}`, 'good'); finish(); return; }
       score(false);
       if (shift(m, e) === prob.plain) say('Equal, but the first number must be from 1 to 10', 'bad');
       else say('Try again', 'bad');
     } else {
       const d = norm($('exD').value);
       if (!d) return;
-      if (d === prob.plain) { done = true; score(true); say(`✓ ${sciLine()}`, 'good'); return; }
+      if (d === prob.plain) { done = true; score(true); say(`✓ ${sciLine()}`, 'good'); finish(); return; }
       score(false);
       say('Try again', 'bad');
+      retype();
     }
   }
 
@@ -211,8 +223,7 @@
       if (reveal) say(sciLine());
     }
     done = true; showing = false; busy(false);
-    retryBtn.hidden = true; showBtn.hidden = true; checkBtn.hidden = true;
-    nextBtn.focus({ preventScroll: true });
+    finish();
   }
 
   // ---------- wiring ----------
@@ -230,6 +241,13 @@
     if (showing) return;
     if (cfg) { if (done && fb.classList.contains('good')) return; say(''); loadShift(); }
     else loadSci();
+  });
+
+  // Enter anywhere outside a control: Check, or Next once the problem is finished
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter' || showing || e.target.closest('button, input, a, label')) return;
+    e.preventDefault();
+    if (done) newProblem(); else check();
   });
 
   C.typing(false);

@@ -399,7 +399,7 @@
     { id: 'ptwo', name: 'Pick: two steps', tier: 1, type: 'ratio', gen: genPickTwo },
     { id: 'prate', name: 'Pick: rates', tier: 3, type: 'ratio', gen: genPickRate },
     { id: 'metric', name: 'Metric', tier: 1, type: 'conv', gen: genMetric, tip: 'Drag pieces onto the board. Tap # to type.' },
-    { id: 'imperial', name: 'Imperial', tier: 1, type: 'conv', gen: genImperial },
+    { id: 'imperial', name: 'US & time', tier: 1, type: 'conv', gen: genImperial },
     { id: 'two', name: 'Two steps', tier: 1, type: 'conv', gen: genTwo },
     { id: 'rate', name: 'Rates', tier: 1, type: 'conv', gen: genRate },
     { id: 'cubic', name: 'Cubic', tier: 1, type: 'conv', gen: genCubic }
@@ -516,7 +516,7 @@
     if (ONLY) {
       ONLY = to; PR.lvl = 0; PR.streak = 0;
       const u = new URL(location.href); u.searchParams.set('skill', to); history.replaceState(null, '', u);
-      dots.textContent = SKILLS[idx(ONLY)].name;
+      dots.textContent = SKILLS[idx(ONLY)].name; dots.setAttribute('aria-label', dots.textContent);
       newProblem();
       return;
     }
@@ -735,6 +735,9 @@
   let cur = null;            // { id, review, level, type, spec | q,to,target, goal, solved, wrong, graded }
   const board = () => (cur && isConv(cur.type) ? convBoard() : boardF);
   const fbk = $('fbk');
+  // the inputs rest once a problem is solved
+  const RESTING = ['tray', 'cards', 'build', 'undo', 'reset', 'combine'];
+  const rest = on => RESTING.forEach(id => { $(id).inert = on; });
   function say(t, cls) { fbk.innerHTML = t; fbk.className = 'fb-feedback' + (cls ? ' ' + cls : ''); }
 
   function changed(b) {
@@ -783,6 +786,7 @@
     hintEl.textContent = '';
     say('');
     $('go').textContent = 'Check'; $('go').disabled = false;
+    rest(false);
     boardC.disarm();
     if (conv) {
       cur.target = sides(cur.to);
@@ -809,6 +813,8 @@
     cur.solved = true;
     const up = finish(!cur.wrong);
     say('✓' + (msg ? ' ' + msg : ''), 'good');
+    boardC.disarm();
+    rest(true);
     $('go').textContent = 'Next →'; $('go').disabled = false; $('go').focus();
     drawDots(up ? idx(cur.id) : -1);
   }
@@ -819,7 +825,13 @@
   $('reset').addEventListener('click', () => board().reset());
   $('combine').addEventListener('click', () => board().combine());
   document.addEventListener('keydown', e => {
-    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z' && !e.target.closest('input')) { e.preventDefault(); board().undo(); }
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z' && !e.target.closest('input')) { e.preventDefault(); if (cur && !cur.solved) board().undo(); }
+  });
+  // Enter anywhere that isn't a control: Check, then Next
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter' || e.defaultPrevented || e.repeat || e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) return;
+    if (e.target.closest && e.target.closest('input, textarea, select, button, a, [role="button"], [tabindex], .fb-pop')) return;
+    if (!$('go').disabled) { e.preventDefault(); $('go').click(); }
   });
   const factor = $('factor');
   function addTo(row) {
@@ -829,7 +841,8 @@
     factor.value = ''; factor.focus();
   }
   document.querySelectorAll('[data-add]').forEach(b => b.addEventListener('click', () => addTo(b.dataset.add)));
-  $('build').addEventListener('submit', e => { e.preventDefault(); addTo('num'); });
+  // Enter in the factor box: add it on top; with the box empty, Check
+  $('build').addEventListener('submit', e => { e.preventDefault(); if (factor.value.trim()) addTo('num'); else $('go').click(); });
   $('wipe').addEventListener('click', () => {
     if (!window.confirm('Reset progress?')) return;
     P = fresh(); saveP(); newProblem();
@@ -842,7 +855,7 @@
     ACTIVE.forEach(s => { const d = document.createElement('i'); d.className = 'dot'; d.title = s.name; dots.appendChild(d); });
   }
   buildDots();
-  if (ONLY) { dots.textContent = SKILLS[idx(ONLY)].name; dots.classList.add('only'); $('wipe').hidden = true; $('pace').hidden = true; }
+  if (ONLY) { dots.textContent = SKILLS[idx(ONLY)].name; dots.setAttribute('aria-label', dots.textContent); dots.classList.add('only'); $('top').classList.add('solo'); $('wipe').hidden = true; $('pace').hidden = true; }
   function drawDots(popAt) {
     const nb = neighbours();
     $('prev').disabled = !nb.prev; $('next').disabled = !nb.next;
@@ -864,7 +877,9 @@
     document.querySelectorAll('[data-pace]').forEach(b => b.setAttribute('aria-pressed', String(Number(b.dataset.pace) === T.pace)));
   }
   function setPace(p) {
-    T = tune(Math.min(1, Math.max(0, p)));
+    p = Math.min(1, Math.max(0, p));
+    if (p === T.pace) return;
+    T = tune(p);
     try { localStorage.setItem(PACE_KEY, String(T.pace)); } catch (_) {}
     ACTIVE = SKILLS.filter(s => s.tier <= T.tier);
     paceUI();

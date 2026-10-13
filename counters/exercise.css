@@ -9,13 +9,14 @@
   display: flex; flex-direction: column; gap: 14px;
 }
 .ex-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-.ex-home { color: var(--muted); text-decoration: none; font-size: 13px; }
+.ex-home { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; margin: -10px 0 -10px -14px; color: var(--muted); text-decoration: none; font-size: 18px; border-radius: 10px; }
 .ex-home:hover { color: var(--accent); }
 .ex-score { color: var(--muted); font-size: 13px; }
 .ex-tabs { display: flex; gap: 4px; padding: 4px; border: 1px solid var(--line); border-radius: 12px; width: fit-content; max-width: 100%; flex-wrap: wrap; }
 .ex-tabs button {
-  border: 0; background: transparent; padding: 8px 14px; border-radius: 8px; font-size: 14px; color: var(--muted);
+  border: 0; background: transparent; padding: 8px 14px; min-height: 40px; border-radius: 8px; font-size: 14px; color: var(--muted);
 }
+.ex-tabs button:not([aria-pressed="true"]):hover { color: var(--ink); }
 .ex-tabs button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
 .ex-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .ex-q { margin: 0; font-size: clamp(17px, 2.6vw, 22px); line-height: 1.5; color: var(--ink); }
@@ -27,11 +28,11 @@
   font: inherit; font-size: 20px; width: 9ch; padding: 6px 10px; border-radius: 10px;
   border: 2px solid var(--line); background: transparent; color: var(--ink);
 }
-.ex-answer input.exp { width: 5ch; font-size: 15px; padding: 3px 6px; margin-top: -14px; }
+.ex-answer input.exp { width: 5ch; font-size: 16px; padding: 3px 6px; margin-top: -14px; }
 .ex-answer input:focus { outline: none; border-color: var(--accent); }
 .ex-answer .pow { display: inline-flex; align-items: flex-start; gap: 6px; white-space: nowrap; }
 .ex-fb { margin: 0; min-height: 1.5em; font-size: 15px; line-height: 1.5; color: var(--muted); }
-.ex-fb.good { color: #1f8a4c; }
+.ex-fb.good { color: #177a42; }
 .ex-fb.bad { color: #c2410c; }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .ex-fb.good { color: #5bd08f; }
@@ -41,9 +42,11 @@
 :root[data-theme="dark"] .ex-fb.bad { color: #fb923c; }
 .ex-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .ex-actions button {
-  font-size: 14px; padding: 9px 16px; border-radius: 10px;
+  font-size: 14px; min-height: 44px; min-width: 44px; padding: 0 16px; border-radius: 10px;
   border: 1px solid var(--line); background: transparent; color: var(--ink);
 }
+.ex-actions button:not(:disabled):hover { border-color: var(--accent); }
 .ex-actions button.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
 .ex-actions button:disabled { opacity: 0.4; cursor: default; }
 .ex-actions button[hidden] { display: none; }
+@media (max-width: 360px) { .ex-actions button { padding: 0 11px; } }

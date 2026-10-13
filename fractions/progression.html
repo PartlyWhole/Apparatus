@@ -4,11 +4,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <style>body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}.dots.only { font-size: 0.85rem; color: var(--muted); letter-spacing: 0.02em; }
 </style>
-<title>Fraction Path</title>
+<title>Fractions</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500;600;700&display=swap">
-<link rel="stylesheet" href="fraction-board.css">
+<link rel="stylesheet" href="fraction-board.css?v=3">
 <style>
 /* One calm column: progress dots, the task, the board, a quiet row of tools, one line of feedback, one button */
 :root {
@@ -51,21 +51,24 @@
 * { box-sizing: border-box; }
 html, body { min-height: 100%; }
 body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 16px; line-height: 1.5; overflow-x: hidden; }
-.page { max-width: 60rem; margin: 0 auto; padding-inline: 16px; padding-block: 20px 28px; display: flex; flex-direction: column; gap: 16px; }
+.page { max-width: 60rem; margin: 0 auto; padding-inline: 16px; padding-block: 20px 72px; display: flex; flex-direction: column; gap: 16px; }
 button, input { font: inherit; color: inherit; }
 button { cursor: pointer; }
 :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 sup { font-size: 0.58em; line-height: 0; position: relative; top: -0.8em; vertical-align: 0; margin-left: 0.04em; }
 
 /* top: home, ‹ progress ›, pace */
-.top { display: grid; grid-template-columns: 42px minmax(0, 1fr) auto; align-items: center; gap: 4px; }
+.top { display: grid; grid-template-columns: 1fr minmax(0, auto) 1fr; grid-template-areas: "home nav pace"; align-items: center; gap: 4px; }
+.top .home { grid-area: home; }
+.top .nav { grid-area: nav; }
+.top .pace { grid-area: pace; }
 .nav { display: flex; align-items: center; justify-content: center; gap: 2px; min-width: 0; }
 .nav .dots { min-width: 0; }
 .step { width: 32px; height: 42px; border: 0; background: transparent; color: var(--muted); font-size: 1.35rem; line-height: 1; padding: 0; }
 .step:hover:not(:disabled) { color: var(--accent); }
 .step:disabled { opacity: 0.25; cursor: default; }
 .pace { justify-self: end; display: inline-flex; align-items: center; gap: 2px; color: var(--muted); font-size: 0.8rem; }
-.pace button { border: 0; background: transparent; padding: 6px 4px; color: var(--muted); opacity: 0.7; }
+.pace button { border: 0; background: transparent; min-height: 42px; padding: 0 6px; color: var(--muted); opacity: 0.7; }
 .pace button:hover { opacity: 1; color: var(--accent); }
 .pace button[aria-pressed="true"] { opacity: 1; color: var(--accent); font-weight: 700; }
 .home {
@@ -79,6 +82,7 @@ sup { font-size: 0.58em; line-height: 0; position: relative; top: -0.8em; vertic
 .dot.now { box-shadow: inset 0 0 0 1.5px var(--accent); background: conic-gradient(var(--accent) calc(var(--p) * 1%), transparent 0); }
 .dot.cur { transform: scale(1.45); }
 .dot.pop { animation: pop 0.6s ease-out; }
+@media (prefers-reduced-motion: reduce) { .dot { transition: none; } .dot.pop { animation: none; } }
 @keyframes pop { 40% { transform: scale(2.1); } }
 
 .task { text-align: center; margin: 0; font-size: clamp(1.2rem, 3.4vw, 1.5rem); font-weight: 700; text-wrap: balance; font-family: var(--f-mono); }
@@ -127,14 +131,16 @@ sup { font-size: 0.58em; line-height: 0; position: relative; top: -0.8em; vertic
   background: var(--chip); color: var(--ink); box-shadow: 0 0 0 1px var(--line);
   font-family: var(--f-mono); font-weight: 700; font-size: 1.05rem; line-height: 1.25;
   cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none;
+  transition: transform 0.1s;
 }
+.rc:active { transform: scale(0.96); }
 .rc i { color: var(--accent); font-style: italic; font-weight: 600; }
 .rc:hover { box-shadow: 0 0 0 1.5px var(--accent); }
 .rc.lifted { opacity: 0.35; }
 .rc-ghost { position: fixed; left: 0; top: 0; z-index: 50; pointer-events: none; cursor: grabbing; box-shadow: 0 0 0 1.5px var(--accent), 0 10px 24px rgba(10, 20, 40, 0.18); }
 .card.hot { box-shadow: 0 0 0 2px var(--accent), 0 10px 30px rgba(10, 20, 40, 0.06); }
 .piece {
-  display: inline-block; padding: 6px 12px; border-radius: 10px;
+  display: inline-flex; align-items: center; justify-content: center; min-width: 42px; min-height: 42px; padding: 4px 12px; border-radius: 10px;
   background: var(--chip); color: var(--ink); box-shadow: 0 0 0 1px var(--line);
   font-family: var(--f-mono); font-weight: 700; font-size: 1.15rem; line-height: 1.2;
   cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none;
@@ -144,6 +150,13 @@ sup { font-size: 0.58em; line-height: 0; position: relative; top: -0.8em; vertic
 .piece:hover { box-shadow: 0 0 0 1.5px var(--accent); }
 .piece.armed { box-shadow: 0 0 0 3px var(--accent); }
 
+/* a board hint and the answer's feedback share one line; a hint briefly covers the feedback */
+.say { display: grid; }
+.say > * { grid-area: 1 / 1; }
+.hint:not(:empty) ~ .fb-feedback { opacity: 0; }
+.fb-feedback { transition: opacity 0.2s; }
+/* once solved, the inputs rest and Next takes over */
+.page [inert] { opacity: 0.35; transition: opacity 0.3s; }
 .hint { text-align: center; min-height: 1.4em; margin: 0; font-size: 0.9rem; color: var(--ink); transition: opacity 0.3s; }
 .hint:empty { opacity: 0; }
 .fb-feedback { text-align: center; margin: 0; min-height: 1.5em; color: var(--muted); text-wrap: balance; }
@@ -155,15 +168,28 @@ sup { font-size: 0.58em; line-height: 0; position: relative; top: -0.8em; vertic
 .primary:disabled { opacity: 0.4; cursor: default; }
 .wipe { align-self: center; margin-top: 8px; border: 0; background: transparent; color: var(--muted); opacity: 0.55; font-size: 0.8rem; padding: 4px 8px; }
 .wipe:hover { opacity: 1; color: var(--bad); }
+@media (max-width: 520px) {
+  /* phones: home and pace on one row, the progress dots get their own */
+  .top { grid-template-columns: 42px 1fr auto; grid-template-areas: "home . pace" "nav nav nav"; row-gap: 0; }
+  .top.solo { grid-template-columns: 42px minmax(0, 1fr) 42px; grid-template-areas: "home nav ."; }
+}
 @media (max-width: 480px) {
   .page { gap: 14px; }
   .dot { width: 8px; height: 8px; }
   .dots { gap: 5px; }
 }
+@media (max-width: 360px) {
+  .dot { width: 7px; height: 7px; }
+  .dots { gap: 4px; }
+}
+/* short phones: a shorter board keeps Check in view */
+@media (max-width: 520px) and (max-height: 760px) {
+  .card .fb { min-height: 180px; padding-top: 22px; }
+}
 </style>
 
 <div class="page">
-  <div class="top">
+  <div class="top" id="top">
     <a class="home" href="../index.html" aria-label="Apparatus">←</a>
     <div class="nav">
       <button type="button" class="step" id="prev" title="Previous skill" aria-label="Previous skill">‹</button>
@@ -195,12 +221,14 @@ sup { font-size: 0.58em; line-height: 0; position: relative; top: -0.8em; vertic
     <div class="unitpieces" id="unitPieces"></div>
   </div>
   <div id="cards" hidden></div>
-  <p class="hint" id="hint" role="status"></p>
-  <p class="fb-feedback" id="fbk" aria-live="polite"></p>
+  <div class="say">
+    <p class="hint" id="hint" role="status"></p>
+    <p class="fb-feedback" id="fbk" aria-live="polite"></p>
+  </div>
   <div class="actions"><button type="button" class="primary" id="go">Check</button></div>
   <button type="button" class="wipe" id="wipe">Reset progress</button>
 </div>
 
-<script src="fraction-board.js?v=2"></script>
-<script src="cheatsheet.js"></script>
-<script src="progression.js?v=3"></script>
+<script src="fraction-board.js?v=3"></script>
+<script src="cheatsheet.js?v=3"></script>
+<script src="progression.js?v=4"></script>

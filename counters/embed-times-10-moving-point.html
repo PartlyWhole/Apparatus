@@ -120,9 +120,9 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .btn:active { transform: translateY(1px); }
 .btn:disabled { opacity: 0.35; cursor: not-allowed; filter: none; transform: none; }
 .reset {
-  align-self: center; height: 44px; padding: 0 16px; border-radius: 10px;
+  align-self: center; width: 44px; height: 44px; padding: 0; border-radius: 50%;
   border: 0; background: transparent; color: var(--ink); opacity: 0.7;
-  box-shadow: inset 0 0 0 1px var(--line); font-size: 0.95rem;
+  box-shadow: inset 0 0 0 1px var(--line); font-size: 1.3rem;
 }
 .reset:hover { opacity: 1; box-shadow: inset 0 0 0 1px var(--accent); }
 .hint { text-align: center; font-size: 0.85rem; color: var(--muted); min-height: 1.3em; margin: 0; }
@@ -133,7 +133,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .speed { display: inline-flex; align-items: center; gap: 10px; }
 .speed input { width: min(150px, 40vw); accent-color: var(--accent); }
 .speed output { min-width: 2.8em; font-variant-numeric: tabular-nums; }
-.switch { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; font-size: 0.9rem; }
+.switch { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; cursor: pointer; user-select: none; font-size: 0.9rem; }
 .switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
 .switch .track { width: 46px; height: 26px; border-radius: 13px; background: var(--line); position: relative; transition: background 0.2s; flex: none; }
 .switch .track::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: var(--bg); transition: transform 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.3); }
@@ -159,8 +159,9 @@ html, body { height: auto; }
   </div>
   <div class="buttons">
     <button type="button" class="btn" id="mul10" aria-label="Multiply by 10">×10</button>
-    <button type="button" class="reset" id="reset">Reset</button>
+    <button type="button" class="reset" id="reset" aria-label="Reset" title="Reset">↺</button>
   </div>
+  <p class="hint" id="hint">Tap the number to type your own.</p>
   <div class="quiet">
     <label class="speed" for="speed">
       <span>Speed</span>
@@ -173,7 +174,6 @@ html, body { height: auto; }
       <span>Instant</span>
     </label>
   </div>
-  <p class="hint" id="hint">Tap the number to type your own.</p>
 </div>
 
 <script>
@@ -279,7 +279,7 @@ html, body { height: auto; }
   mulBtn.addEventListener('pointerdown', () => { if (editing) edit.blur(); });
   mulBtn.addEventListener('click', times10);
   document.addEventListener('keydown', e => {
-    if (e.target === edit) return;
+    if (e.target.closest('input') || e.metaKey || e.ctrlKey || e.altKey) return;
     if (e.target.closest('button') && (e.key === 'Enter' || e.key === ' ')) return;
     if (e.key === 'ArrowUp' || e.key === '*' || e.key === 'x') { e.preventDefault(); times10(); }
   });
@@ -300,8 +300,7 @@ html, body { height: auto; }
   // Click left of the point to type the whole number; click right of it (or press ".") to type the decimals.
   // The point stays where it is, and only the part being typed is highlighted.
   let editing = false, before = null, mode = 'int', pendingMode = null;
-  const HINT_INT = 'Typing the whole number. Press . to type the decimals. Enter to finish, Esc to cancel.';
-  const HINT_FRAC = 'Typing the decimals. Tap left of the point for the whole number. Enter to finish, Esc to cancel.';
+  const HINT_INT = 'Type a number. Enter to finish, Esc to cancel.', HINT_FRAC = HINT_INT;
   const intPart = () => digits.slice(0, P).join('').replace(/^0+(?=\d)/, '');
   const fracPart = () => digits.slice(P).join('').replace(/0+$/, '');
 

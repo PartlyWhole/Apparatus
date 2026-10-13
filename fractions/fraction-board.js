@@ -8,7 +8,8 @@
  *   - drag a factor along its own side, or into another fraction's same side   (order doesn't matter)
  *   - drop a factor on an equal factor across the bar to cancel them           (a/a = 1)
  *   - drop a factor on a neighbour on the same side to multiply them           (10² · 10³ = 10⁽²⁺³⁾)
- *   - tap a factor to split it (12 → 3 · 4, 10⁵ → 10 · 10⁴, 2.54 → 254 · 10⁻²) or to move a power of ten across the bar
+ *   - tap a power of ten or a decimal to rewrite it (1000 → 10³, 10⁵ → 10 · 10⁴, 2.54 → 254 · 10⁻²) or to move a power of ten
+ *     across the bar; whole numbers are never factored (12 offers nothing)
  *   - tap "= 1" on a fraction whose top equals its bottom to remove it
  * Options: isOne(fraction) lets a host treat other fractions as 1 (e.g. 12 in / 1 ft for unit conversions).
  *   fracClass(fr), fracTag(fr)   extra class / small tag for a fraction (e.g. "draft", "≠ 1")
@@ -140,7 +141,7 @@
       const e = f.e;
       if (e > 1) add(() => [P(1), P(e - 1)]);
       if (e < -1) add(() => [P(-1), P(e + 1)]);
-      if (e >= 2 && e <= 5) add(() => Array.from({ length: e }, () => P(1)));
+      if (e >= 3 && e <= 5) add(() => Array.from({ length: e }, () => P(1)));   // (for 10² that's the split above)
       if (e >= 0 && e <= 6) add(() => [N('1' + zeros(e))]);
       if (e < 0 && e >= -6) add(() => [N('0.' + zeros(-e - 1) + '1')]);
       // 10ⁿ on one side is 10⁻ⁿ on the other
@@ -410,6 +411,7 @@
 
     // ---------- selection + split menu ----------
     let pop = null;
+    let viaKey = false;
     function closePop() { if (pop) { pop.remove(); pop = null; } }
     function deselect() {
       closePop();
@@ -438,11 +440,13 @@
       const r = el.getBoundingClientRect(), R = root.getBoundingClientRect();
       let x = r.left + r.width / 2 - R.left;
       pop.style.left = x + 'px'; pop.style.top = (r.top - R.top - 8) + 'px';
-      // keep the menu inside the board
+      // keep the menu inside the board: below the factor if there's no room above, and never past the sides
+      if (pop.getBoundingClientRect().top < R.top + 2) { pop.classList.add('fb-below'); pop.style.top = (r.bottom - R.top + 8) + 'px'; }
       const pr = pop.getBoundingClientRect();
       if (pr.left < R.left + 4) pop.style.left = (x + (R.left + 4 - pr.left)) + 'px';
       if (pr.right > R.right - 4) pop.style.left = (x - (pr.right - R.right + 4)) + 'px';
-      if (!quiet) { const first = pop.querySelector('button'); if (first && document.activeElement === el) first.focus({ preventScroll: true }); }
+      // from the keyboard, step straight into the menu (a tap leaves focus where it is)
+      if (!quiet && viaKey) { const first = pop.querySelector('button'); if (first && document.activeElement === el) first.focus({ preventScroll: true }); }
     }
 
     // ---------- actions ----------
@@ -852,7 +856,6 @@
         root.querySelectorAll('.fb-frac-bad').forEach(x => x.classList.remove('fb-frac-bad'));
         root.classList.remove('fb-on-drag');
         fit(false);
-      fit(false);
         const gr = ghost.getBoundingClientRect();
         if (ev.type === 'pointercancel' || !target || target.kind === 'locked' || target.kind === 'trash') {
           if (target && target.kind === 'locked') { shake(target.el); hint(opts.lockedHint || 'That fraction is finished.'); }
@@ -925,8 +928,13 @@
     }
     root.addEventListener('keydown', e => {
       const tok = e.target.closest && e.target.closest('.fb-tok');
-      if (tok && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); tap(tok.dataset.id); }
-      if (e.key === 'Escape') { deselect(); disarm(); }
+      if (tok && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); viaKey = true; try { tap(tok.dataset.id); } finally { viaKey = false; } }
+      if (e.key === 'Escape') {
+        // leaving the menu puts focus back on its factor
+        const back = pop && pop.contains(e.target) && selected && root.querySelector(`[data-id="${selected}"]`);
+        deselect(); disarm();
+        if (back) back.focus({ preventScroll: true });
+      }
     });
     document.addEventListener('pointerdown', e => { if (!root.contains(e.target)) deselect(); });
 

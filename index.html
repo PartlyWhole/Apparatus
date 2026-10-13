@@ -4,61 +4,84 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Apparatus</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232f6fde'/%3E%3Ctext x='16' y='23' font-family='system-ui,sans-serif' font-size='20' font-weight='700' text-anchor='middle' fill='%23fff'%3E%C3%B7%3C/text%3E%3C/svg%3E">
 <style>
-  :root { --bg:#faf8f4; --fg:#1d1d1f; --muted:#6b6b70; --card:#fff; --line:#e4e0d8; --accent:#2f6fde; }
-  @media (prefers-color-scheme: dark) { :root { --bg:#151517; --fg:#f2f2f2; --muted:#9a9aa0; --card:#1f1f22; --line:#333338; --accent:#7aa7ff; } }
+  :root { --bg:#faf8f4; --fg:#1d1d1f; --muted:#5f5f66; --card:#fff; --line:#e4e0d8; --accent:#2f6fde; --on-accent:#fff; color-scheme:light; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#151517; --fg:#f2f2f2; --muted:#a2a2a8; --card:#1f1f22; --line:#333338; --accent:#7aa7ff; --on-accent:#151517; color-scheme:dark; } }
   * { box-sizing:border-box; }
   body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.5 system-ui,-apple-system,sans-serif; }
-  main { max-width:880px; margin:0 auto; padding:48px 16px; }
-  h1 { font-size:2.5rem; margin:0 0 4px; letter-spacing:-0.02em; }
-  p.sub { color:var(--muted); margin:0 0 32px; }
-  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:16px; }
-  a.toy { display:block; padding:20px; background:var(--card); border:1px solid var(--line); border-radius:12px; color:inherit; text-decoration:none; transition:border-color .15s, transform .15s; }
+  main { max-width:880px; margin:0 auto; padding:48px 16px 64px; }
+  h1 { font-size:2.5rem; line-height:1.1; margin:0 0 8px; letter-spacing:-0.02em; }
+  h2 { font-size:.8rem; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin:36px 0 12px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px; }
+  .toy { display:block; padding:16px 18px; background:var(--card); border:1px solid var(--line); border-radius:12px; color:inherit; text-decoration:none; transition:border-color .15s, transform .15s; }
   a.toy:hover { border-color:var(--accent); transform:translateY(-2px); }
-  a.toy h2 { margin:0 0 6px; font-size:1.15rem; }
-  a.toy p { margin:0; color:var(--muted); font-size:.92rem; }
-  h3.section { font-size:.8rem; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin:36px 0 12px; }
+  .toy h3 { margin:0; font-size:1.05rem; line-height:1.3; }
+  .toy p { margin:4px 0 0; color:var(--muted); font-size:.9rem; }
+  .pace { display:flex; gap:8px; margin-top:12px; }
+  .pace a { flex:1; text-align:center; padding:6px 0; border:1px solid var(--line); border-radius:8px; color:var(--accent); text-decoration:none; font-weight:600; font-size:.92rem; transition:border-color .15s, background .15s; }
+  .pace a:first-child { background:var(--accent); border-color:var(--accent); color:var(--on-accent); }
+  .pace a:hover { border-color:var(--accent); }
+  a.all { display:flex; align-items:center; justify-content:space-between; gap:8px; color:var(--accent); }
+  a.all h3 { color:inherit; }
+  a:focus-visible { outline:3px solid var(--accent); outline-offset:2px; }
+  @media (prefers-reduced-motion: reduce) { a.toy { transition:none; } a.toy:hover { transform:none; } }
 </style>
 </head>
 <body>
 <main>
   <h1>Apparatus</h1>
-  <p class="sub">A library of interactive toys. <a href="exercises.html" style="color:var(--accent)">All exercises →</a></p>
-  <h3 class="section">Progressions</h3>
+
+  <h2>Progressions</h2>
   <div class="grid">
-    <a class="toy" href="counters/progression.html?pace=1"><h2>Powers of Ten Path</h2><p>×10, ÷10 and scientific notation, step by step.</p></a>
-    <a class="toy" href="counters/progression.html?pace=0"><h2>Powers of Ten Cram</h2><p>The essentials, fast.</p></a>
-    <a class="toy" href="fractions/progression.html?pace=1"><h2>Fraction Path</h2><p>Canceling, powers of ten, and unit conversions, step by step.</p></a>
-    <a class="toy" href="fractions/progression.html?pace=0"><h2>Fraction Cram</h2><p>The essentials, fast.</p></a>
-    <a class="toy" href="fractions/unit-facts.html"><h2>Unit Facts</h2><p>Memorize prefixes and conversion facts.</p></a>
+    <div class="toy">
+      <h3>Powers of Ten</h3>
+      <p>×10, ÷10, scientific notation</p>
+      <div class="pace"><a href="counters/progression.html?pace=1" aria-label="Powers of Ten, full">Full</a><a href="counters/progression.html?pace=0" aria-label="Powers of Ten, cram">Cram</a></div>
+    </div>
+    <div class="toy">
+      <h3>Fractions</h3>
+      <p>Canceling, powers of ten, units</p>
+      <div class="pace"><a href="fractions/progression.html?pace=1" aria-label="Fractions, full">Full</a><a href="fractions/progression.html?pace=0" aria-label="Fractions, cram">Cram</a></div>
+    </div>
+    <a class="toy all" href="exercises.html"><h3>All Exercises</h3><span aria-hidden="true">→</span></a>
   </div>
-  <h3 class="section">Geometry</h3>
+
+  <h2>Counters</h2>
   <div class="grid">
-    <a class="toy" href="Slope.html"><h2>Slope Lab</h2><p>Explore the slope of a line.</p></a>
+    <a class="toy" href="counters/plus-minus-counter.html"><h3>+/− Counter</h3><p>Count up and down.</p></a>
+    <a class="toy" href="counters/times-10-counter.html"><h3>×10 Counter</h3><p>Digits shift left.</p></a>
+    <a class="toy" href="counters/times-10-decimal-counter.html"><h3>×10 Decimal Counter</h3><p>Digits cross the point.</p></a>
+    <a class="toy" href="counters/times-10-moving-point-counter.html"><h3>×10 Moving-Point Counter</h3><p>The point hops right.</p></a>
+    <a class="toy" href="counters/divide-10-moving-point-counter.html"><h3>÷10 Moving-Point Counter</h3><p>The point hops left.</p></a>
+    <a class="toy" href="counters/times-10-to-the-n-counter.html"><h3>× 10ⁿ Counter</h3><p>Move tens into the exponent.</p></a>
   </div>
-  <h3 class="section">Counters</h3>
+
+  <h2>Counter Exercises</h2>
   <div class="grid">
-    <a class="toy" href="counters/plus-minus-counter.html"><h2>+/− Counter</h2><p>Whole-number flip counter. Hold + or − to speed up, or type a number.</p></a>
-    <a class="toy" href="counters/times-10-counter.html"><h2>×10 Counter</h2><p>Every digit shifts one place left.</p></a>
-    <a class="toy" href="counters/times-10-decimal-counter.html"><h2>×10 Decimal Counter</h2><p>Digits shift across the decimal point.</p></a>
-    <a class="toy" href="counters/times-10-moving-point-counter.html"><h2>×10 Moving-Point Counter</h2><p>Digits stay put; the point hops right.</p></a>
-    <a class="toy" href="counters/divide-10-moving-point-counter.html"><h2>÷10 Moving-Point Counter</h2><p>Digits stay put; the point hops left.</p></a>
-    <a class="toy" href="counters/times-10-to-the-n-counter.html"><h2>× 10ⁿ Counter</h2><p>Factor a 10 or 1/10 out of the digits into the exponent, step by step.</p></a>
+    <a class="toy" href="counters/times-10-counter-exercises.html"><h3>×10 Exercises</h3></a>
+    <a class="toy" href="counters/times-10-decimal-counter-exercises.html"><h3>×10 Decimal Exercises</h3></a>
+    <a class="toy" href="counters/times-10-moving-point-counter-exercises.html"><h3>×10 Moving-Point Exercises</h3></a>
+    <a class="toy" href="counters/divide-10-moving-point-counter-exercises.html"><h3>÷10 Moving-Point Exercises</h3></a>
+    <a class="toy" href="counters/times-10-to-the-n-counter-exercises.html"><h3>Scientific Notation Exercises</h3></a>
   </div>
-  <h3 class="section">Counter Exercises</h3>
+
+  <h2>Fractions</h2>
   <div class="grid">
-    <a class="toy" href="counters/times-10-counter-exercises.html"><h2>×10 Exercises</h2><p>Reach a number with ×10, or say how many times it takes.</p></a>
-    <a class="toy" href="counters/times-10-decimal-counter-exercises.html"><h2>×10 Decimal Exercises</h2><p>The same, starting from decimals.</p></a>
-    <a class="toy" href="counters/times-10-moving-point-counter-exercises.html"><h2>×10 Moving-Point Exercises</h2><p>Hop the point right to reach a number.</p></a>
-    <a class="toy" href="counters/divide-10-moving-point-counter-exercises.html"><h2>÷10 Moving-Point Exercises</h2><p>Hop the point left to reach a number.</p></a>
-    <a class="toy" href="counters/times-10-to-the-n-counter-exercises.html"><h2>Scientific Notation Exercises</h2><p>Decimals to scientific notation, and back.</p></a>
+    <a class="toy" href="fractions/fraction-board.html"><h3>Fraction Board</h3><p>Cancel, rewrite, convert.</p></a>
   </div>
-  <h3 class="section">Fractions</h3>
+
+  <h2>Fraction Exercises</h2>
   <div class="grid">
-    <a class="toy" href="fractions/fraction-board.html"><h2>Fraction Board</h2><p>Canceling, fractions equal to 1, powers of ten, units, and build your own.</p></a>
-    <a class="toy" href="fractions/unit-conversion-practice.html"><h2>Unit Conversion Practice</h2><p>Chapter 8’s 28 conversion problems.</p></a>
-    <a class="toy" href="fractions/fraction-board-exercises.html"><h2>Fraction Board Exercises</h2><p>Cancel, powers of ten, reach a goal fraction.</p></a>
-    <a class="toy" href="fractions/unit-conversion-exercises.html"><h2>Unit Conversion Exercises</h2><p>Random quantities to convert.</p></a>
+    <a class="toy" href="fractions/fraction-board-exercises.html"><h3>Fraction Board Exercises</h3></a>
+    <a class="toy" href="fractions/unit-conversion-exercises.html"><h3>Unit Conversion Exercises</h3></a>
+    <a class="toy" href="fractions/unit-conversion-practice.html"><h3>Unit Conversion Practice</h3><p>Chapter 8’s 28 problems.</p></a>
+    <a class="toy" href="fractions/unit-facts.html"><h3>Unit Facts</h3><p>Prefixes and conversions to memorize.</p></a>
+  </div>
+
+  <h2>Geometry</h2>
+  <div class="grid">
+    <a class="toy" href="Slope.html"><h3>Slope Lab</h3></a>
   </div>
 </main>
 </body>

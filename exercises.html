@@ -3,34 +3,30 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>All Exercises</title>
+<title>All Exercises · Apparatus</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232f6fde'/%3E%3Ctext x='16' y='23' font-family='system-ui,sans-serif' font-size='20' font-weight='700' text-anchor='middle' fill='%23fff'%3E%C3%B7%3C/text%3E%3C/svg%3E">
 <style>
-  :root { --bg:#faf8f4; --fg:#1d1d1f; --muted:#6b6b70; --card:#fff; --line:#e4e0d8; --accent:#2f6fde; }
-  @media (prefers-color-scheme: dark) { :root { --bg:#151517; --fg:#f2f2f2; --muted:#9a9aa0; --card:#1f1f22; --line:#333338; --accent:#7aa7ff; } }
+  :root { --bg:#faf8f4; --fg:#1d1d1f; --muted:#5f5f66; --card:#fff; --line:#e4e0d8; --accent:#2f6fde; color-scheme:light; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#151517; --fg:#f2f2f2; --muted:#a2a2a8; --card:#1f1f22; --line:#333338; --accent:#7aa7ff; color-scheme:dark; } }
   * { box-sizing:border-box; }
   body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.5 system-ui,-apple-system,sans-serif; }
-  main { max-width:880px; margin:0 auto; padding:48px 16px; }
-  h1 { font-size:2.5rem; margin:0 0 4px; letter-spacing:-0.02em; }
-  p.sub { color:var(--muted); margin:0 0 32px; }
-  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:16px; }
-  a.toy { display:block; padding:20px; background:var(--card); border:1px solid var(--line); border-radius:12px; color:inherit; text-decoration:none; transition:border-color .15s, transform .15s; }
-  a.toy:hover { border-color:var(--accent); transform:translateY(-2px); }
-  a.toy h2 { margin:0 0 6px; font-size:1.15rem; }
-  a.toy p { margin:0; color:var(--muted); font-size:.92rem; }
-  h3.section { font-size:.8rem; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin:36px 0 12px; }
-  ol.skills { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; counter-reset: s; }
-  ol.skills a { display: flex; gap: 10px; align-items: baseline; padding: 12px 14px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; color: inherit; text-decoration: none; transition: border-color .15s; }
-  ol.skills a:hover { border-color: var(--accent); }
-  ol.skills a::before { counter-increment: s; content: counter(s); color: var(--muted); font-size: .8rem; min-width: 1.2em; }
-  a.back { color: var(--muted); text-decoration: none; font-size: .9rem; }
-  a.back:hover { color: var(--accent); }
+  main { max-width:880px; margin:0 auto; padding:32px 16px 64px; }
+  h1 { font-size:2.5rem; line-height:1.1; margin:12px 0 8px; letter-spacing:-0.02em; }
+  h2 { font-size:.8rem; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin:36px 0 12px; }
+  .skills { list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,190px),1fr)); gap:8px; counter-reset:s; }
+  .skills a { display:flex; gap:10px; align-items:baseline; height:100%; padding:10px 14px; background:var(--card); border:1px solid var(--line); border-radius:10px; color:inherit; text-decoration:none; transition:border-color .15s; }
+  .skills a:hover { border-color:var(--accent); }
+  ol.skills a::before { counter-increment:s; content:counter(s); color:var(--muted); font-size:.8rem; min-width:1.4em; font-variant-numeric:tabular-nums; }
+  a.back { color:var(--muted); text-decoration:none; font-size:.9rem; }
+  a.back:hover { color:var(--accent); }
+  a:focus-visible { outline:3px solid var(--accent); outline-offset:2px; }
 </style>
 </head>
 <body>
 <main>
   <a class="back" href="index.html">← Apparatus</a>
-  <h1>Exercises</h1>
-  <h3 class="section">Powers of ten</h3>
+  <h1>All Exercises</h1>
+  <h2>Powers of Ten</h2>
   <ol class="skills">
     <li><a href="counters/progression.html?skill=w-reach">×10 · reach</a></li>
     <li><a href="counters/progression.html?skill=w-count">×10 · how many</a></li>
@@ -44,7 +40,7 @@
     <li><a href="counters/progression.html?skill=sci-back">Scientific → decimal</a></li>
     <li><a href="counters/progression.html?skill=sci-mixed">Mixed</a></li>
   </ol>
-  <h3 class="section">Fractions and units</h3>
+  <h2>Fractions</h2>
   <ol class="skills">
     <li><a href="fractions/progression.html?skill=num">Cancel numbers</a></li>
     <li><a href="fractions/progression.html?skill=unit">Cancel units</a></li>
@@ -56,21 +52,21 @@
     <li><a href="fractions/progression.html?skill=down">Reduce a fraction</a></li>
     <li><a href="fractions/progression.html?skill=any">Reach any goal</a></li>
     <li><a href="fractions/progression.html?skill=pmetric">Pick ratios: metric</a></li>
-    <li><a href="fractions/progression.html?skill=pimperial">Pick ratios: US and time</a></li>
+    <li><a href="fractions/progression.html?skill=pimperial">Pick ratios: US units and time</a></li>
     <li><a href="fractions/progression.html?skill=ptwo">Pick ratios: two steps</a></li>
     <li><a href="fractions/progression.html?skill=prate">Pick ratios: rates</a></li>
     <li><a href="fractions/progression.html?skill=metric">Metric units</a></li>
-    <li><a href="fractions/progression.html?skill=imperial">Imperial and time</a></li>
+    <li><a href="fractions/progression.html?skill=imperial">US units and time</a></li>
     <li><a href="fractions/progression.html?skill=two">Two-step conversions</a></li>
     <li><a href="fractions/progression.html?skill=rate">Rates</a></li>
     <li><a href="fractions/progression.html?skill=cubic">Cubic units</a></li>
   </ol>
-  <h3 class="section">Memory</h3>
-  <ol class="skills">
+  <h2>Memory</h2>
+  <ul class="skills">
     <li><a href="fractions/unit-facts.html">Unit facts and prefixes</a></li>
-  </ol>
-  <h3 class="section">Free practice</h3>
-  <ol class="skills">
+  </ul>
+  <h2>Free Practice</h2>
+  <ul class="skills">
     <li><a href="counters/times-10-counter-exercises.html">×10</a></li>
     <li><a href="counters/times-10-decimal-counter-exercises.html">×10 decimals</a></li>
     <li><a href="counters/times-10-moving-point-counter-exercises.html">Moving point ×10</a></li>
@@ -78,7 +74,8 @@
     <li><a href="counters/times-10-to-the-n-counter-exercises.html">Scientific notation</a></li>
     <li><a href="fractions/fraction-board-exercises.html">Fraction board</a></li>
     <li><a href="fractions/unit-conversion-exercises.html">Unit conversion</a></li>
-  </ol>
+    <li><a href="fractions/unit-conversion-practice.html">Chapter 8 problems</a></li>
+  </ul>
 </main>
 </body>
 </html>

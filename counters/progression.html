@@ -2,7 +2,7 @@
 <html lang="en">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Powers of Ten Practice</title>
+<title>Powers of Ten</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&display=swap">
@@ -40,28 +40,31 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .wrap { max-width: 64rem; margin: 0 auto; padding: 20px 16px 32px; display: flex; flex-direction: column; gap: 14px; }
 .task { width: 100%; max-width: 40rem; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
 .top { display: flex; align-items: center; gap: 16px; width: 100%; max-width: 40rem; margin: 0 auto; }
-.home { color: var(--muted); text-decoration: none; font-size: 15px; }
+.home { color: var(--muted); text-decoration: none; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; min-width: 32px; min-height: 40px; margin-left: -9px; border-radius: 8px; flex: none; }
 .home:hover { color: var(--accent); }
-.reset { margin-left: auto; border: 0; background: transparent; color: var(--muted); font-size: 13px; padding: 4px 6px; border-radius: 8px; opacity: 0.6; }
+.reset { margin-left: auto; border: 0; background: transparent; color: var(--muted); font-size: 13px; min-width: 32px; min-height: 40px; padding: 4px 6px; margin-right: -6px; border-radius: 8px; opacity: 0.6; flex: none; }
 .reset:hover, .reset.armed { opacity: 1; color: var(--accent); }
 .nav { display: flex; align-items: center; gap: 6px; min-width: 0; }
-.nav button { border: 0; background: transparent; color: var(--muted); font-size: 18px; line-height: 1; padding: 2px 5px; border-radius: 8px; opacity: 0.6; flex: none; }
+.nav button { border: 0; background: transparent; color: var(--muted); font-size: 18px; line-height: 1; min-height: 40px; padding: 2px 6px; border-radius: 8px; opacity: 0.6; flex: none; }
 .nav button:hover { opacity: 1; color: var(--accent); }
-@media (max-width: 420px) { .top { gap: 10px; } .nav { gap: 2px; } .nav .dots { gap: 5px; } }
+@media (max-width: 420px) { .top { gap: 10px; } .nav { gap: 2px; } }
 .pace { margin-left: auto; display: inline-flex; align-items: center; color: var(--muted); font-size: 13px; flex: none; }
 .pace span { opacity: 0.5; }
-.pace button { border: 0; background: transparent; color: var(--muted); padding: 4px 5px; border-radius: 8px; opacity: 0.6; }
+.pace button { border: 0; background: transparent; color: var(--muted); min-height: 40px; padding: 4px 5px; border-radius: 8px; opacity: 0.6; }
 .pace button:hover { opacity: 1; }
 .pace button[aria-pressed="true"] { opacity: 1; color: var(--accent); }
 .pace:not([hidden]) + .reset { margin-left: -10px; }
 @media (max-width: 420px) { .pace:not([hidden]) + .reset { margin-left: -6px; } }
+@media (max-width: 360px) { .top { gap: 6px; } .nav { gap: 0; } .nav button { padding: 2px 4px; } .pace button { padding: 4px 3px; } }
 
 /* one dot per skill: hollow = locked, ring filling up = learning, solid = learned (deeper = longer remembered) */
-.dots { display: flex; gap: 7px; flex-wrap: wrap; }
-.dots i { width: 9px; height: 9px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--line); transition: background 0.4s, box-shadow 0.4s, transform 0.3s; }
+.dots { display: flex; gap: 7px; flex-wrap: wrap; padding: 4px 0; }
+.dots i { flex: none; width: 9px; height: 9px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--line); transition: background 0.4s, box-shadow 0.4s, transform 0.3s; }
 .dots i.l { background: conic-gradient(var(--accent) calc(var(--p) * 360deg), transparent 0); box-shadow: inset 0 0 0 1.5px var(--accent); }
 .dots i.m { background: color-mix(in srgb, var(--accent) calc(var(--p) * 100%), transparent); box-shadow: none; }
 .dots i[data-now] { transform: scale(1.35); }
+@media (max-width: 420px) { .nav .dots { gap: 4px; } .dots i { width: 8px; height: 8px; } }
+@media (max-width: 360px) { .nav .dots { gap: 3px; } .dots i { width: 7px; height: 7px; } }
 
 .row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; min-height: 48px; }
 .q { margin: 0; font-size: clamp(18px, 2.8vw, 22px); line-height: 1.5; }
@@ -78,10 +81,13 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .ans input.exp { width: 4.5ch; font-size: 15px; padding: 3px 6px; margin-top: -14px; }
 .ans input:focus { outline: none; border-color: var(--accent); }
 .ans input:disabled { opacity: 0.6; }
+.ans input.good { opacity: 1; border-color: var(--good); }
+.ans input.bad { opacity: 1; border-color: var(--bad); }
 .ans .pow { display: inline-flex; align-items: flex-start; gap: 6px; white-space: nowrap; }
 .fb { margin: 0; min-height: 1.5em; font-size: 15px; line-height: 1.5; color: var(--muted); overflow-wrap: anywhere; }
 .fb.good { color: var(--good); }
 .fb.bad { color: var(--bad); }
+.fb.show { color: var(--ink); }
 .actions { display: flex; gap: 8px; }
 .actions button { font-size: 14px; padding: 9px 18px; border-radius: 10px; border: 1px solid var(--accent); background: var(--accent); color: var(--on-accent); }
 .actions button:disabled { opacity: 0.4; cursor: default; }
@@ -119,7 +125,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
     </div>
     <p class="fb" id="fb" aria-live="polite"></p>
     <div class="actions">
-      <button type="button" id="check">Check</button>
+      <button type="button" id="check" aria-describedby="q">Check</button>
       <button type="button" id="next" hidden>Next →</button>
     </div>
   </section>
@@ -129,5 +135,5 @@ button { font: inherit; color: inherit; cursor: pointer; }
     <label class="switch" for="instant"><input id="instant" type="checkbox"><span class="track"></span><span>Instant</span></label>
   </div>
 </main>
-<script src="progression.js"></script>
+<script src="progression.js?v=4"></script>
 </html>

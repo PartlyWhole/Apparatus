@@ -11,15 +11,20 @@
   box-shadow: 0 0 0 1px var(--line), 0 10px 30px rgba(10, 20, 40, 0.12); display: grid; grid-template-columns: auto auto auto; gap: 6px 10px;
   font-family: var(--f-mono, monospace); font-size: 0.95rem; color: var(--ink); }
 .cs-panel span:nth-child(3n+2) { color: var(--muted); }
-.cs-btn[hidden], .cs-panel[hidden] { display: none; }`;
+.cs-btn[hidden], .cs-panel[hidden], .cs-room[hidden] { display: none; }
+.cs-room { height: 56px; }
+@media (min-width: 1280px) { .cs-room { display: none; } }`;
   document.head.appendChild(css);
   const btn = document.createElement('button');
   btn.type = 'button'; btn.className = 'cs-btn'; btn.textContent = 'Cheat sheet'; btn.setAttribute('aria-expanded', 'false');
   const panel = document.createElement('div');
   panel.className = 'cs-panel'; panel.hidden = true; panel.setAttribute('role', 'note');
   panel.innerHTML = FACTS.map(([a, b]) => `<span>${a}</span><span>=</span><span>${b}</span>`).join('');
+  // room at the end of the page, so the button never sits on top of the last thing there
+  const room = document.createElement('div');
+  room.className = 'cs-room'; room.setAttribute('aria-hidden', 'true');
   btn.addEventListener('click', () => { panel.hidden = !panel.hidden; btn.setAttribute('aria-expanded', String(!panel.hidden)); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && !panel.hidden) btn.click(); });
-  document.body.append(panel, btn);
-  window.cheatsheet = { show(on) { btn.hidden = !on; if (!on) { panel.hidden = true; btn.setAttribute('aria-expanded', 'false'); } } };
+  document.body.append(room, panel, btn);
+  window.cheatsheet = { show(on) { btn.hidden = room.hidden = !on; if (!on) { panel.hidden = true; btn.setAttribute('aria-expanded', 'false'); } } };
 })();
