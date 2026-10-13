@@ -150,7 +150,7 @@ button { cursor: pointer; }
   </div>
 </div>
 
-<script src="fraction-board.js"></script>
+<script src="fraction-board.js?v=2"></script>
 <script>
 (function () {
   const ri = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
@@ -193,18 +193,27 @@ button { cursor: pointer; }
     // matching pairs: one on top somewhere, one on the bottom somewhere else
     const pairs = [...shuffle(NUMS.slice()).slice(0, ri(2, 3)), ...shuffle(UNITS.slice()).slice(0, ri(1, 2))];
     pairs.forEach(x => { const a = ri(0, k - 1); let b = ri(0, k - 1); if (k > 1 && b === a) b = (a + 1) % k; fr[a].num.push(x); fr[b].den.push(x); });
-    // leftovers: sometimes sharing a factor (like 4 over 6), so splitting is needed
+    // leftovers that don't cancel
     const lt = pick([4, 6, 8, 9, 3, 5, 7, 2]); let lb = pick([6, 9, 10, 3, 4, 5, 7, 2]); while (lb === lt) lb = pick([6, 9, 10, 3, 4, 5, 7, 2]);
     fr[ri(0, k - 1)].num.push(lt); fr[ri(0, k - 1)].den.push(lb);
     const u = pick(UNITS.filter(x => !pairs.includes(x)));
     fr[ri(0, k - 1)][Math.random() < 0.5 ? 'num' : 'den'].push(u);
     return fr.map(f => shuffle(f.num).join(' ') + ' / ' + shuffle(f.den).join(' '));
   }
+  // factors that still have an equal partner across the bar (numbers, powers of ten, units)
+  function cancelPairs(st) {
+    const top = [], bot = [];
+    st.fracs.forEach(fr => {
+      fr.num.forEach(f => { if (f.t !== 'b' && !isUnity(f)) top.push(f); });
+      fr.den.forEach(f => { if (f.t !== 'b' && !isUnity(f)) bot.push(f); });
+    });
+    const out = [];
+    top.forEach(f => { const h = FractionBoard.html(f); if (bot.some(g => FractionBoard.internals.same(f, g)) && !out.includes(h)) out.push(h); });
+    return out;
+  }
   function checkCancel(st) {
-    const both = unitsOnBothSides(st);
-    if (both.length) return [false, `${both.join(', ')} can still cancel.`];
-    const t = totals(st), g = bgcd(t.n, t.d);
-    if (g > 1n) return [false, `Top and bottom share a factor of ${g}.`];
+    const c = cancelPairs(st);
+    if (c.length) return [false, `${c.join(', ')} can still cancel.`];
     return [true, 'Simplified.'];
   }
 
@@ -237,7 +246,7 @@ button { cursor: pointer; }
     const m = ri(2, 6);
     const kind = ri(0, 2);
     if (kind === 0) { goal = [a * m, b * m]; return [`${a} / ${b}`]; }                  // build up
-    if (kind === 1) { goal = [a, b]; return [`${a * m} / ${b * m}`]; }                    // reduce
+    if (kind === 1) { goal = [a, b]; return [`${a} ${m} / ${b} ${m}`]; }                    // reduce: cancel the shared factor
     let p = ri(2, 5), q = ri(2, 5); while (p === q) q = ri(2, 5);
     goal = [a * p, b * q]; return [`${a} / ${b}`];                                          // not equal: multiply top and bottom by different factors
   }

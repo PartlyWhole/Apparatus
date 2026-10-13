@@ -9,11 +9,13 @@
  */
 (function () {
   'use strict';
-  const MASTER = 4;
+  const MASTER = 3;
+  const QUICK_MASTER = 2, QUICK_LEVEL = [1, 2];   // the first skills: two in a row, starting at medium
+  const masterFor = id => SKILLS.find(s => s.id === id).quick ? QUICK_MASTER : MASTER;
   const GAP = [0, 3, 6, 12, 24, 48];
   const DAYS = [0, 1, 2, 4, 8, 16];
-  const LEARN_LEVEL = [0, 1, 1, 2];
-  const KEY = 'apparatus.fraction-path.v1';
+  const LEARN_LEVEL = [0, 1, 2];
+  const KEY = 'apparatus.fraction-path.v2';
 
   const ri = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
   const pick = a => a[ri(0, a.length - 1)];
@@ -45,11 +47,20 @@
     return both;
   }
   const bgcd = (a, b) => { while (b) [a, b] = [b, a % b]; return a; };
+  // factors that still have an equal partner across the bar (numbers, powers of ten, units)
+  function cancelPairs(st) {
+    const top = [], bot = [];
+    st.fracs.forEach(fr => {
+      fr.num.forEach(f => { if (f.t !== 'b' && !isUnity(f)) top.push(f); });
+      fr.den.forEach(f => { if (f.t !== 'b' && !isUnity(f)) bot.push(f); });
+    });
+    const out = [];
+    top.forEach(f => { const h = FractionBoard.html(f); if (bot.some(g => FractionBoard.internals.same(f, g)) && !out.includes(h)) out.push(h); });
+    return out;
+  }
   function checkCancel(st) {
-    const both = unitsOnBothSides(st);
-    if (both.length) return [false, `<i>${both.join(', ')}</i> can still cancel.`];
-    const t = totals(st), g = bgcd(t.n, t.d);
-    if (g > 1n) return [false, `Top and bottom share a factor of ${g}.`];
+    const c = cancelPairs(st);
+    if (c.length) return [false, `${c.join(', ')} can still cancel.`];
     return [true, ''];
   }
   function checkPowers(st) {
@@ -99,27 +110,6 @@
     if (l > 0) fr[ri(0, k - 1)][Math.random() < 0.5 ? 'num' : 'den'].push(us[3]);
     return { spec: join(fr) };
   }
-  // 3. cancel that needs a split first (4 over 6)
-  function genSplit(l) {
-    if (l < 2) {
-      for (;;) {
-        const [a, b] = coprime(l === 0 ? [1, 2, 3] : [1, 2, 3, 4, 5]);
-        const m = pick(l === 0 ? [2, 3] : [2, 3, 4, 5, 6]);
-        if (a * m < 4 && b * m < 4) continue;
-        const fr = [{ num: [a * m], den: [b * m] }];
-        if (l === 1) { const u = pick(UN); fr[0].num.push(u); fr[0].den.push(u); }
-        return { spec: join(fr) };
-      }
-    }
-    const S = [4, 6, 8, 9, 10, 12, 14, 15, 16, 18, 20, 21];
-    for (;;) {
-      const t = [pick(S), pick(S)], b = [pick(S), pick(S)];
-      if (t.some(x => b.includes(x)) || gcd(t[0] * t[1], b[0] * b[1]) === 1) continue;
-      const fr = [{ num: [t[0]], den: [b[0]] }, { num: [t[1]], den: [b[1]] }];
-      place(fr, pick(UN), 2);
-      return { spec: join(fr) };
-    }
-  }
   // 4. several fractions, everything mixed
   function genMixed(l) {
     const k = l === 0 ? 2 : ri(2, 3), fr = blank(k);
@@ -168,13 +158,13 @@
     }
     if (kind === 'down') {
       const m = l === 0 ? pick([2, 3]) : l === 1 ? ri(2, 6) : pick([6, 8, 9, 10, 12]);
-      return { spec: [`${a * m} / ${b * m}`], goal: [a, b] };
+      return { spec: [`${a} ${m} / ${b} ${m}`], goal: [a, b] };
     }
     let p = ri(2, 5), q = ri(2, 5); while (p === q) q = ri(2, 5);
     if (l === 0) return { spec: [`${a} / ${b}`], goal: Math.random() < 0.5 ? [a * p, b] : [a, b * q] };
     if (l === 1) return { spec: [`${a} / ${b}`], goal: [a * p, b * q] };
     let m = ri(2, 3); while (m === p || m === q) m++;
-    return { spec: [`${a * m} / ${b * m}`], goal: [a * p, b * q] };
+    return { spec: [`${a} ${m} / ${b} ${m}`], goal: [a * p, b * q] };
   }
 
   // ================= unit conversions =================
@@ -266,9 +256,8 @@
 
   // ================= the skills, in order =================
   const SKILLS = [
-    { id: 'num', name: 'Cancel', type: 'cancel', gen: genNum, tip: 'Drag a number onto its match across the bar.' },
-    { id: 'unit', name: 'Units', type: 'cancel', gen: genUnit },
-    { id: 'split', name: 'Split', type: 'cancel', gen: genSplit, tip: 'Tap a number to split it.' },
+    { id: 'num', name: 'Cancel', quick: true, type: 'cancel', gen: genNum, tip: 'Drag a number onto its match across the bar.' },
+    { id: 'unit', name: 'Units', quick: true, type: 'cancel', gen: genUnit },
     { id: 'mixed', name: 'Mixed', type: 'cancel', gen: genMixed },
     { id: 'p10', name: '10ⁿ', type: 'pow', gen: l => genPow('p10', l), tip: 'Tap a power of ten to split it or move it across. Drop one on a neighbour to multiply.' },
     { id: 'forms', name: '1,000', type: 'pow', gen: l => genPow('forms', l), tip: 'Tap a number to rewrite it as 10ⁿ.' },
@@ -332,7 +321,8 @@
   function level(id) {
     if (ONLY) return PR.lvl;
     const s = S(id);
-    return s.box === 0 ? LEARN_LEVEL[Math.min(s.streak, LEARN_LEVEL.length - 1)] : Math.min(2, s.box);
+    const L = SKILLS.find(k => k.id === id).quick ? QUICK_LEVEL : LEARN_LEVEL;
+    return s.box === 0 ? L[Math.min(s.streak, L.length - 1)] : Math.min(2, s.box);
   }
   // record one answer; returns true when it masters a new skill
   function grade(id, ok, review, now) {
@@ -344,7 +334,7 @@
     let mastered = false;
     if (s.box === 0) {
       s.streak = ok ? s.streak + 1 : 0;
-      if (s.streak >= MASTER) {
+      if (s.streak >= masterFor(id)) {
         s.box = 1; s.streak = 0; s.due = P.n + GAP[1]; mastered = true;
         P.front = Math.max(P.front, idx(id) + 1);
       }
@@ -601,7 +591,7 @@
       const s = S(SKILLS[i].id);
       d.className = 'dot';
       if (s.box > 0) { d.classList.add('done'); d.style.setProperty('--b', 40 + s.box * 12); }
-      else if (i === P.front) { d.classList.add('now'); d.style.setProperty('--p', Math.round(100 * s.streak / MASTER)); }
+      else if (i === P.front) { d.classList.add('now'); d.style.setProperty('--p', Math.round(100 * s.streak / masterFor(SKILLS[i].id))); }
       if (cur && SKILLS[i].id === cur.id) d.classList.add('cur');
       if (i === popAt) d.classList.add('pop');
     });

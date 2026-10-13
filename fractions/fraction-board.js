@@ -131,17 +131,6 @@
           add(() => [P(k)]);
           if (k >= 2) add(() => [N('10'), N('1' + zeros(k - 1))]);
         }
-        if (k === null && v > 3n && v <= 100000n) {
-          let count = 0;
-          for (let a = 2n; a * a <= v && count < 3; a++) {
-            if (v % a === 0n) {
-              const b = v / a;
-              if (k !== null && a === 10n) continue;
-              add(() => [N(a.toString()), N(b.toString())]);
-              count++;
-            }
-          }
-        }
       } else {
         // a decimal is a whole number times a power of ten: 2.54 = 254 · 10⁻²
         add(() => [N(f.d), P(-f.s)]);

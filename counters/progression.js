@@ -99,9 +99,9 @@
   // A mastered skill returns after GAP[box] problems, or after DAYS[box] days, whichever comes first.
   // Right on review: box + 1 (max 5). Wrong: back to box 1. With nothing due and nothing new, the soonest-due skill
   // comes early; that keeps its box when right.
-  const UP = [2, 2, 3];
+  const UP = [1, 2, 2];
   // quick skills (the warm-up counters): one right per level, and their first review starts further out
-  const QUICK_UP = [1, 1, 1], QUICK_BOX = 3;
+  const QUICK_UP = [1, 1, 0], QUICK_BOX = 3;
   const upFor = k => k.quick ? QUICK_UP : UP;
   const GAP = [0, 3, 8, 20, 50, 120];
   const DAYS = [0, 0, 1, 3, 7, 21];
@@ -136,7 +136,12 @@
     if (review) { s.box = !ok ? 1 : early ? s.box : Math.min(5, s.box + 1); schedule(s); }
     else if (ok) {
       s.streak++;
-      if (s.streak >= upFor(skill)[s.lvl]) { s.streak = 0; if (s.lvl < 2) s.lvl++; else { s.box = skill.quick ? QUICK_BOX : 1; schedule(s); } }
+      if (s.streak >= upFor(skill)[s.lvl]) {
+        s.streak = 0;
+        // quick skills are mastered after the medium level; the hard level comes back in review
+        if (s.lvl < 2 && !(skill.quick && s.lvl === 1)) s.lvl++;
+        else { s.box = skill.quick ? QUICK_BOX : 1; schedule(s); }
+      }
     } else { s.streak = 0; s.lvl = Math.max(0, s.lvl - 1); }
     st.last = skill.id; st.lastReview = review;
     save(); dots();
