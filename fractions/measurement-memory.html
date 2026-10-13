@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Measurement Memory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500;600;700&display=swap">
+<style>
+:root {
+  --bg: #EEF2F7; --surface: #FFFFFF; --ink: #13203A; --muted: #5F6F8A; --line: #D3DBE7;
+  --accent: #2648C9; --on-accent: #FFFFFF; --good: #17804F; --bad: #C2413A;
+  --f-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B1120; --surface: #131C2E; --ink: #E4EAF4; --muted: #95A4BF; --line: #26344F;
+    --accent: #8AA8FF; --on-accent: #0B1120; --good: #4CC38A; --bad: #FF8F85; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B1120; --surface: #131C2E; --ink: #E4EAF4; --muted: #95A4BF; --line: #26344F;
+  --accent: #8AA8FF; --on-accent: #0B1120; --good: #4CC38A; --bad: #FF8F85; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--f-body); }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.page { min-height: 100%; max-width: 40rem; margin: 0 auto; padding: 24px 16px 40px; display: flex; flex-direction: column; gap: 28px; }
+.top { display: flex; align-items: center; gap: 10px; }
+.top a, .wipe { min-width: 44px; min-height: 44px; display: grid; place-items: center; color: var(--muted); text-decoration: none; font-size: 1.1rem; }
+.top a:hover { color: var(--accent); }
+.bar { flex: 1; height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; }
+.bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width 0.5s ease; }
+.wipe { border: 0; background: transparent; opacity: 0.6; padding: 0; }
+.wipe:hover { opacity: 1; }
+.wipe.armed { opacity: 1; color: var(--bad); font-size: 0.85rem; }
+.card { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 22px; padding-bottom: 10vh; }
+.q {
+  display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 10px 12px; max-width: 100%;
+  font-family: var(--f-mono); font-weight: 700; font-size: clamp(1.35rem, 5.5vw, 2.1rem); text-align: center; line-height: 1.3;
+}
+.q sup { font-size: 0.55em; }
+.q .w { font-family: var(--f-body); }
+.q input {
+  width: 7ch; max-width: 100%; padding: 6px 10px; border-radius: 12px; border: 2px solid var(--line); background: var(--surface);
+  font-family: var(--f-mono); font-weight: 700; font-size: inherit; text-align: center;
+}
+.q input.word { width: 9ch; font-family: var(--f-body); }
+.q input:focus { outline: none; border-color: var(--accent); }
+.q.ok input { border-color: var(--good); color: var(--good); }
+.q.no input { border-color: var(--bad); color: var(--bad); }
+.opts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; width: min(100%, 30rem); }
+.opts button {
+  min-height: 56px; padding: 10px 12px; border-radius: 14px; border: 2px solid var(--line); background: var(--surface);
+  font-family: var(--f-mono); font-weight: 700; font-size: 1.1rem; line-height: 1.25; overflow-wrap: anywhere;
+}
+.opts button.w { font-family: var(--f-body); }
+.opts button:hover:not(:disabled) { border-color: var(--accent); }
+.opts button:disabled { cursor: default; opacity: 0.5; }
+.opts button.ok { opacity: 1; border-color: var(--good); color: var(--good); }
+.opts button.no { opacity: 1; border-color: var(--bad); color: var(--bad); }
+.fb { min-height: 1.6em; margin: 0; font-family: var(--f-mono); font-size: 1.05rem; color: var(--muted); text-align: center; }
+.fb.ok { color: var(--good); font-weight: 700; }
+.fb.no { color: var(--bad); }
+.go { min-height: 46px; padding: 0 26px; border-radius: 999px; border: 0; background: var(--accent); color: var(--on-accent); font-weight: 700; }
+@media (max-width: 360px) { .opts { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) { .bar i { transition: none; } }
+</style>
+
+<div class="page">
+  <div class="top">
+    <a href="../index.html" aria-label="Apparatus">←</a>
+    <div class="bar" role="img" id="barWrap"><i id="bar"></i></div>
+    <button type="button" class="wipe" id="wipe" aria-label="Reset progress" title="Reset progress">↺</button>
+  </div>
+  <div class="card">
+    <div class="q" id="q" aria-live="polite"></div>
+    <div class="opts" id="opts" hidden></div>
+    <p class="fb" id="fb" aria-live="polite"></p>
+    <button type="button" class="go" id="go">Check</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  // ================= the facts (Chapter 8) =================
+  // Each fact can be asked as multiple choice (mc) and as fill in the blank (fill).
+  // A fact's fill question only appears after its multiple-choice question has been answered right once.
+  //   mc:   { q: html, a: answer, opts: [wrong answers], w: options are words }
+  //   fill: { q: [before, after], a: number | string | [accepted strings], kind: 'num' | 'word' | 'sym', show }
+  const F = [];
+  const fact = (id, mc, fill) => F.push({ id, mc, fill });
+  const ONE_IN = n => '1/' + n;                       // how fractions are written in options
+
+  // ---- prefixes: the five essentials ----
+  const PREFIX = [
+    ['mega', 'M', 1e6, '1,000,000'],
+    ['kilo', 'k', 1e3, '1,000'],
+    ['centi', 'c', 1e-2, '1/100'],
+    ['milli', 'm', 1e-3, '1/1,000'],
+    ['micro', 'µ', 1e-6, '1/1,000,000']
+  ];
+  const EXTRA = [['hecto', 'h', 100, '100'], ['deca', 'da', 10, '10'], ['deci', 'd', 0.1, '1/10']];
+  const ALL_P = PREFIX.concat(EXTRA);
+  function prefixFacts(list, pool) {
+    // distractors come from the same pool (the five essentials don't borrow from the extras)
+    const factorOpts = s => pool.map(p => p[3]).filter(x => x !== s);
+    list.forEach(([name, sym, val, show]) => {
+      fact(`${name}-x`, { q: `${name}– = ×`, a: show, opts: factorOpts(show) }, { q: [`${name}– = ×`, ''], a: val, kind: 'num', show });
+      fact(`${name}-sym`, { q: `<span class="w">Symbol for ${name}–</span>`, a: sym, opts: pool.map(p => p[1]).concat(['mc', 'K', 'D']).filter(x => x !== sym) },
+        sym === 'µ' ? null : { q: [`${name}– =`, ''], a: sym, kind: 'sym', show: sym });
+      fact(`${name}-of`, { q: `× ${show} =`, a: name + '–', opts: pool.map(p => p[0] + '–').filter(x => x !== name + '–'), w: true },
+        { q: [`× ${show} =`, '–'], a: name, kind: 'word', show: name });
+    });
+  }
+  prefixFacts(PREFIX, PREFIX);
+  fact('M-vs-m', { q: 'M =', a: 'mega–', opts: ['milli–', 'micro–', 'meter'], w: true }, null);
+  fact('m-vs-M', { q: 'm (in mg) =', a: 'milli–', opts: ['mega–', 'micro–', 'meter'], w: true }, null);
+
+  // ---- the seven base units ----
+  const BASE = [
+    ['meter', 'm', 'length'],
+    ['kilogram', 'kg', 'mass'],
+    ['second', 's', 'time'],
+    ['ampere', 'A', 'electric current'],
+    ['kelvin', 'K', 'temperature'],
+    ['candela', 'cd', 'luminous intensity'],
+    ['mole', 'mol', 'amount of substance']
+  ];
+  const QTY = BASE.map(b => b[2]).concat(['energy', 'force', 'volume', 'power', 'pressure', 'weight']);
+  const UNITN = BASE.map(b => b[0]).concat(['gram', 'joule', 'newton', 'liter', 'watt']);
+  BASE.forEach(([name, sym, qty]) => {
+    fact(`${name}-measures`, { q: `<span class="w">A ${name} measures</span>`, a: qty, opts: QTY.filter(x => x !== qty), w: true },
+      { q: [`<span class="w">A ${name} measures</span>`, ''], a: qty === 'length' ? ['length', 'distance'] : qty === 'electric current' ? [qty, 'current'] : [qty], kind: 'word', show: qty });
+    fact(`${name}-unit`, { q: `<span class="w">SI base unit of ${qty}</span>`, a: name, opts: UNITN.filter(x => x !== name), w: true },
+      { q: [`<span class="w">SI base unit of ${qty}:</span>`, ''], a: [name, sym], kind: 'word', show: name });
+    fact(`${name}-sym`, { q: `<span class="w">Symbol for ${name}</span>`, a: sym, opts: BASE.map(b => b[1]).concat(['g', 'k', 'M', 'Cd', 'a']).filter(x => x !== sym) },
+      { q: [`<span class="w">${name} =</span>`, ''], a: sym, kind: 'sym', show: sym });
+  });
+  fact('mass-weight', { q: '<span class="w">Weight is a force, measured in</span>', a: 'newtons', opts: ['kilograms', 'grams', 'joules', 'kelvins'], w: true }, null);
+  fact('gram-prefix', { q: '<span class="w">For mass, prefixes go on the</span>', a: 'gram', opts: ['kilogram', 'meter', 'liter'], w: true }, null);
+
+  // ---- conversions to memorize ----
+  const CONV = [
+    // prefix conversions (built from the prefix meanings)
+    ['1 km', 'm', 1000], ['1 m', 'cm', 100], ['1 m', 'mm', 1000], ['1 m', 'µm', 1e6], ['1 cm', 'mm', 10],
+    ['1 kg', 'g', 1000], ['1 g', 'mg', 1000], ['1 L', 'mL', 1000], ['1 L', 'µL', 1e6], ['1 MW', 'W', 1e6], ['1 kJ', 'J', 1000],
+    // U.S. Customary (Table 8.6)
+    ['1 mi', 'ft', 5280], ['1 yd', 'ft', 3], ['1 ft', 'in', 12], ['1 min', 's', 60], ['1 hr', 'min', 60], ['1 dy', 'hr', 24], ['1 yr', 'dy', 365], ['1 hr', 's', 3600],
+    // SI volume (Table 8.6)
+    ['1 L', 'cm<sup>3</sup>', 1000], ['1 m<sup>3</sup>', 'cm<sup>3</sup>', 1e6], ['1 m<sup>3</sup>', 'L', 1000], ['1 mL', 'cm<sup>3</sup>', 1],
+    // inter-system, the one to memorize
+    ['1 in', 'cm', 2.54]
+  ];
+  const NUMS = [1, 2.54, 3, 10, 12, 24, 60, 100, 365, 1000, 3600, 5280, 1e6, 0.1, 0.01, 0.001];
+  const commas = n => { const [i, f] = String(n).split('.'); return i.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + (f ? '.' + f : ''); };
+  function numOpts(a) {
+    const near = [a * 10, a / 10, a * 100].filter(x => x >= 1 && x < 1e7 && Number.isInteger(+x.toPrecision(6)));
+    const pool = [...new Set(near.concat(NUMS.filter(x => x >= 1)).map(x => +x.toPrecision(6)))].filter(x => x !== a);
+    return pool.map(commas);
+  }
+  CONV.forEach(([from, to, n]) => {
+    const id = (from + '-' + to).replace(/<[^>]+>/g, '').replace(/\s/g, '');
+    fact(id, { q: `${from} = ? ${to}`, a: commas(n), opts: numOpts(n) }, { q: [`${from} =`, to], a: n, kind: 'num', show: commas(n) });
+  });
+
+  // ---- derived units and the liter ----
+  const DERIVED = [['joule', 'J', 'energy'], ['newton', 'N', 'force'], ['watt', 'W', 'power'], ['pascal', 'Pa', 'pressure'], ['cubic meter', 'm<sup>3</sup>', 'volume']];
+  DERIVED.forEach(([name, sym, qty]) => {
+    fact(`${name}-measures`, { q: `<span class="w">A ${name} (${sym}) measures</span>`, a: qty, opts: QTY.filter(x => x !== qty), w: true },
+      { q: [`<span class="w">A ${name} measures</span>`, ''], a: [qty], kind: 'word', show: qty });
+  });
+  fact('liter-measures', { q: '<span class="w">A liter (L) measures</span>', a: 'volume', opts: ['mass', 'length', 'pressure'], w: true }, null);
+  fact('base-or-derived', { q: '<span class="w">Which is a base unit?</span>', a: 'kelvin', opts: ['joule', 'newton', 'liter', 'gram'], w: true }, null);
+
+  // ---- the other prefixes between mega and micro (reference, last) ----
+  prefixFacts(EXTRA, ALL_P);
+
+  // every question: a fact's mc, then (unlocked by it) its fill
+  const ITEMS = [];
+  F.forEach(f => {
+    ITEMS.push({ id: f.id + ':mc', fact: f, kind: 'mc' });
+    if (f.fill) ITEMS.push({ id: f.id + ':fill', fact: f, kind: 'fill', after: f.id + ':mc' });
+  });
+
+  // ================= spaced repetition (Leitner boxes per question) =================
+  // Right: box + 1 (max 5). Wrong: box 0. A question comes back after GAP[box] questions or DAYS[box] days.
+  // New questions are introduced while fewer than LOAD are still being learned (box < 2).
+  const GAP = [2, 4, 8, 16, 32, 64];
+  const DAYS = [0, 0, 1, 2, 5, 12];
+  const LOAD = 4, MASTERED = 4;
+  const KEY = 'apparatus.measurement-memory.v1';
+  const fresh = () => ({ n: 0, last: null, c: {} });
+  let st = fresh();
+  try { const o = JSON.parse(localStorage.getItem(KEY)); if (o && o.c) st = Object.assign(fresh(), o); } catch (_) {}
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (_) {} };
+  const S = id => st.c[id];
+  const due = (id, now) => { const s = S(id); return st.n >= s.due || (DAYS[s.box] && now - s.t >= DAYS[s.box] * 864e5); };
+  function pick() {
+    const now = Date.now();
+    const seen = ITEMS.filter(it => S(it.id)).map(it => it.id);
+    const learning = seen.filter(id => S(id).box < 2).length;
+    let ready = seen.filter(id => due(id, now) && id !== st.last).sort((a, b) => S(a).due - S(b).due);
+    if (ready.length) return ready[0];
+    if (learning < LOAD) {
+      // the next new question: a fill whose mc has been answered right, else the next new mc
+      const next = ITEMS.find(it => !S(it.id) && it.after && S(it.after) && S(it.after).box >= 1)
+        || ITEMS.find(it => !S(it.id) && !it.after);
+      if (next) { st.c[next.id] = { box: 0, due: 0, t: now }; return next.id; }
+    }
+    ready = seen.filter(id => id !== st.last).sort((a, b) => S(a).due - S(b).due);
+    return ready[0] || seen[0];
+  }
+  function grade(id, ok) {
+    const s = S(id);
+    st.n++; s.t = Date.now(); st.last = id;
+    s.box = ok ? Math.min(5, s.box + 1) : 0;
+    s.due = st.n + GAP[s.box];
+    save(); drawBar();
+  }
+
+  // ================= answers =================
+  function parse(t) {
+    t = t.trim().toLowerCase().replace(/[,\s]/g, '').replace(/−/g, '-').replace(/^[x×*]/, '');
+    let m;
+    if ((m = /^(-?\d*\.?\d+)\/(-?\d*\.?\d+)$/.exec(t))) return +m[1] / +m[2];
+    if ((m = /^(?:1[x×*])?10\^\(?(-?\d+)\)?$/.exec(t))) return 10 ** +m[1];
+    if (/^-?\d*\.?\d+(e-?\d+)?$/.test(t)) return +t;
+    return NaN;
+  }
+  const word = t => t.trim().toLowerCase().replace(/[–-]$/, '').replace(/s$/, '').replace(/\s+/g, ' ');
+  function rightFill(fl, text) {
+    if (fl.kind === 'num') { const v = parse(text); return isFinite(v) && Math.abs(v - fl.a) <= Math.abs(fl.a) * 1e-9; }
+    if (fl.kind === 'sym') return text.trim() === fl.a;              // case matters: M ≠ m, K ≠ k
+    return [].concat(fl.a).some(a => word(text) === word(a));
+  }
+
+  // ================= one question =================
+  const $ = id => document.getElementById(id);
+  const q = $('q'), opts = $('opts'), fb = $('fb'), go = $('go');
+  const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  let cur = null, done = false, timer = null;
+  function next() {
+    clearTimeout(timer);
+    const id = pick();
+    cur = ITEMS.find(it => it.id === id);
+    done = false;
+    fb.textContent = ''; fb.className = 'fb';
+    q.className = 'q';
+    const f = cur.fact;
+    if (cur.kind === 'mc') {
+      q.innerHTML = `<span>${f.mc.q}</span>`;
+      const choices = shuffle([f.mc.a].concat(shuffle(f.mc.opts.slice()).slice(0, 3)));
+      opts.innerHTML = choices.map(c => `<button type="button" class="${f.mc.w ? 'w' : ''}" data-a="${c.replace(/"/g, '&quot;')}">${c}</button>`).join('');
+      opts.hidden = false; go.hidden = true;
+      opts.querySelectorAll('button').forEach(b => b.addEventListener('click', () => choose(b)));
+      if (document.activeElement && document.activeElement !== document.body) document.activeElement.blur();
+    } else {
+      const fl = f.fill;
+      const cls = fl.kind === 'num' ? '' : 'word';
+      q.innerHTML = `<span>${fl.q[0]}</span><input id="a" type="text" inputmode="${fl.kind === 'num' ? 'decimal' : 'text'}" autocomplete="off" autocapitalize="off" spellcheck="false" class="${cls}" aria-label="Answer">${fl.q[1] ? `<span>${fl.q[1]}</span>` : ''}`;
+      opts.hidden = true; go.hidden = false; go.textContent = 'Check';
+      const inp = $('a');
+      inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); act(); } });
+      inp.focus({ preventScroll: true });
+    }
+  }
+  function finish(ok, answerHTML) {
+    grade(cur.id, ok);
+    done = true;
+    if (ok) {
+      fb.textContent = '✓'; fb.className = 'fb ok';
+      go.hidden = false; go.textContent = 'Next →';
+      timer = setTimeout(() => { if (done) next(); }, 800);
+    } else {
+      fb.innerHTML = answerHTML; fb.className = 'fb no';
+      go.hidden = false; go.textContent = 'Next →'; go.focus({ preventScroll: true });
+    }
+  }
+  function choose(b) {
+    if (done) return;
+    const f = cur.fact, ok = b.dataset.a === f.mc.a;
+    opts.querySelectorAll('button').forEach(x => { x.disabled = true; if (x.dataset.a === f.mc.a) x.classList.add('ok'); });
+    if (!ok) b.classList.add('no');
+    finish(ok, '');
+    if (!ok) fb.textContent = '';
+  }
+  function act() {
+    if (done) return next();
+    if (cur.kind !== 'fill') return;
+    const inp = $('a'), fl = cur.fact.fill;
+    if (!inp.value.trim()) return;
+    const ok = rightFill(fl, inp.value);
+    inp.readOnly = true;
+    q.classList.add(ok ? 'ok' : 'no');
+    finish(ok, `${fl.q[0]} ${fl.show} ${fl.q[1]}`);
+  }
+  go.addEventListener('click', act);
+  document.addEventListener('keydown', e => {
+    if (e.target.closest('input')) return;
+    if (cur && cur.kind === 'mc' && !done && /^[1-4]$/.test(e.key)) { const b = opts.children[+e.key - 1]; if (b) b.click(); }
+    else if (e.key === 'Enter' && done && e.target === document.body) { e.preventDefault(); next(); }
+  });
+
+  // ================= progress =================
+  function drawBar() {
+    const sum = ITEMS.reduce((a, it) => a + Math.min(MASTERED, S(it.id) ? S(it.id).box : 0), 0);
+    const pct = Math.round(100 * sum / (MASTERED * ITEMS.length));
+    $('bar').style.width = pct + '%';
+    $('barWrap').setAttribute('aria-label', `${pct}% mastered`);
+  }
+  const wipe = $('wipe');
+  let armed = null;
+  wipe.addEventListener('click', () => {
+    if (!armed) { wipe.classList.add('armed'); wipe.textContent = 'Reset?'; armed = setTimeout(() => { armed = null; wipe.classList.remove('armed'); wipe.textContent = '↺'; }, 3000); return; }
+    clearTimeout(armed); armed = null; wipe.classList.remove('armed'); wipe.textContent = '↺';
+    st = fresh(); save(); drawBar(); next();
+  });
+
+  if (/[?&]debug\b/.test(location.search)) window.mem = { get st() { return st; }, ITEMS, pick, grade, parse, rightFill, next, get cur() { return cur; } };
+  drawBar();
+  next();
+})();
+</script>
