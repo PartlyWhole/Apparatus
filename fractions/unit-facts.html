@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Unit Facts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500;600;700&display=swap">
+<style>
+:root {
+  --bg: #EEF2F7; --surface: #FFFFFF; --ink: #13203A; --muted: #5F6F8A; --line: #D3DBE7;
+  --accent: #2648C9; --on-accent: #FFFFFF; --good: #17804F; --bad: #C2413A;
+  --f-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B1120; --surface: #131C2E; --ink: #E4EAF4; --muted: #95A4BF; --line: #26344F;
+    --accent: #8AA8FF; --on-accent: #0B1120; --good: #4CC38A; --bad: #FF8F85; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B1120; --surface: #131C2E; --ink: #E4EAF4; --muted: #95A4BF; --line: #26344F;
+  --accent: #8AA8FF; --on-accent: #0B1120; --good: #4CC38A; --bad: #FF8F85; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--f-body); }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.page { min-height: 100%; max-width: 40rem; margin: 0 auto; padding: 24px 16px 40px; display: flex; flex-direction: column; gap: 28px; }
+.top { display: flex; align-items: center; gap: 14px; }
+.top a { color: var(--muted); text-decoration: none; font-size: 1.1rem; }
+.top a:hover { color: var(--accent); }
+.bar { flex: 1; height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; }
+.bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width 0.5s ease; }
+.wipe { border: 0; background: transparent; color: var(--muted); opacity: 0.6; font-size: 1rem; padding: 4px; }
+.wipe:hover { opacity: 1; }
+.wipe.armed { opacity: 1; color: var(--bad); font-size: 0.85rem; }
+.card { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 22px; padding-bottom: 12vh; }
+.q {
+  display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 12px;
+  font-family: var(--f-mono); font-weight: 700; font-size: clamp(1.6rem, 6vw, 2.4rem); text-align: center;
+}
+.q sup { font-size: 0.55em; }
+.q input {
+  width: 6.5ch; padding: 6px 10px; border-radius: 12px; border: 2px solid var(--line); background: var(--surface);
+  font-family: var(--f-mono); font-weight: 700; font-size: inherit; text-align: center;
+}
+.q input.word { width: 6ch; }
+.q input:focus { outline: none; border-color: var(--accent); }
+.q input::placeholder { color: var(--muted); opacity: 0.45; }
+.q.ok input { border-color: var(--good); color: var(--good); }
+.q.no input { border-color: var(--bad); color: var(--bad); }
+.fb { min-height: 1.6em; margin: 0; font-family: var(--f-mono); font-size: 1.05rem; color: var(--muted); text-align: center; }
+.fb.no { color: var(--bad); }
+.go { height: 46px; padding: 0 26px; border-radius: 999px; border: 0; background: var(--accent); color: var(--on-accent); font-weight: 700; }
+</style>
+
+<div class="page">
+  <div class="top">
+    <a href="../index.html" aria-label="Apparatus">←</a>
+    <div class="bar" role="img" id="barWrap"><i id="bar"></i></div>
+    <button type="button" class="wipe" id="wipe" aria-label="Reset progress" title="Reset progress">↺</button>
+  </div>
+  <div class="card">
+    <div class="q" id="q"></div>
+    <p class="fb" id="fb" aria-live="polite"></p>
+    <button type="button" class="go" id="go">Check</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  // ---------- the facts, in the order they're introduced ----------
+  // q: [before, after] around the blank; a: the answer; w: answer is a word; show: how to write the answer
+  const C = (id, before, after, a, extra) => Object.assign({ id, q: [before, after], a }, extra || {});
+  const CARDS = [
+    C('kilo', 'kilo = ×', '', 1e3),
+    C('milli', 'milli = ×', '', 1e-3, { show: '1/1000' }),
+    C('km-m', '1 km =', 'm', 1e3),
+    C('g-mg', '1 g =', 'mg', 1e3),
+    C('kg-g', '1 kg =', 'g', 1e3),
+    C('centi', 'centi = ×', '', 1e-2, { show: '1/100' }),
+    C('m-cm', '1 m =', 'cm', 100),
+    C('L-mL', '1 L =', 'mL', 1e3),
+    C('m-mm', '1 m =', 'mm', 1e3),
+    C('cm-mm', '1 cm =', 'mm', 10),
+    C('mega', 'mega = ×', '', 1e6),
+    C('micro', 'micro = ×', '', 1e-6, { show: '1/1,000,000' }),
+    C('k-sym', 'k =', '', 'kilo', { w: true }),
+    C('m-sym', 'm (in mg) =', '', 'milli', { w: true }),
+    C('kW-W', '1 kW =', 'W', 1e3),
+    C('MW-W', '1 MW =', 'W', 1e6),
+    C('mg-ug', '1 mg =', 'µg', 1e3),
+    C('m-um', '1 m =', 'µm', 1e6),
+    C('M-sym', 'M =', '', 'mega', { w: true }),
+    C('u-sym', 'µ =', '', 'micro', { w: true }),
+    C('c-sym', 'c =', '', 'centi', { w: true }),
+    C('m-km', '1 m =', 'km', 1e-3),
+    C('mg-g', '1 mg =', 'g', 1e-3),
+    C('cm-m', '1 cm =', 'm', 1e-2),
+    C('mL-L', '1 mL =', 'L', 1e-3),
+    C('mL-cm3', '1 mL =', 'cm<sup>3</sup>', 1),
+    C('m3-L', '1 m<sup>3</sup> =', 'L', 1e3),
+    C('kJ-J', '1 kJ =', 'J', 1e3),
+    C('min-s', '1 min =', 's', 60),
+    C('hr-min', '1 hr =', 'min', 60),
+    C('dy-hr', '1 dy =', 'hr', 24),
+    C('yr-dy', '1 yr =', 'dy', 365),
+    C('hr-s', '1 hr =', 's', 3600),
+    C('in-cm', '1 in =', 'cm', 2.54),
+    C('ft-in', '1 ft =', 'in', 12),
+    C('yd-ft', '1 yd =', 'ft', 3),
+    C('mi-ft', '1 mi =', 'ft', 5280),
+    C('gal-L', '1 gal =', 'L', 3.785, { tol: 0.002 }),
+    C('mi-km', '1 mi =', 'km', 1.609, { tol: 0.002 })
+  ];
+
+  // ---------- spaced repetition (Leitner boxes per card) ----------
+  // A card's box goes up by one each time it's recalled, and drops to 0 when missed.
+  // It comes back after GAP[box] cards, or after DAYS[box] days, whichever is first.
+  // A new card is introduced only while fewer than LOAD cards are still being learned (box < 2).
+  const GAP = [2, 4, 8, 16, 32, 64];
+  const DAYS = [0, 0, 1, 2, 5, 12];
+  const LOAD = 3, MASTERED = 4;
+  const KEY = 'apparatus.unit-facts.v1';
+  const fresh = () => ({ n: 0, intro: 0, last: null, c: {} });
+  let st = fresh();
+  try { const o = JSON.parse(localStorage.getItem(KEY)); if (o && o.c) st = Object.assign(fresh(), o); } catch (_) {}
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (_) {} };
+  const S = id => st.c[id];
+
+  function due(id, now) { const s = S(id); return st.n >= s.due || (DAYS[s.box] && now - s.t >= DAYS[s.box] * 864e5); }
+  function pick() {
+    const now = Date.now();
+    const seen = CARDS.slice(0, st.intro).map(c => c.id);
+    const learning = seen.filter(id => S(id).box < 2).length;
+    let ready = seen.filter(id => due(id, now) && id !== st.last).sort((a, b) => S(a).due - S(b).due);
+    if (ready.length) return ready[0];
+    if (st.intro < CARDS.length && learning < LOAD) {
+      const id = CARDS[st.intro++].id;
+      st.c[id] = { box: 0, due: 0, t: now, fresh: true };
+      return id;
+    }
+    // nothing due and nothing new: the one coming due soonest
+    ready = seen.filter(id => id !== st.last).sort((a, b) => S(a).due - S(b).due);
+    return ready[0] || seen[0];
+  }
+  function grade(id, ok) {
+    const s = S(id);
+    st.n++; s.t = Date.now(); st.last = id;
+    if (s.fresh) { s.fresh = false; s.box = 0; }
+    else s.box = ok ? Math.min(5, s.box + 1) : 0;
+    s.due = st.n + GAP[s.box];
+    save(); drawBar();
+  }
+
+  // ---------- answers ----------
+  function parse(t) {
+    t = t.trim().toLowerCase().replace(/[,\s]/g, '').replace(/−/g, '-').replace(/^[x×*]/, '');
+    let m;
+    if ((m = /^(-?\d*\.?\d+)\/(-?\d*\.?\d+)$/.exec(t))) return +m[1] / +m[2];
+    if ((m = /^(?:1[x×*])?10\^\(?(-?\d+)\)?$/.exec(t))) return 10 ** +m[1];
+    if (/^-?\d*\.?\d+(e-?\d+)?$/.test(t)) return +t;
+    return NaN;
+  }
+  const commas = n => { const [i, f] = String(n).split('.'); return i.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + (f ? '.' + f : ''); };
+  const showAns = c => c.show || (c.w ? c.a : commas(+c.a.toPrecision(6)));
+  function right(c, text) {
+    if (c.w) return text.trim().toLowerCase() === c.a;
+    const v = parse(text);
+    return isFinite(v) && Math.abs(v - c.a) <= Math.abs(c.a) * (c.tol || 1e-9);
+  }
+
+  // ---------- one card ----------
+  const $ = id => document.getElementById(id);
+  const q = $('q'), fb = $('fb'), go = $('go');
+  let cur = null, done = false;
+  function next() {
+    const id = pick();
+    cur = CARDS.find(c => c.id === id);
+    done = false;
+    const s = S(id);
+    const ph = s.fresh ? showAns(cur) : '';
+    q.className = 'q';
+    q.innerHTML = `<span>${cur.q[0]}</span><input id="a" type="text" inputmode="${cur.w ? 'text' : 'decimal'}" autocomplete="off" autocapitalize="off" spellcheck="false" class="${cur.w ? 'word' : ''}" placeholder="${ph}" aria-label="Answer">${cur.q[1] ? `<span>${cur.q[1]}</span>` : ''}`;
+    fb.textContent = ''; fb.className = 'fb';
+    go.textContent = 'Check';
+    const inp = $('a');
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); act(); } });
+    inp.focus({ preventScroll: true });
+  }
+  function act() {
+    if (done) return next();
+    const inp = $('a');
+    if (!inp.value.trim()) return;
+    const ok = right(cur, inp.value);
+    grade(cur.id, ok);
+    done = true;
+    inp.readOnly = true;
+    q.classList.add(ok ? 'ok' : 'no');
+    if (ok) { fb.textContent = '✓'; go.textContent = 'Next →'; setTimeout(() => { if (done && fb.textContent === '✓') next(); }, 700); }
+    else { fb.className = 'fb no'; fb.innerHTML = `${cur.q[0]} ${showAns(cur)} ${cur.q[1]}`; go.textContent = 'Next →'; go.focus({ preventScroll: true }); }
+  }
+  go.addEventListener('click', act);
+
+  // ---------- progress ----------
+  function drawBar() {
+    const sum = CARDS.reduce((a, c) => a + Math.min(MASTERED, st.c[c.id] ? st.c[c.id].box : 0), 0);
+    const pct = Math.round(100 * sum / (MASTERED * CARDS.length));
+    $('bar').style.width = pct + '%';
+    $('barWrap').setAttribute('aria-label', `${pct}% mastered`);
+  }
+  const wipe = $('wipe');
+  let armed = null;
+  wipe.addEventListener('click', () => {
+    if (!armed) { wipe.classList.add('armed'); wipe.textContent = 'Reset?'; armed = setTimeout(() => { armed = null; wipe.classList.remove('armed'); wipe.textContent = '↺'; }, 3000); return; }
+    clearTimeout(armed); armed = null; wipe.classList.remove('armed'); wipe.textContent = '↺';
+    st = fresh(); save(); drawBar(); next();
+  });
+
+  if (/[?&]debug\b/.test(location.search)) window.facts = { get st() { return st; }, CARDS, pick, grade, parse, right, next, get cur() { return cur; } };
+  drawBar();
+  next();
+})();
+</script>
