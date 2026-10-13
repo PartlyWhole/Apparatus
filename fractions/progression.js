@@ -1,21 +1,55 @@
 /* Fraction Path: a ramped sequence of fraction-board and unit-conversion skills with spaced repetition.
  *
- * Skills unlock one at a time. A new skill is mastered after MASTER correct answers in a row; it then enters
- * Leitner box 1. Mastered skills come back for review when GAP[box] problems have been answered since, or
- * DAYS[box] days have passed, whichever is first. Reviews are interleaved with new material (at most one review
- * between new problems while a skill is being learned). A correct review moves the skill up a box (max 5);
- * a wrong one sends it back to box 1. An answer counts as wrong if any Check failed, or if the problem was skipped.
- * Within a skill, difficulty (level 0–2) follows the current streak while learning, and the box while reviewing.
+ * The included skills (see pace below) are learned in order. A new skill is mastered after T.master correct
+ * answers in a row; it then enters Leitner box 1. Mastered skills come back for review when T.gap[box] problems
+ * have been answered since, or T.days[box] days have passed, whichever is first. While a skill is being learned,
+ * reviews are interleaved with new material (at least T.newBetween new problems between reviews). A correct review
+ * moves the skill up a box (max 5); a wrong one sends it back to box 1. An answer counts as wrong if any Check
+ * failed, or if the problem was skipped. Within a skill, difficulty (level 0–2) ramps with the streak while
+ * learning, and follows the box while reviewing.
  */
 (function () {
   'use strict';
-  const MASTER = 3;
   const QUICK_MASTER = 2, QUICK_LEVEL = [1, 2];   // the first skills: two in a row, starting at medium
-  const masterFor = id => SKILLS.find(s => s.id === id).quick ? QUICK_MASTER : MASTER;
-  const GAP = [0, 3, 6, 12, 24, 48];
-  const DAYS = [0, 1, 2, 4, 8, 16];
-  const LEARN_LEVEL = [0, 1, 2];
+  const masterFor = id => SKILLS.find(s => s.id === id).quick ? Math.min(QUICK_MASTER, T.master) : T.master;
   const KEY = 'apparatus.fraction-path.v2';
+
+  // ================= pace: one knob from cram (0) to full (1) =================
+  // Every tuning constant is derived here; each one moves monotonically with pace.
+  //                               pace 0 (Cram)          0.5                     1 (Full)
+  //   master   right in a row       2                      3                       5
+  //   start    first level          1 (medium)             0.5                     0 (easy)
+  //   step     level per right      1                      0.75                    0.5     (reaches level 2 on the last one)
+  //   tier     skills included      core only              + extra practice        + all
+  //   gap[b]   problems until review  2,3,5,8,13           3,5,10,17,31            4,8,16,32,64
+  //   days[b]  days until review    3h,6h,12h,1d,2d        8.5h,19h,1.8,4,9 d      1,2.5,6.3,16,39 d
+  //   newBetween  new problems between reviews while learning: 2 … 2 … 1
+  const PACE_KEY = 'apparatus.pace';
+  const lerp = (a, b, t) => a + (b - a) * t;
+  function tune(p) {
+    const master = Math.round(lerp(2, 4.5, p));
+    const start = lerp(1, 0, p);
+    const g1 = lerp(2, 4, p), gm = lerp(1.6, 2, p);           // review gap in problems: g1 · gm^(box−1)
+    const d1 = 0.125 * Math.pow(8, p), dm = lerp(2, 2.5, p);  // review gap in days: d1 · dm^(box−1)
+    const box = [1, 2, 3, 4, 5];
+    return {
+      pace: p,
+      master,
+      start,
+      step: (2 - start) / Math.max(1, master - 1),
+      tier: 1 + (p >= 1 / 3) + (p >= 2 / 3),
+      gap: [0, ...box.map(b => Math.round(g1 * Math.pow(gm, b - 1)))],
+      days: [0, ...box.map(b => d1 * Math.pow(dm, b - 1))],
+      newBetween: Math.round(lerp(2, 1, p))
+    };
+  }
+  function initialPace() {
+    const u = parseFloat(new URLSearchParams(location.search).get('pace'));
+    if (Number.isFinite(u)) { const p = Math.min(1, Math.max(0, u)); try { localStorage.setItem(PACE_KEY, String(p)); } catch (_) {} return p; }
+    try { const s = parseFloat(localStorage.getItem(PACE_KEY)); if (Number.isFinite(s)) return Math.min(1, Math.max(0, s)); } catch (_) {}
+    return 1;
+  }
+  let T = tune(initialPace());
 
   const ri = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
   const pick = a => a[ri(0, a.length - 1)];
@@ -193,8 +227,8 @@
   // Chapter 8's own problems, by skill
   const BOOK = {
     metric: [['358 g', 'kg'], ['10.6 µm', 'm'], ['61.77 m', 'mm'], ['0.97450 m', 'µm'], ['0.5677 kg', 'mg'], ['205 MW', 'W'], ['345 mg', 'kg'], ['370000 W', 'MW'], ['9.11 L', 'µL'], ['745 mm', 'cm']],
-    imperial: [['12.5 in', 'cm']],
-    two: [['560 mi', 'm'], ['55 min', 'yr'], ['4500 s', 'hr'], ['9.950 yr', 's']],
+    imperial: [['12.5 in', 'cm'], ['560 mi', 'm']],
+    two: [['55 min', 'yr'], ['4500 s', 'hr'], ['9.950 yr', 's']],
     rate: [['225 m / s', 'km / s'], ['3.17 gal / min', 'L / s'], ['7700 gal / min', 'L / s'], ['5.5 kg / min', 'g / s'], ['35 mi / hr', 'm / s'], ['14.4 cm / s', 'm / s'], ['62 g / hr', 'mg / s'], ['0.385 L / s', 'gal / min']],
     cubic: [['73 m^3', 'L'], ['2300 mL', 'cm^3'], ['350 L', 'cm^3'], ['67.2 L', 'm^3'], ['57900 cm^3', 'm^3']]
   };
@@ -217,7 +251,7 @@
   function genImperial(l) {
     const b = fromBook('imperial', l); if (b) return b;
     const easy = [['ft', 'in', 12], ['yd', 'ft', 3], ['hr', 'min', 60], ['min', 's', 60], ['dy', 'hr', 24]];
-    const hard = [['mi', 'ft', 5280], ['yr', 'dy', 365], ['in', 'cm', 2.54], ['gal', 'L', 3.785], ['yd', 'in', 36]];
+    const hard = [['mi', 'ft', 5280], ['yr', 'dy', 365], ['in', 'cm', 2.54], ['gal', 'L', 3.785], ['mi', 'm', 1609], ['mi', 'km', 1.609], ['ft', 'm', 0.3048]];
     const [a, c, k] = pick(l === 2 ? easy.concat(hard) : easy);
     if (l === 0) return conv(`${ri(2, 12)} ${a}`, c);
     if (Math.random() < 0.5) return conv(`${l === 1 ? ri(2, 40) : amount(2)} ${a}`, c);
@@ -228,7 +262,7 @@
     const L = [
       [['hr', 's'], ['dy', 'min'], ['yd', 'in'], ['km', 'mm']],
       [['ft', 'cm'], ['dy', 's'], ['in', 'm'], ['mi', 'in'], ['kg', 'mg']],
-      [['mi', 'm'], ['mi', 'km'], ['yr', 'hr'], ['yr', 'min'], ['gal', 'mL'], ['ft', 'm']]
+      [['yr', 'hr'], ['yr', 'min'], ['gal', 'mL'], ['dy', 's']]
     ];
     const [a, c] = dir(pick(l === 2 ? L[1].concat(L[2]) : L[l]), l);
     return conv(`${amount(l)} ${a}`, c);
@@ -254,28 +288,129 @@
     return conv(`${amount(l)} ${a}`, c);
   }
 
+  // ================= ratio cards: choose ready-made conversion factors =================
+  // [a, b, k]: 1 a = k b. The memorized facts, then the cheat sheet's.
+  const FACTS = [
+    ['km', 'm', '1000'], ['m', 'cm', '100'], ['m', 'mm', '1000'], ['cm', 'mm', '10'], ['m', 'µm', '1000000'],
+    ['kg', 'g', '1000'], ['g', 'mg', '1000'], ['mg', 'µg', '1000'], ['L', 'mL', '1000'], ['mL', 'µL', '1000'],
+    ['kW', 'W', '1000'], ['MW', 'kW', '1000'], ['kJ', 'J', '1000'],
+    ['ft', 'in', '12'], ['yd', 'ft', '3'], ['mi', 'ft', '5280'], ['in', 'cm', '2.54'],
+    ['min', 's', '60'], ['hr', 'min', '60'], ['dy', 'hr', '24'], ['yr', 'dy', '365'],
+    ['ft', 'm', '0.3048', 1], ['mi', 'km', '1.609', 1], ['mi', 'm', '1609', 1], ['gal', 'L', '3.785', 1]
+  ];
+  // tempting wrong numbers for a memorized fact (none for cheat-sheet facts)
+  const WRONG = { '1000': ['100', '10'], '100': ['1000', '10'], '10': ['100'], '1000000': ['1000'], '60': ['100'], '24': ['12'], '12': ['10'], '3': ['36'], '5280': ['1760'], '2.54': ['25.4'] };
+  const cardSpec = (a, b, k, flip) => (flip ? `1 ${a} / ${k} ${b}` : `${k} ${b} / 1 ${a}`);
+  // the shortest chain of facts from unit a to unit c
+  function chain(a, c) {
+    if (a === c) return [];
+    const prev = { [a]: null }, q = [a];
+    while (q.length) {
+      const u = q.shift();
+      if (u === c) break;
+      FACTS.forEach(f => {
+        const v = f[0] === u ? f[1] : f[1] === u ? f[0] : null;
+        if (v && !(v in prev)) { prev[v] = { u, f }; q.push(v); }
+      });
+    }
+    const out = [];
+    for (let v = c; prev[v]; v = prev[v].u) out.unshift(prev[v].f);
+    return out;
+  }
+  const unitsOf = spec => { const s = sides(spec); return [...s.top, ...s.bot].map(f => f.u); };
+  // a problem plus its tray: the cards on a right path, true cards that lead elsewhere, and (from level 1) a card that isn't 1
+  function withCards(p, l) {
+    const from = sides(p.q), to = sides(p.to);
+    const steps = [];
+    [['top', 'top'], ['bot', 'bot']].forEach(([s]) => from[s].forEach((f, i) => chain(f.u, to[s][i].u).forEach(x => steps.includes(x) || steps.push(x))));
+    const near = new Set(steps.flatMap(f => [f[0], f[1]]).concat(unitsOf(p.q), unitsOf(p.to)));
+    const cards = steps.map(f => cardSpec(f[0], f[1], f[2], Math.random() < 0.5));
+    // metric problems get metric distractors only
+    const metricOnly = [...near].every(u => FACTS.slice(0, 13).some(f => f[0] === u || f[1] === u));
+    const others = shuffle(FACTS.filter(f => !steps.includes(f) && (near.has(f[0]) || near.has(f[1])) && (!metricOnly || FACTS.indexOf(f) < 13)));
+    others.slice(0, l === 2 ? 2 : 1).forEach(f => cards.push(cardSpec(f[0], f[1], f[2], Math.random() < 0.5)));
+    if (l > 0) {
+      const f = shuffle(steps.filter(x => !x[3] && WRONG[x[2]]))[0];
+      if (f) cards.push(cardSpec(f[0], f[1], pick(WRONG[f[2]]), Math.random() < 0.5));
+    }
+    return Object.assign(p, { cards: shuffle(cards), steps: steps.length });
+  }
+  const chainLen = (q, to) => sides(to).top.reduce((n, f, i) => n + chain(sides(q).top[i].u, f.u).length, 0) + sides(to).bot.reduce((n, f, i) => n + chain(sides(q).bot[i].u, f.u).length, 0);
+  function bookPick(kind, l, lo, hi) {
+    if (l !== 2 || Math.random() >= 0.4) return null;
+    const ok = BOOK[kind].filter(([q, to]) => { const n = chainLen(q, to); return n >= lo && n <= hi; });
+    return ok.length ? conv(...pick(ok)) : null;
+  }
+  function genPickMetric(l) {
+    const b = bookPick('metric', l, 1, 1); if (b) return withCards(b, l);
+    const L = [
+      [['km', 'm'], ['m', 'cm'], ['kg', 'g'], ['L', 'mL'], ['kW', 'W'], ['g', 'mg']],
+      [['cm', 'mm'], ['m', 'mm'], ['mg', 'µg'], ['MW', 'kW'], ['kJ', 'J'], ['mL', 'µL']],
+      [['m', 'µm']]
+    ];
+    const [a, c] = dir(pick(L.slice(0, l + 1).flat()), l);
+    return withCards(conv(`${l === 0 ? ri(2, 20) : amount(l)} ${a}`, c), l);
+  }
+  function genPickImperial(l) {
+    const b = bookPick('imperial', l, 1, 1); if (b) return withCards(b, l);
+    const L = [
+      [['ft', 'in'], ['yd', 'ft'], ['hr', 'min'], ['min', 's'], ['dy', 'hr']],
+      [['mi', 'ft'], ['yr', 'dy'], ['in', 'cm']],
+      [['ft', 'm'], ['mi', 'km'], ['mi', 'm'], ['gal', 'L']]
+    ];
+    const [a, c] = dir(pick(L.slice(0, l + 1).flat()), l);
+    return withCards(conv(`${l === 0 ? ri(2, 12) : amount(l)} ${a}`, c), l);
+  }
+  function genPickTwo(l) {
+    const b = bookPick('two', l, 2, 4); if (b) return withCards(b, l);
+    const L = [
+      [['hr', 's'], ['yd', 'in'], ['dy', 'min'], ['km', 'cm'], ['kg', 'mg']],
+      [['mi', 'in'], ['in', 'm'], ['yr', 'hr'], ['L', 'µL'], ['km', 'mm']],
+      [['dy', 's'], ['yd', 'cm'], ['yr', 'min'], ['mg', 'kg']]
+    ];
+    const [a, c] = dir(pick(l === 2 ? L[1].concat(L[2]) : L[l]), l);
+    return withCards(conv(`${amount(l)} ${a}`, c), l);
+  }
+  function genPickRate(l) {
+    const b = bookPick('rate', l, 2, 4); if (b) return withCards(b, l);
+    const L = [
+      [['m / s', 'km / s'], ['g / min', 'g / s'], ['km / hr', 'km / min'], ['L / min', 'L / hr'], ['cm / s', 'm / s'], ['mg / s', 'g / s']],
+      [['km / hr', 'm / min'], ['kg / min', 'g / s'], ['L / s', 'mL / min'], ['m / s', 'cm / min'], ['g / hr', 'mg / min']],
+      [['km / hr', 'm / s'], ['mi / hr', 'ft / s'], ['m / s', 'km / hr'], ['mi / hr', 'km / hr'], ['ft / s', 'in / min'], ['mi / hr', 'm / s']]
+    ];
+    const [a, c] = pick(L[l]);
+    return withCards(conv(`${amount(l)} ${a}`, c), l);
+  }
+
   // ================= the skills, in order =================
+  // tier: 1 core (always), 2 extra practice (pace ≥ 1/3), 3 nice to have (pace ≥ 2/3)
   const SKILLS = [
-    { id: 'num', name: 'Cancel', quick: true, type: 'cancel', gen: genNum, tip: 'Drag a number onto its match across the bar.' },
-    { id: 'unit', name: 'Units', quick: true, type: 'cancel', gen: genUnit },
-    { id: 'mixed', name: 'Mixed', type: 'cancel', gen: genMixed },
-    { id: 'p10', name: '10ⁿ', type: 'pow', gen: l => genPow('p10', l), tip: 'Tap a power of ten to split it or move it across. Drop one on a neighbour to multiply.' },
-    { id: 'forms', name: '1,000', type: 'pow', gen: l => genPow('forms', l), tip: 'Tap a number to rewrite it as 10ⁿ.' },
-    { id: 'neg', name: '10⁻ⁿ', type: 'pow', gen: l => genPow('neg', l) },
-    { id: 'up', name: 'Build up', type: 'goal', gen: l => genGoal('up', l), tip: 'Type a factor, then ↑ top or ↓ bottom.' },
-    { id: 'down', name: 'Reduce', type: 'goal', gen: l => genGoal('down', l) },
-    { id: 'any', name: 'Any', type: 'goal', gen: l => genGoal('any', l) },
-    { id: 'metric', name: 'Metric', type: 'conv', gen: genMetric, tip: 'Drag pieces onto the board. Tap # to type.' },
-    { id: 'imperial', name: 'Imperial', type: 'conv', gen: genImperial },
-    { id: 'two', name: 'Two steps', type: 'conv', gen: genTwo },
-    { id: 'rate', name: 'Rates', type: 'conv', gen: genRate },
-    { id: 'cubic', name: 'Cubic', type: 'conv', gen: genCubic }
+    { id: 'num', name: 'Cancel', tier: 1, quick: true, type: 'cancel', gen: genNum, tip: 'Drag a number onto its match across the bar.' },
+    { id: 'unit', name: 'Units', tier: 1, quick: true, type: 'cancel', gen: genUnit },
+    { id: 'mixed', name: 'Mixed', tier: 2, type: 'cancel', gen: genMixed },
+    { id: 'p10', name: '10ⁿ', tier: 1, type: 'pow', gen: l => genPow('p10', l), tip: 'Tap a power of ten to split it or move it across. Drop one on a neighbour to multiply.' },
+    { id: 'forms', name: '1,000', tier: 3, type: 'pow', gen: l => genPow('forms', l), tip: 'Tap a number to rewrite it as 10ⁿ.' },
+    { id: 'neg', name: '10⁻ⁿ', tier: 1, type: 'pow', gen: l => genPow('neg', l) },
+    { id: 'up', name: 'Build up', tier: 1, type: 'goal', gen: l => genGoal('up', l), tip: 'Type a factor, then ↑ top or ↓ bottom.' },
+    { id: 'down', name: 'Reduce', tier: 1, type: 'goal', gen: l => genGoal('down', l) },
+    { id: 'any', name: 'Any', tier: 2, type: 'goal', gen: l => genGoal('any', l) },
+    { id: 'pmetric', name: 'Pick: metric', tier: 1, type: 'ratio', gen: genPickMetric, tip: 'Tap a card to add it. Tap a bar to flip.' },
+    { id: 'pimperial', name: 'Pick: US & time', tier: 1, type: 'ratio', gen: genPickImperial },
+    { id: 'ptwo', name: 'Pick: two steps', tier: 1, type: 'ratio', gen: genPickTwo },
+    { id: 'prate', name: 'Pick: rates', tier: 3, type: 'ratio', gen: genPickRate },
+    { id: 'metric', name: 'Metric', tier: 1, type: 'conv', gen: genMetric, tip: 'Drag pieces onto the board. Tap # to type.' },
+    { id: 'imperial', name: 'Imperial', tier: 1, type: 'conv', gen: genImperial },
+    { id: 'two', name: 'Two steps', tier: 1, type: 'conv', gen: genTwo },
+    { id: 'rate', name: 'Rates', tier: 1, type: 'conv', gen: genRate },
+    { id: 'cubic', name: 'Cubic', tier: 1, type: 'conv', gen: genCubic }
   ];
   const TYPES = {
     cancel: { task: () => 'Simplify', check: checkCancel },
     pow: { task: () => 'Write as 10ⁿ', check: checkPowers },
     goal: { task: p => `<span class="w">Make</span>${fracHTML(p.goal[0], p.goal[1])}`, check: checkGoal }
   };
+  const isConv = t => t === 'conv' || t === 'ratio';
+  let ACTIVE = SKILLS.filter(s => s.tier <= T.tier);
 
   // ?skill=<id>: practice one skill on its own; saved progress is left alone
   const ONLY_ID = new URLSearchParams(location.search).get('skill');
@@ -284,14 +419,23 @@
     if (ok) { if (++PR.streak >= 2) { PR.streak = 0; PR.lvl = Math.min(2, PR.lvl + 1); } }
     else { PR.streak = 0; PR.lvl = Math.max(0, PR.lvl - 1); }
   }
-  const ONLY = SKILLS.some(s => s.id === ONLY_ID) ? ONLY_ID : null;
+  let ONLY = SKILLS.some(s => s.id === ONLY_ID) ? ONLY_ID : null;
 
   // ================= progress and spaced repetition =================
-  function fresh() { return { n: 0, front: 0, lastId: null, lastReview: false, sk: {} }; }
+  // at: a skill moved to with ‹ › (null: the front). atStreak: right in a row while practicing a mastered one.
+  function fresh() { return { n: 0, at: null, atStreak: 0, sinceReview: 99, lastId: null, sk: {} }; }
   function loadP() {
     try {
       const x = JSON.parse(localStorage.getItem(KEY));
-      if (x && typeof x.n === 'number' && x.sk) return x;
+      if (x && typeof x.n === 'number' && x.sk) {
+        if (!('sinceReview' in x)) {
+          // saved before the ratio cards: whoever already learned the conversions doesn't need them
+          if (x.sk.metric && x.sk.metric.box > 0) ['pmetric', 'pimperial', 'ptwo', 'prate'].forEach(id => { x.sk[id] = x.sk[id] || { box: 1, streak: 0, due: x.n + 3, t: Date.now(), seen: 0, ok: 0 }; });
+          Object.assign(x, { at: null, atStreak: 0, sinceReview: x.lastReview ? 0 : 99 });
+          delete x.front; delete x.lastReview;
+        }
+        return x;
+      }
     } catch (_) {}
     return fresh();
   }
@@ -299,30 +443,40 @@
   let P = loadP();
   const S = id => P.sk[id] || (P.sk[id] = { box: 0, streak: 0, due: 0, t: 0, seen: 0, ok: 0 });
   const idx = id => SKILLS.findIndex(s => s.id === id);
+  const mastered = id => S(id).box > 0;
+  // the skill being learned: the first included one not mastered (skipped ones wait until the rest are done)
+  function front() {
+    const s = ACTIVE.find(k => !mastered(k.id) && !S(k.id).skip) || ACTIVE.find(k => !mastered(k.id));
+    return s ? s.id : null;
+  }
+  // where the student stands: the skill moved to with ‹ ›, else the front
+  const here = () => (P.at && ACTIVE.some(s => s.id === P.at) ? P.at : front());
   function isDue(id, now) {
     const s = S(id);
-    return s.box > 0 && (P.n >= s.due || now - s.t >= DAYS[s.box] * 864e5);
+    return s.box > 0 && (P.n >= s.due || now - s.t >= T.days[s.box] * 864e5);
   }
   // which skill comes next, and whether it's a review
   function nextSkill(now) {
     if (ONLY) return { id: ONLY, review: false };
     now = now || Date.now();
-    const mastered = SKILLS.slice(0, P.front).map(s => s.id);
-    let due = mastered.filter(id => isDue(id, now)).sort((a, b) => (S(a).due - S(b).due) || (S(a).box - S(b).box));
+    const h = here();
+    const done = ACTIVE.map(s => s.id).filter(mastered);
+    let due = done.filter(id => id !== h && isDue(id, now)).sort((a, b) => (S(a).due - S(b).due) || (S(a).box - S(b).box));
     if (due.length > 1) due = due.filter(id => id !== P.lastId);
-    const learning = P.front < SKILLS.length ? SKILLS[P.front].id : null;
-    if (due.length && (!learning || !P.lastReview)) return { id: due[0], review: true };
-    if (learning) return { id: learning, review: false };
+    if (due.length && (!h || P.sinceReview >= T.newBetween)) return { id: due[0], review: true };
+    if (h) return { id: h, review: false };
     // everything mastered and nothing due: the one coming due soonest
-    let rest = mastered.slice().sort((a, b) => S(a).due - S(b).due);
+    let rest = done.slice().sort((a, b) => S(a).due - S(b).due);
     if (rest.length > 1) rest = rest.filter(id => id !== P.lastId);
     return { id: rest[0], review: true };
   }
-  function level(id) {
+  function level(id, review) {
     if (ONLY) return PR.lvl;
     const s = S(id);
-    const L = SKILLS.find(k => k.id === id).quick ? QUICK_LEVEL : LEARN_LEVEL;
-    return s.box === 0 ? L[Math.min(s.streak, L.length - 1)] : Math.min(2, s.box);
+    if (review) return Math.min(2, s.box);
+    const streak = s.box > 0 ? P.atStreak : s.streak;
+    if (SKILLS[idx(id)].quick) return QUICK_LEVEL[Math.min(streak, QUICK_LEVEL.length - 1)];
+    return Math.min(2, Math.floor(T.start + streak * T.step + 1e-9));
   }
   // record one answer; returns true when it masters a new skill
   function grade(id, ok, review, now) {
@@ -330,20 +484,47 @@
     now = now || Date.now();
     const s = S(id);
     P.n++; s.seen++; s.t = now; if (ok) s.ok++;
-    P.lastId = id; P.lastReview = !!review;
-    let mastered = false;
-    if (s.box === 0) {
+    P.lastId = id; P.sinceReview = review ? 0 : P.sinceReview + 1;
+    let up = false;
+    if (review) {
+      s.box = ok ? Math.min(5, s.box + 1) : 1;
+      s.due = P.n + T.gap[s.box];
+    } else if (s.box > 0) {
+      // practicing a mastered skill (moved back to): never demoted; enough right in a row returns to the front
+      P.atStreak = ok ? P.atStreak + 1 : 0;
+      if (P.atStreak >= masterFor(id)) { P.at = null; P.atStreak = 0; }
+    } else {
       s.streak = ok ? s.streak + 1 : 0;
       if (s.streak >= masterFor(id)) {
-        s.box = 1; s.streak = 0; s.due = P.n + GAP[1]; mastered = true;
-        P.front = Math.max(P.front, idx(id) + 1);
+        s.box = 1; s.streak = 0; s.due = P.n + T.gap[1]; delete s.skip; up = true;
+        if (P.at === id) P.at = null;
       }
-    } else {
-      s.box = ok ? Math.min(5, s.box + 1) : 1;
-      s.due = P.n + GAP[s.box];
     }
     saveP();
-    return mastered;
+    return up;
+  }
+  // ‹ › : move to the previous or next skill. Moving on from an unmastered skill skips it (not wrong, not mastered).
+  function neighbours() {
+    const list = ONLY ? SKILLS.map(s => s.id) : ACTIVE.map(s => s.id);
+    const h = ONLY || here();
+    const i = h ? list.indexOf(h) : list.length;
+    return { list, i, prev: i > 0 ? list[i - 1] : null, next: i < list.length - 1 ? list[i + 1] : null };
+  }
+  function move(d) {
+    const nb = neighbours(), to = d < 0 ? nb.prev : nb.next;
+    if (!to) return;
+    if (ONLY) {
+      ONLY = to; PR.lvl = 0; PR.streak = 0;
+      const u = new URL(location.href); u.searchParams.set('skill', to); history.replaceState(null, '', u);
+      dots.textContent = SKILLS[idx(ONLY)].name;
+      newProblem();
+      return;
+    }
+    const h = here();
+    if (d > 0 && h && !mastered(h)) { S(h).skip = true; S(h).streak = 0; }
+    P.at = to; P.atStreak = 0;
+    saveP();
+    newProblem({ id: to, review: false });
   }
 
   // ================= boards =================
@@ -379,6 +560,22 @@
     onDisarm: () => document.querySelectorAll('.piece.armed').forEach(p => p.classList.remove('armed')),
     onChange: changed
   });
+  // ratio cards: whole conversion factors are added from the tray; tap a bar to flip one, undo to take one back
+  const boardR = FractionBoard($('boardR'), {
+    isOne: () => false,
+    bareFactors: true,
+    split: false,
+    crossMove: false,
+    crossMoveHint: 'Keep each factor in its own fraction.',
+    locked: () => true,
+    canRemove: () => false,
+    removeHint: 'Undo takes a card back.',
+    canEdit: () => false,
+    canFlip: fr => !isGiven(fr),
+    onHint: t => hint(t),
+    onChange: changed
+  });
+  const convBoard = () => (cur && cur.type === 'ratio' ? boardR : boardC);
 
   // ---------- conversion helpers ----------
   const unitHTML = f => `<i>${fh(f)}</i>`;
@@ -412,12 +609,12 @@
   }
   function boardUnits() {
     const top = [], bot = [];
-    boardC.state.fracs.forEach(fr => { fr.num.forEach(f => { if (f.t === 'u') top.push(f); }); fr.den.forEach(f => { if (f.t === 'u') bot.push(f); }); });
+    convBoard().state.fracs.forEach(fr => { fr.num.forEach(f => { if (f.t === 'u') top.push(f); }); fr.den.forEach(f => { if (f.t === 'u') bot.push(f); }); });
     return { top, bot };
   }
   const sameKeys = (a, b) => { const x = a.map(key).sort(), y = b.map(key).sort(); return x.length === y.length && x.every((v, i) => v === y[i]); };
   function unitsMatch() {
-    const now = boardUnits(), fr = boardC.state.fracs;
+    const now = boardUnits(), fr = convBoard().state.fracs;
     const blanks = fr.some(f => [...f.num, ...f.den].some(g => g.t === 'b'));
     return { now, ok: !blanks && !fr.some(needsUnit) && sameKeys(now.top, cur.target.top) && sameKeys(now.bot, cur.target.bot) };
   }
@@ -440,7 +637,7 @@
     return commas(x.toFixed(Math.max(0, 3 - mag)));
   }
   function checkConv() {
-    const v = boardC.value();
+    const v = convBoard().value();
     const want = siSize(cur.q) / siSize('1 ' + cur.to);
     const got = Number(v.n) / Number(v.d);
     if (Math.abs(got / want - 1) < 0.01) return [true, `${decimal(v.n, v.d)} ${unitsFracHTML(cur.target.top, cur.target.bot)}`];
@@ -479,18 +676,73 @@
   }
   wire($('numPiece'));
 
+  // ---------- ratio cards ----------
+  const cardsEl = $('cards');
+  function cardHTML(spec) {
+    const side = str => str.trim().split(/\s+/).map(pf).map(f => (f.t === 'u' ? `<i>${fh(f)}</i>` : fh(f))).join(' ');
+    const [t, b] = spec.split('/');
+    return `<span class="fb-vfrac"><span>${side(t)}</span><span>${side(b)}</span></span>`;
+  }
+  function fillCards(list) {
+    cardsEl.innerHTML = '';
+    list.forEach(spec => {
+      const el = document.createElement('span');
+      el.className = 'rc'; el.dataset.spec = spec; el.innerHTML = cardHTML(spec);
+      el.tabIndex = 0; el.setAttribute('role', 'button'); el.setAttribute('aria-label', spec.replace('/', 'per'));
+      wireCard(el);
+      cardsEl.appendChild(el);
+    });
+  }
+  const placeCard = (el, from) => { if (cur && !cur.solved) boardR.addFraction(el.dataset.spec, from || el); };
+  // press a card and drag it onto the board, or just tap it
+  function wireCard(el) {
+    el.addEventListener('pointerdown', e => {
+      if (e.button !== 0 && e.pointerType === 'mouse') return;
+      e.preventDefault();
+      const r = el.getBoundingClientRect(), dx = e.clientX - r.left, dy = e.clientY - r.top;
+      const card = $('cardR');
+      const over = ev => { const R = card.getBoundingClientRect(); return ev.clientX >= R.left && ev.clientX <= R.right && ev.clientY >= R.top && ev.clientY <= R.bottom; };
+      let ghost = null;
+      const move = ev => {
+        if (ev.pointerId !== e.pointerId) return;
+        if (!ghost) {
+          if (Math.hypot(ev.clientX - e.clientX, ev.clientY - e.clientY) < 5) return;
+          ghost = el.cloneNode(true); ghost.classList.add('rc-ghost'); ghost.style.width = r.width + 'px';
+          document.body.appendChild(ghost); el.classList.add('lifted');
+        }
+        ev.preventDefault();
+        ghost.style.transform = `translate(${ev.clientX - dx}px, ${ev.clientY - dy}px)`;
+        card.classList.toggle('hot', over(ev));
+      };
+      const up = ev => {
+        if (ev.pointerId !== e.pointerId) return;
+        document.removeEventListener('pointermove', move);
+        document.removeEventListener('pointerup', up);
+        document.removeEventListener('pointercancel', up);
+        el.classList.remove('lifted'); card.classList.remove('hot');
+        if (!ghost) { if (ev.type !== 'pointercancel') placeCard(el); return; }
+        if (ev.type !== 'pointercancel' && over(ev)) placeCard(el, ghost);
+        ghost.remove();
+      };
+      document.addEventListener('pointermove', move, { passive: false });
+      document.addEventListener('pointerup', up);
+      document.addEventListener('pointercancel', up);
+    });
+    el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); placeCard(el); } });
+  }
+
   // ================= the loop =================
   let cur = null;            // { id, review, level, type, spec | q,to,target, goal, solved, wrong, graded }
-  const board = () => (cur && cur.type === 'conv' ? boardC : boardF);
+  const board = () => (cur && isConv(cur.type) ? convBoard() : boardF);
   const fbk = $('fbk');
   function say(t, cls) { fbk.innerHTML = t; fbk.className = 'fb-feedback' + (cls ? ' ' + cls : ''); }
 
   function changed(b) {
     if (!cur || b !== board()) return;
     $('undo').disabled = !b.canUndo();
-    $('combine').hidden = cur.type === 'conv' || b.fractionCount() < 2;
+    $('combine').hidden = isConv(cur.type) || b.fractionCount() < 2;
     if (!cur.solved && fbk.classList.contains('bad')) say('');
-    if (cur.type === 'conv') {
+    if (isConv(cur.type)) {
       const m = unitsMatch();
       const u = $('units');
       u.classList.toggle('match', m.ok);
@@ -501,7 +753,7 @@
 
   // generate one problem for a skill at a level (and make sure it isn't already solved)
   function make(skill, l) {
-    if (skill.type === 'conv') return skill.gen(l);
+    if (isConv(skill.type)) return skill.gen(l);
     for (let i = 0; i < 300; i++) {
       const g = skill.gen(l);
       const st = { fracs: g.spec.map(s => parseFraction(s)) };
@@ -516,12 +768,12 @@
   function newProblem(forced) {
     const pickd = forced || nextSkill();
     const skill = SKILLS[idx(pickd.id)];
-    const l = forced && forced.level != null ? forced.level : level(skill.id);
+    const l = forced && forced.level != null ? forced.level : level(skill.id, pickd.review);
     const g = make(skill, l);
     cur = Object.assign({ id: skill.id, review: pickd.review, level: l, type: skill.type, solved: false, wrong: false, graded: false }, g);
-    const conv = cur.type === 'conv';
-    $('cardF').hidden = conv; $('cardC').hidden = !conv;
-    $('tray').hidden = !conv; $('units').hidden = !conv;
+    const conv = isConv(cur.type), ratio = cur.type === 'ratio';
+    $('cardF').hidden = conv; $('cardC').hidden = !conv || ratio; $('cardR').hidden = !ratio;
+    $('tray').hidden = !conv || ratio; cardsEl.hidden = !ratio; $('units').hidden = !conv;
     if (window.cheatsheet) window.cheatsheet.show(conv);
     $('build').hidden = cur.type !== 'goal';
     $('combine').hidden = true;
@@ -535,9 +787,9 @@
     if (conv) {
       cur.target = sides(cur.to);
       $('task').innerHTML = `${quantityHTML(cur.q)} <span class="arrow">→</span> ${unitsFracHTML(cur.target.top, cur.target.bot)}`;
-      fillTray(cur);
+      if (ratio) fillCards(cur.cards); else fillTray(cur);
       givenId = null;
-      boardC.load([cur.q]);
+      convBoard().load([cur.q]);
     } else {
       $('task').innerHTML = TYPES[cur.type].task(cur);
       boardF.load(cur.spec);
@@ -552,7 +804,7 @@
   }
   function check() {
     if (!cur || cur.solved) return;
-    const [ok, msg] = cur.type === 'conv' ? checkConv() : TYPES[cur.type].check(board().state, cur);
+    const [ok, msg] = isConv(cur.type) ? checkConv() : TYPES[cur.type].check(board().state, cur);
     if (!ok) { cur.wrong = true; say(msg, 'bad'); return; }
     cur.solved = true;
     const up = finish(!cur.wrong);
@@ -561,7 +813,8 @@
     drawDots(up ? idx(cur.id) : -1);
   }
   $('go').addEventListener('click', () => { if (cur && cur.solved) newProblem(); else check(); });
-  $('skip').addEventListener('click', () => { if (cur && !cur.solved) finish(false); newProblem(); });
+  $('prev').addEventListener('click', () => move(-1));
+  $('next').addEventListener('click', () => move(1));
   $('undo').addEventListener('click', () => board().undo());
   $('reset').addEventListener('click', () => board().reset());
   $('combine').addEventListener('click', () => board().combine());
@@ -582,25 +835,52 @@
     P = fresh(); saveP(); newProblem();
   });
 
-  // ---------- progress dots ----------
+  // ---------- progress dots (the skills included at this pace) ----------
   const dots = $('dots');
-  SKILLS.forEach(s => { const d = document.createElement('i'); d.className = 'dot'; d.title = s.name; dots.appendChild(d); });
-  if (ONLY) { dots.textContent = SKILLS[idx(ONLY)].name; dots.classList.add('only'); $('wipe').hidden = true; }
+  function buildDots() {
+    dots.innerHTML = '';
+    ACTIVE.forEach(s => { const d = document.createElement('i'); d.className = 'dot'; d.title = s.name; dots.appendChild(d); });
+  }
+  buildDots();
+  if (ONLY) { dots.textContent = SKILLS[idx(ONLY)].name; dots.classList.add('only'); $('wipe').hidden = true; $('pace').hidden = true; }
   function drawDots(popAt) {
+    const nb = neighbours();
+    $('prev').disabled = !nb.prev; $('next').disabled = !nb.next;
     if (ONLY) return;
+    const h = here();
     [...dots.children].forEach((d, i) => {
-      const s = S(SKILLS[i].id);
+      const id = ACTIVE[i].id, s = S(id);
       d.className = 'dot';
       if (s.box > 0) { d.classList.add('done'); d.style.setProperty('--b', 40 + s.box * 12); }
-      else if (i === P.front) { d.classList.add('now'); d.style.setProperty('--p', Math.round(100 * s.streak / masterFor(SKILLS[i].id))); }
-      if (cur && SKILLS[i].id === cur.id) d.classList.add('cur');
-      if (i === popAt) d.classList.add('pop');
+      else if (id === h) { d.classList.add('now'); d.style.setProperty('--p', Math.round(100 * s.streak / masterFor(id))); }
+      if (cur && id === cur.id) d.classList.add('cur');
+      if (idx(id) === popAt) d.classList.add('pop');
     });
-    dots.setAttribute('aria-label', `${Math.min(P.front, SKILLS.length)} of ${SKILLS.length} mastered`);
+    dots.setAttribute('aria-label', `${ACTIVE.filter(s => mastered(s.id)).length} of ${ACTIVE.length} mastered`);
   }
 
+  // ---------- pace: Cram · Full ----------
+  function paceUI() {
+    document.querySelectorAll('[data-pace]').forEach(b => b.setAttribute('aria-pressed', String(Number(b.dataset.pace) === T.pace)));
+  }
+  function setPace(p) {
+    T = tune(Math.min(1, Math.max(0, p)));
+    try { localStorage.setItem(PACE_KEY, String(T.pace)); } catch (_) {}
+    ACTIVE = SKILLS.filter(s => s.tier <= T.tier);
+    paceUI();
+    if (ONLY) return;
+    buildDots();
+    if (cur && !cur.solved) newProblem(); else drawDots();
+  }
+  document.querySelectorAll('[data-pace]').forEach(b => b.addEventListener('click', () => {
+    const u = new URL(location.href);
+    if (u.searchParams.has('pace')) { u.searchParams.delete('pace'); history.replaceState(null, '', u); }
+    setPace(Number(b.dataset.pace));
+  }));
+  paceUI();
+
   if (/[?&]debug\b/.test(location.search)) {
-    window.prog = { get P() { return P; }, set P(x) { P = x; }, get cur() { return cur; }, SKILLS, boardF, boardC, nextSkill, grade, level, make, newProblem, check, isDue, saveP, loadConv: specs => { givenId = null; boardC.load(specs); }, constants: { MASTER, GAP, DAYS } };
+    window.prog = { get P() { return P; }, set P(x) { P = x; }, get cur() { return cur; }, get T() { return T; }, get ACTIVE() { return ACTIVE; }, SKILLS, boardF, boardC, boardR, fresh, front, here, nextSkill, grade, level, make, newProblem, check, isDue, saveP, setPace, tune, move, chain, loadConv: specs => { givenId = null; convBoard().load(specs); } };
   }
   newProblem();
 })();
