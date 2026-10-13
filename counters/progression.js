@@ -2,7 +2,11 @@
 // Each counter is an embed-*.html page in a same-origin iframe exposing window.__ctr = { load, read, step, lock, typing }.
 (function () {
   const $ = id => document.getElementById(id);
+  // animation speed (scrubber + Instant), shared with every embedded counter; replays scale with it too
+  let speed = 1, instant = false;
+  const rate = () => instant ? 1000 : speed;
   const wait = ms => new Promise(r => setTimeout(r, ms));
+  const pace = ms => wait(ms / rate());
 
   // ---------- decimal strings (no floating point) ----------
   function norm(s) {
@@ -177,12 +181,21 @@
       f.fit = fit;
       try { new w.ResizeObserver(fit).observe(stage); } catch (_) {}
       w.__ctrStep = onStep;
+      w.__ctr.speed(speed, instant);
       res(w);
     }, { once: true }));
     box.appendChild(el);
     return (frames[key] = f);
   }
-  Object.keys(SRC).forEach(frame);           // load all five up front so switching is instant
+  Object.keys(SRC).forEach(frame);
+  const speedIn = $('speed'), speedOut = $('speedOut'), instIn = $('instant');
+  function applySpeed() {
+    speed = parseFloat(speedIn.value); instant = instIn.checked;
+    speedOut.textContent = (Math.round(speed * 100) / 100) + '×'; speedIn.disabled = instant;
+    Object.values(frames).forEach(f => f.ready.then(w => w.__ctr.speed(speed, instant)));
+  }
+  speedIn.addEventListener('input', applySpeed);
+  instIn.addEventListener('change', applySpeed);           // load all five up front so switching is instant
   let C = null, W = null;
   async function useCounter(key) {
     const f = frame(key);
@@ -306,13 +319,13 @@
     cur.showing = true;
     if (p.ctr === 'sci') {
       C.load(p.plain, p.type === 'toSci' ? 0 : p.e);
-      await wait(600);
+      await pace(600);
       const dir = (p.type === 'toSci') === (p.e > 0) ? -1 : 1;
-      for (let k = 0; k < Math.abs(p.e) && my === token; k++) { await C.step(dir); await wait(220); }
+      for (let k = 0; k < Math.abs(p.e) && my === token; k++) { await C.step(dir); await pace(220); }
     } else {
       C.load(p.s);
-      await wait(600);
-      for (let k = 0; k < p.n && my === token; k++) { await stepUnlocked(); await wait(320); }
+      await pace(600);
+      for (let k = 0; k < p.n && my === token; k++) { await stepUnlocked(); await pace(320); }
       if (my === token) C.lock(true);
     }
     if (my === token) cur.showing = false;

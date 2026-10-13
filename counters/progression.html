@@ -80,6 +80,18 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .ctr iframe { display: block; width: 100%; height: 0; border: 0; background: transparent; }
 .ctr iframe.off { position: absolute; left: 0; top: 0; visibility: hidden; pointer-events: none; }
 .dots.only { font-size: 0.85rem; color: var(--muted); letter-spacing: 0.02em; }
+.quiet { display: flex; align-items: center; justify-content: center; gap: 18px; flex-wrap: wrap; font-size: 0.85rem; color: var(--muted); }
+.speed { display: inline-flex; align-items: center; gap: 10px; }
+.speed input { width: min(150px, 40vw); accent-color: var(--accent); }
+.speed input:disabled { opacity: 0.4; }
+.speed output { min-width: 2.8em; font-variant-numeric: tabular-nums; }
+.switch { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; }
+.switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.switch .track { width: 40px; height: 22px; border-radius: 11px; background: var(--line); position: relative; transition: background 0.2s; flex: none; }
+.switch .track::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: var(--bg); transition: transform 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+.switch input:checked + .track { background: var(--accent); }
+.switch input:checked + .track::after { transform: translateX(18px); }
+.switch input:focus-visible + .track { outline: 3px solid var(--accent); outline-offset: 2px; }
 </style>
 
 <main class="wrap">
@@ -100,6 +112,10 @@ button { font: inherit; color: inherit; cursor: pointer; }
     </div>
   </section>
   <div class="ctr" id="ctr"></div>
+  <div class="quiet">
+    <label class="speed" for="speed"><span>Speed</span><input type="range" id="speed" min="0.25" max="3" step="0.05" value="1"><output id="speedOut" for="speed">1×</output></label>
+    <label class="switch" for="instant"><input id="instant" type="checkbox"><span class="track"></span><span>Instant</span></label>
+  </div>
 </main>
 <script src="progression.js"></script>
 </html>

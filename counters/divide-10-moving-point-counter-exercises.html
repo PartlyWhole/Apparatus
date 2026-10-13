@@ -128,6 +128,18 @@ button { font: inherit; color: inherit; cursor: pointer; }
 @media (prefers-reduced-motion: reduce) {
   .counterwrap.editing .caret { animation: none; }
 }
+.quiet { display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; font-size: 0.85rem; color: var(--muted); }
+.speed { display: inline-flex; align-items: center; gap: 10px; }
+.speed input { width: min(150px, 40vw); accent-color: var(--accent); }
+.speed output { min-width: 2.8em; font-variant-numeric: tabular-nums; }
+.switch { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; font-size: 0.9rem; }
+.switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.switch .track { width: 46px; height: 26px; border-radius: 13px; background: var(--line); position: relative; transition: background 0.2s; flex: none; }
+.switch .track::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: var(--bg); transition: transform 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+.switch input:checked + .track { background: var(--accent); }
+.switch input:checked + .track::after { transform: translateX(20px); }
+.switch input:focus-visible + .track { outline: 3px solid var(--accent); outline-offset: 2px; }
+.speed input:disabled { opacity: 0.4; }
 </style>
 <link rel="stylesheet" href="exercise.css">
 
@@ -163,12 +175,30 @@ button { font: inherit; color: inherit; cursor: pointer; }
     <button type="button" class="btn" id="mul10" aria-label="Divide by 10">÷10</button>
     <button type="button" class="reset" id="reset">Reset</button>
   </div>
+  <div class="quiet">
+    <label class="speed" for="speed">
+      <span>Speed</span>
+      <input type="range" id="speed" min="0.25" max="3" step="0.05" value="1">
+      <output id="speedOut" for="speed">1×</output>
+    </label>
+    <label class="switch" for="instant">
+      <input id="instant" type="checkbox">
+      <span class="track"></span>
+      <span>Instant</span>
+    </label>
+  </div>
   <p class="hint" id="hint">Tap the number to type your own.</p>
 </div>
 
 <script>
 (function () {
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let speed = 1, chosen = 1, instant = false;   // speed: what animations use; Instant makes them all but disappear
+  const speedIn = document.getElementById('speed'), speedOut = document.getElementById('speedOut'), instIn = document.getElementById('instant');
+  function setSpeed(v) { chosen = v; speedIn.value = v; speedOut.textContent = (Math.round(v * 100) / 100) + '×'; speed = instant ? 1000 : chosen; }
+  function setInstant(on) { instant = on; instIn.checked = on; speedIn.disabled = on; speed = on ? 1000 : chosen; }
+  speedIn.addEventListener('input', () => setSpeed(parseFloat(speedIn.value)));
+  instIn.addEventListener('change', () => setInstant(instIn.checked));
   const INT = 8, FRAC = 7, N = INT + FRAC;   // tiles: 8 before the starting point, 7 after
   const HOME = INT;                          // the point starts in the gap after tile 7
   const HOP = 480;
@@ -215,7 +245,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
     const first = digits.findIndex(d => d);
     if (first >= 0 && tiles[first].offsetLeft + off < W * 0.06) off = W * 0.06 - tiles[first].offsetLeft;
     pan = off;
-    row.style.transition = animate && !reduceMotion ? 'transform 0.45s ease' : 'none';
+    row.style.transition = animate && !reduceMotion ? `transform ${0.45 / speed}s ease` : 'none';
     row.style.transform = `translateX(${Math.round(pan)}px)`;
   }
   function render() {
@@ -247,9 +277,9 @@ button { font: inherit; color: inherit; cursor: pointer; }
         { left: from + 'px', transform: 'translateY(0)' },
         { left: (from + to) / 2 + 'px', transform: `translateY(${lift}px)`, offset: 0.5 },
         { left: to + 'px', transform: 'translateY(0)' }
-      ], { duration: HOP, easing: 'ease-in-out' });
-      setTimeout(() => passed.classList.add('passed'), HOP * 0.35);
-      setTimeout(() => passed.classList.remove('passed'), HOP * 1.4);
+      ], { duration: HOP / speed, easing: 'ease-in-out' });
+      setTimeout(() => passed.classList.add('passed'), HOP / speed * 0.35);
+      setTimeout(() => passed.classList.remove('passed'), HOP / speed * 1.4);
       placeDot(P);
       await a.finished.catch(() => {});
     } else {
@@ -275,7 +305,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
     const from = gapX(P);
     P = HOME;
     render();
-    if (!reduceMotion) dot.animate([{ left: from + 'px' }, { left: gapX(P) + 'px' }], { duration: 400, easing: 'ease-in-out' });
+    if (!reduceMotion) dot.animate([{ left: from + 'px' }, { left: gapX(P) + 'px' }], { duration: 400 / speed, easing: 'ease-in-out' });
     panTo(P, true);
     edit.value = valueText();
   });
@@ -408,6 +438,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
     read() { return { value: valueText() }; },
     step() { return divide10(); },
     lock(on) { window.__ctrLocked = on; render(); },
+    speed(v, on) { setSpeed(v); setInstant(!!on); },
     typing(on) { edit.disabled = !on; }
   };
 })();

@@ -154,6 +154,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .switch input:focus-visible + .track { outline: 3px solid var(--accent); outline-offset: 2px; }
 .speed { display: inline-flex; align-items: center; gap: 10px; }
 .speed input { width: min(150px, 40vw); accent-color: var(--accent); }
+.speed input:disabled { opacity: 0.4; }
 .speed output { min-width: 2.8em; font-variant-numeric: tabular-nums; }
 .hint.nope { color: var(--ink); }
 .chip {
@@ -282,6 +283,12 @@ button { font: inherit; color: inherit; cursor: pointer; }
       <input type="range" id="speed" min="0.25" max="3" step="0.05" value="1">
       <output id="speedOut" for="speed">1×</output>
     </label>
+    <span class="sep" aria-hidden="true"></span>
+    <label class="switch" for="instant">
+      <input id="instant" type="checkbox">
+      <span class="track"></span>
+      <span>Instant</span>
+    </label>
   </div>
 </div>
 
@@ -291,13 +298,14 @@ button { font: inherit; color: inherit; cursor: pointer; }
   const INT = 8, FRAC = 8, N = INT + FRAC;   // tiles: 8 before the starting point, 8 after
   const HOME = INT;                          // the point starts in the middle gap; exponent = HOME - P
   const HOP = 480;
-  let speed = 1;
+  let speed = 1, chosen = 1, instant = false;   // Instant makes animations all but disappear
   const T = ms => ms / speed;               // every step of the animation is scaled by the speed scrubber
   const speedIn = document.getElementById('speed'), speedOut = document.getElementById('speedOut');
-  speedIn.addEventListener('input', () => {
-    speed = parseFloat(speedIn.value);
-    speedOut.textContent = (Math.round(speed * 100) / 100) + '×';
-  });
+  const instIn = document.getElementById('instant');
+  function setSpeed(v) { chosen = v; speedIn.value = v; speedOut.textContent = (Math.round(v * 100) / 100) + '×'; speed = instant ? 1000 : chosen; }
+  function setInstant(on) { instant = on; instIn.checked = on; speedIn.disabled = on; speed = on ? 1000 : chosen; }
+  speedIn.addEventListener('input', () => setSpeed(parseFloat(speedIn.value)));
+  instIn.addEventListener('change', () => setInstant(instIn.checked));
 
   const wrap = document.getElementById('wrap');
   const counter = document.getElementById('counter');
@@ -888,6 +896,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
     read() { return { value: valueText(), exp: HOME - P }; },
     step(dir) { return hop(dir, true); },
     lock() {},
+    speed(v, on) { setSpeed(v); setInstant(!!on); },
     typing(on) { edit.disabled = !on; expEdit.disabled = !on; }
   };
 })();
