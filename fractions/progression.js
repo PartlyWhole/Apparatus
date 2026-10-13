@@ -794,6 +794,7 @@
       if (ratio) fillCards(cur.cards); else fillTray(cur);
       givenId = null;
       convBoard().load([cur.q]);
+      givenId = convBoard().state.fracs[0].id;   // the amount being converted, fixed now (a tap on a card's bar must not claim it)
     } else {
       $('task').innerHTML = TYPES[cur.type].task(cur);
       boardF.load(cur.spec);
@@ -895,7 +896,7 @@
   paceUI();
 
   if (/[?&]debug\b/.test(location.search)) {
-    window.prog = { get P() { return P; }, set P(x) { P = x; }, get cur() { return cur; }, get T() { return T; }, get ACTIVE() { return ACTIVE; }, SKILLS, boardF, boardC, boardR, fresh, front, here, nextSkill, grade, level, make, newProblem, check, isDue, saveP, setPace, tune, move, chain, loadConv: specs => { givenId = null; convBoard().load(specs); } };
+    window.prog = { get P() { return P; }, set P(x) { P = x; }, get cur() { return cur; }, get T() { return T; }, get ACTIVE() { return ACTIVE; }, SKILLS, boardF, boardC, boardR, fresh, front, here, nextSkill, grade, level, make, newProblem, check, isDue, saveP, setPace, tune, move, chain, loadConv: specs => { givenId = null; convBoard().load(specs); givenId = convBoard().state.fracs[0].id; } };
   }
   newProblem();
 })();
