@@ -44,7 +44,7 @@ A coordinate grid (SVG) with lattice points the student can tap. The anchor pict
 Each follows the house pattern: tutorial only where the idea is new (G1, G4's turn, G10); opening contrast set; tricky probes; miss penalty; one cue + one sentence; next-session check; analytics advice for a tutor; cheat sheet with the relevant picture (slope triangle, the 90° turn, the distance triangle).
 
 ## Answer formats (new building blocks)
-- **Fraction** (slopes): two stacked boxes with the minus typed in the top box (like the exponent fields); simplified required, equivalent unsimplified answers get "simplify" feedback rather than a plain miss.
+- **Number or fraction** (slopes, b): one box; "/" or the fraction icon opens two stacked boxes, minus typed in either; simplified required, equivalent unsimplified answers get "simplify" feedback rather than a plain miss.
 - **Point** (x, y): two boxes inside parentheses.
 - **Equation** y = [m] x + [b], m a fraction; "y = [ ]" and "x = [ ]" for horizontal/vertical.
 - **Root** a√b: a box, a radical sign, a box.
@@ -58,7 +58,7 @@ Each follows the house pattern: tutorial only where the idea is new (G1, G4's tu
 - b with the sign of m·x wrong: "b = y − m·x = −9 − ¼·(−4) = −8."
 
 ## Decided (2026-10-14)
-- Fractions: stacked boxes; a minus typed in either box; empty bottom = 1; a 0 on the bottom means undefined (the word shows under the boxes). No "undefined" button.
+- Answers: one box by default (a whole number, or a decimal like 0.5). The student decides when it's a fraction: typing "/" or tapping the small fraction icon beside the box opens stacked boxes; backspace in an empty bottom closes them. A minus typed in either box; a 0 on the bottom means undefined (the word shows under the boxes). No "undefined" button.
 - ∥ and ⟂ always come with their words ("∥ parallel", "⟂ perpendicular").
 - An equal but unsimplified answer (2/4) gets a "Simplify." nudge and isn't graded.
 - G7 is a step chain (m → ∥/⟂ m → b): a wrong step says why, then fresh boxes in place; first tries are graded. The next-session check asks for y = [m]x + [b] at once.
