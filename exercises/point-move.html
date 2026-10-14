@@ -20,7 +20,7 @@
 .flip.on { opacity: 1; }
 
 /* the row of places: digits solid; empty places faint zeros (tutorial, opening) or small dots */
-.row { --w: 0.9em; position: relative; display: flex; font-size: clamp(1.7rem, 7.6vw, 2.8rem); line-height: 1; padding: 0.95em 0 0.45em; cursor: pointer; touch-action: manipulation; outline-offset: 6px; border-radius: 8px; }
+.row { --w: 0.9em; position: relative; display: flex; font-size: clamp(1.7rem, 7.6vw, 2.8rem); line-height: 1; padding: 1.2em 0 0.45em; cursor: pointer; touch-action: manipulation; outline-offset: 6px; border-radius: 8px; }
 .row.answered { cursor: default; }
 .s { width: var(--w); text-align: center; position: relative; }
 .s.pad { color: transparent; }
@@ -44,8 +44,8 @@
 @keyframes hop { 40% { transform: translateY(-0.45em); } }
 
 /* numbered arcs: one per hop, over the place the point jumped across */
-.arc { position: absolute; top: 0.38em; left: calc(var(--g) * var(--w) + 0.08em); width: calc(var(--w) - 0.16em); height: 0.42em; border: 0.06em solid var(--good); border-bottom: 0; border-radius: 50% 50% 0 0 / 100% 100% 0 0; animation: fadein 0.2s ease; pointer-events: none; }
-.arc::after { content: attr(data-n); position: absolute; left: 50%; top: -0.62em; transform: translateX(-50%); font-size: 0.36em; color: var(--good); font-family: var(--f-body); }
+.arc { position: absolute; top: 0.62em; left: calc(var(--g) * var(--w) + 0.08em); width: calc(var(--w) - 0.16em); height: 0.42em; border: 0.06em solid var(--good); border-bottom: 0; border-radius: 50% 50% 0 0 / 100% 100% 0 0; animation: fadein 0.2s ease; pointer-events: none; }
+.arc::after { content: attr(data-n); position: absolute; left: 50%; bottom: 100%; margin-bottom: 0.25em; transform: translateX(-50%); font-size: 0.36em; line-height: 1; color: var(--good); font-family: var(--f-body); }   /* the number sits above the arc, never on it */
 
 /* ---- tutorial buttons ---- */
 .tbtns { min-height: 52px; display: flex; gap: 10px; justify-content: center; }
@@ -64,7 +64,8 @@
 .pmkey .kx { font-size: 1rem; white-space: nowrap; }
 .pmkey .kx small { color: var(--muted); font-weight: 600; }
 .pmkey sup { font-size: 0.62em; position: relative; top: -0.5em; vertical-align: baseline; line-height: 0; }
-.pmkey .row { font-size: 1.15rem; cursor: default; padding-top: 0.9em; }
+.pmkey .row { font-size: 1.15rem; cursor: default; padding-top: 1.1em; }
+.pmkey .arc { top: 0.5em; }
 
 @media (prefers-reduced-motion: reduce) {
   .pt { transition: none; } .pt.hop, .tb.pulse, .tb.flipping, .arc, .res { animation: none; }
