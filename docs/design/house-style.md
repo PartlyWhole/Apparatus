@@ -19,7 +19,7 @@ What the student sees and does. These rules come from the user; when they change
 | **Right but too slow** (only if the tutor turned speed on) | The button shows ⏱ in grey instead of ✓. Doesn't count yet; the item comes back later. Never treated as a miss. |
 | **Wrong** | The picked button turns red; the right one turns green. **One cue** appears on the item and **one sentence** explains why the *picked* answer is wrong (see `feedback.md`). The student clicks **OK** (or Enter) to continue. Answer buttons are locked until then. |
 | Progress bar | Grows smoothly on a right answer. **On a miss it takes a hit:** drops at once, the lost piece stays red briefly then drains away, and the bar thickens for a moment. Elegant, no flourish. |
-| Finished | A ✓ with **Again** and **Done**. |
+| Finished | A ✓ with **More practice** and **Done**. More practice is a fresh round of tricky questions (one per idea per round, new numbers, no opening); it doesn't change "passed", and misses carry the usual penalty. (Restarting from the beginning is ↺.) |
 | Tutorial (if the exercise has one) | First visit only. The student does each step on the real visual; a short caption appears after the action; progress dots and Skip below. Replay from the ? key. |
 
 ## Chrome

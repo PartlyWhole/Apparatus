@@ -79,10 +79,11 @@ The engine shows the caption, dots and **Skip**, runs the tutorial on the first 
 ## What the engine does (so definitions don't)
 
 - **Choosing:** opening → tricky probes (interleaved by idea) → fixing ideas after a miss (easy kind, then the missed kind; never the same idea twice in a row when something else is pending) → next-session check (one tricky kind per idea).
-- **Grading:** a miss sets that idea's need to `fix` (the miss penalty); right answers on penalty questions count it down (tricky probes don't). A slow right answer (speed rule) re-queues the item and changes nothing else.
+- **Grading:** a miss sets that idea's need to `fix` (the miss penalty); right answers on penalty questions count it down (tricky probes don't). A kind can be queued twice; answering removes one copy. A slow right answer (speed rule) re-queues the item and changes nothing else.
 - **Progress:** `credit / (credit + remaining)`; a right answer +1 credit, a miss −`fix`, so a miss always lowers the bar visibly (the "hit").
 - **Own rules:** `rules` appear on the analytics page with the engine's; `configure(SET)` is applied at every start and every analytics render, and ideas it switches off are pruned from the run (their past answers still show in analytics, marked "off").
-- **Reset (↺ in the top bar, and Again):** a fresh run; the log and `S.tut` are kept.
+- **Reset (↺ in the top bar):** a fresh run; the log and `S.tut` are kept.
+- **More practice (finish screen):** a run of `tricky` rounds, one random tricky kind per idea per round, ideas shuffled and never twice in a row; no opening; `done` unchanged.
 - **Persistence:** `localStorage` `apparatus.<id>.v<version>` (state and log) and `apparatus.<id>.settings` (tutor rules, kept by Start over).
 - **Debug:** `?debug` exposes `window.ex` = `{ S(), cur(), def, start(), SET(), respond(answer), state() }` for simulations (`qa-checklist.md`).
 

@@ -95,7 +95,7 @@
   </div>
   <div class="card" id="fin" hidden>
     <div class="done"><div class="mark" aria-hidden="true">✓</div>
-      <nav><button type="button" class="again" id="again">Again</button><a class="go" href="${root}index.html">Done</a></nav></div>
+      <nav><button type="button" class="again" id="more">More practice</button><a class="go" href="${root}index.html">Done</a></nav></div>
   </div>
   <a class="corner" href="${root}analytics.html#${def.id}" aria-label="Analytics"></a>
 </div>`;
@@ -128,6 +128,7 @@
       return null;
     }
 
+    const dropOne = (a, k) => { const i = a.indexOf(k); if (i >= 0) a.splice(i, 1); };
     // ---- grading; returns true when a right answer was too slow to count ----
     // chose: the picked choice id (buttons) or the error type ('right' when right) for tap answers
     function grade(chose, right, ms, want, pick) {
@@ -137,11 +138,11 @@
       R.answers++; lastIdea = idea;
       if (cur.mode === 'open') R.open++;
       if (slow) {                                   // ask this kind again later; nothing gained or lost
-        if (cur.mode === 'probe') R.probe = R.probe.filter(k => k !== cur.kind).concat(cur.kind);
+        if (cur.mode === 'probe') { dropOne(R.probe, cur.kind); R.probe.push(cur.kind); }
         if (cur.mode === 'warm') S.warm.push(S.warm.shift());
         save(); return true;
       }
-      if (cur.mode === 'probe') R.probe = R.probe.filter(k => k !== cur.kind);
+      if (cur.mode === 'probe') dropOne(R.probe, cur.kind);     // one copy (a kind can appear twice in more practice)
       if (cur.mode === 'warm') S.warm.shift();
       // progress = right answers against what's left; a miss costs as much as the penalty, so the bar visibly drops
       R.credit = Math.max(0, (R.credit || 0) + (right ? 1 : -SET.fix));
@@ -178,7 +179,7 @@
         if (missed) S.checkMissed = true; else { S.checkedAt = now; S.checkMissed = false; }
       }
       save(); progress();
-      $('card').hidden = true; $('fin').hidden = false; $('again').focus();
+      $('card').hidden = true; $('fin').hidden = false; $('more').focus();
     }
     function next() {
       progress();
@@ -251,7 +252,23 @@
 
     // a fresh pass; the answer log (analytics) and "tutorial seen" are kept
     function restart() { tick++; configure(); S.run = newRun(def, SET); S.warm = null; lastIdea = null; shown = null; save(); next(); }
-    $('again').addEventListener('click', restart);
+    // more practice: a fresh round of tricky questions (random kinds, one per idea per round, ideas shuffled), no opening;
+    // passing isn't affected, and misses carry the usual penalty
+    function morePractice() {
+      tick++; configure();
+      const R = newRun(def, SET), ids = ideaIds(def);
+      R.open = (def.opening || []).length;
+      R.probe = [];
+      let last = null;
+      for (let k = 0; k < SET.tricky; k++) {
+        const round = shuffle(ids.slice());
+        if (round.length > 1 && round[0] === last) round.push(round.shift());   // never the same idea twice in a row
+        round.forEach(i => R.probe.push(any(def.ideas[i].hard)));
+        last = round[round.length - 1];
+      }
+      S.run = R; S.warm = null; lastIdea = null; shown = null; save(); next();
+    }
+    $('more').addEventListener('click', morePractice);
     // ↺ asks once ("Reset?") before it acts
     let armT;
     $('reset').addEventListener('click', () => {
