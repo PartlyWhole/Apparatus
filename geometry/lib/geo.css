@@ -27,7 +27,9 @@
 /* the slope triangle: run (across) in blue, rise (up/down) in green */
 .grid .tri .run { stroke: var(--accent); stroke-width: 2.6; stroke-linecap: round; }
 .grid .tri .rise { stroke: var(--good); stroke-width: 2.6; stroke-linecap: round; }
-.grid .tri .tl { font: 700 10px var(--f-mono); text-anchor: middle; }
+.grid .tri .tl { font: 700 11.5px var(--f-mono); text-anchor: middle; }
+/* a halo in the page color keeps labels readable over grid lines and tick numbers */
+.grid .tri .tl, .grid .pl { paint-order: stroke; stroke: var(--bg); stroke-width: 4px; stroke-linejoin: round; }
 .grid .tri .run-l { fill: var(--accent); }
 .grid .tri .rise-l { fill: var(--good); text-anchor: start; }
 .grid .tri .rise-l.end { text-anchor: end; }

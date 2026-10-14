@@ -9,7 +9,7 @@
 
   function draw(el, it, o = {}) {
     el.innerHTML = `<div class="gq"><div class="gridbox"></div><p class="say" aria-live="polite"></p>
-      <div class="q ans" hidden>${F.box('slope', { undef: true })}</div><button type="button" class="go" hidden>Check</button></div>`;
+      <div class="q ans" hidden>slope = ${F.box('slope', { undef: true })}</div><button type="button" class="go" hidden>Check</button></div>`;
     const g = G.make(el.querySelector('.gridbox'));
     g.line([it.p[0] - it.run, it.p[1] - it.rise], [it.p[0] + it.run, it.p[1] + it.rise]);
     return g;
