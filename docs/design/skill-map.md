@@ -5,7 +5,8 @@ The exercises in order, what each needs first, and which later exercises review 
 | # | Exercise | Status | Needs first | Reviewed implicitly by |
 |---|---|---|---|---|
 | 1 | **Scientific or Not** (`sci-form`): decimal vs. scientific vs. neither | live | — | anything that writes or reads scientific notation |
-| 2 | *next: to be designed with the user* | — | 1 | |
+| 2 | **Moving the Point** (`point-move`): × / ÷ 10ⁿ and × 10⁻ⁿ move the point | live | place value | factoring out powers of ten; decimal ↔ scientific |
+| 3 | *factoring out powers of ten to reach scientific notation* | idea | 1, 2 | |
 
 ## Candidates (from the older progressions and the user's earlier requests, not yet designed for the new set)
 

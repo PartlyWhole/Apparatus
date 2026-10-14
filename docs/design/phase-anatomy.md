@@ -21,13 +21,27 @@ Design tricky kinds by asking: *what wrong rule would still get the easy ones ri
 
 ## 3. The flow
 
+0. **Tutorial** (optional; for genuinely new ideas): an interactive walk-through on the first visit, before the exercise. See section 3a.
 1. **Opening contrast set** (optional, on by default): one item per idea, as similar as possible, so only the deciding feature differs (4.56 × 10³ / 45.6 × 10² / 4,560). This is the "safe introduction".
 2. **Tricky probes:** each idea's tricky kinds, interleaved so the same idea never comes twice in a row. A right answer on a tricky kind vouches for that idea's easy kinds.
 3. **After a miss on an idea:** that idea needs `fix` more right answers (default 2): first an easy kind, then the kind that was missed (with new numbers). Other ideas are interleaved in between when available.
 4. **Passed** when the opening and every tricky probe are done, and no idea still needs fixing.
-5. **Next-session check:** the first time the page is opened 8+ hours after passing, 3 quick questions, one tricky kind per idea. Clean → final. A miss → practiced right away, and the check runs again next session.
+5. **Next-session check:** the first time the page is opened 8+ hours after passing, one quick question per idea (a tricky kind). Clean → final. A miss → practiced right away, and the check runs again next session.
 
-With defaults a student who understands answers **3 + 2 × ideas** questions (9 for three ideas).
+With defaults a student who understands answers **opening + 2 × ideas** questions (9 for sci-form's three ideas, 11 for point-move's four).
+
+**Twists:** an idea marked `late` (e.g. ÷ 10⁻ⁿ and 10⁰ in point-move) has its probes after everything else: the "twist" after the main ideas are solid.
+
+## 3a. Tutorials
+
+Use one only when the idea is new to the student (a tutorial adds nothing for conventional things; `evidence.md`). Rules, from the guidance research:
+- **Do, don't read:** every step is an action on the real visual (press × 10, watch the point hop). Advance on the action, never on a timer.
+- **Caption after the action**, naming what they just saw, ≤ 8 words ("× 10: the point moves one place right."). The only instruction allowed is for a non-obvious interaction ("Tap where the point lands.").
+- **≤ 5 steps**, progress dots, Skip always visible, Replay from the ? key.
+- **Can't be failed:** a wrong try shows the answer and lets them try again.
+- The last step is the exercise's own answer interaction, so the exercise starts with no surprises.
+
+**Fading scaffolds:** support shown in the tutorial and the opening (point-move's faint zeros) is removed for the tricky questions and comes back only in feedback.
 
 ## 4. Why this bar holds (guessing)
 

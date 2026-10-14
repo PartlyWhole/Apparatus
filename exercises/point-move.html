@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Moving the Point</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="../engine/exercise.css?v=2">
+<style>
+/* ---- the question: expression, slot row, result ---- */
+.pm { display: flex; flex-direction: column; align-items: center; gap: 18px; font-family: var(--f-mono); font-weight: 700; }
+.pm sup { font-size: 0.6em; position: relative; top: -0.55em; vertical-align: baseline; line-height: 0; }
+.expr { font-size: clamp(1.25rem, 5vw, 1.7rem); color: var(--ink); }
+.expr .eq { color: var(--muted); }
+.res { min-height: 1.4em; font-size: clamp(1.25rem, 5vw, 1.7rem); color: var(--ink); animation: fadein 0.3s ease; }
+.res:empty { animation: none; }
+.res.ok { color: var(--good); }
+.flip { min-height: 0; font-size: 1.05rem; color: var(--muted); opacity: 0; transition: opacity 0.3s; }
+.flip.on { opacity: 1; }
+
+/* the row of places: digits solid; empty places faint zeros (tutorial, opening) or small dots */
+.row { --w: 0.9em; position: relative; display: flex; font-size: clamp(1.7rem, 7.6vw, 2.8rem); line-height: 1; padding: 0.95em 0 0.45em; cursor: pointer; touch-action: manipulation; outline-offset: 6px; border-radius: 8px; }
+.row.answered { cursor: default; }
+.s { width: var(--w); text-align: center; position: relative; }
+.s.pad { color: transparent; }
+.s.pad::after { content: ""; position: absolute; left: 50%; bottom: 0.18em; width: 0.12em; height: 0.12em; margin-left: -0.06em; border-radius: 50%; background: var(--line); }
+.row.faint .s.pad { color: var(--line); }
+.row.faint .s.pad::after { display: none; }
+.row .s.pad.fill { color: var(--ink); transition: color 0.2s; }
+.row .s.pad.fill::after { display: none; }
+
+/* points sit in the gaps: --g = how many places are to their left */
+.pt { position: absolute; bottom: 0.47em; left: calc(var(--g) * var(--w)); width: 0.24em; height: 0.24em; margin-left: -0.12em; border-radius: 50%; background: var(--ink); transition: left 0.28s ease; pointer-events: none; }
+.pt.start { background: var(--ink); }
+.row.answered .pt.start, .pt.start.dim { background: var(--line); }
+.pt.ghost { background: var(--accent); opacity: 0; }
+.pt.ghost.on { opacity: 0.55; }
+.row:focus-visible .pt.ghost { opacity: 0.8; }
+.pt.pick.ok, .pt.run { background: var(--good); }
+.pt.pick.no { background: var(--bad); }
+.pt.run.stay { box-shadow: 0 0 0 0.12em var(--good-bg); }
+.pt.hop { animation: hop 0.3s ease; }
+@keyframes hop { 40% { transform: translateY(-0.45em); } }
+
+/* numbered arcs: one per hop, over the place the point jumped across */
+.arc { position: absolute; top: 0.38em; left: calc(var(--g) * var(--w) + 0.08em); width: calc(var(--w) - 0.16em); height: 0.42em; border: 0.06em solid var(--good); border-bottom: 0; border-radius: 50% 50% 0 0 / 100% 100% 0 0; animation: fadein 0.2s ease; pointer-events: none; }
+.arc::after { content: attr(data-n); position: absolute; left: 50%; top: -0.62em; transform: translateX(-50%); font-size: 0.36em; color: var(--good); font-family: var(--f-body); }
+
+/* ---- tutorial buttons ---- */
+.tbtns { min-height: 52px; display: flex; gap: 10px; justify-content: center; }
+.tb { min-width: 96px; min-height: 52px; padding: 0 20px; border-radius: 14px; border: 2px solid var(--line); background: var(--surface); font-family: var(--f-mono); font-weight: 700; font-size: 1.2rem; }
+.tb:hover:not(:disabled) { border-color: var(--accent); }
+.tb:disabled { cursor: default; }
+.tb.pulse { border-color: var(--accent); animation: pulse 1.4s ease-in-out infinite; }
+@keyframes pulse { 50% { box-shadow: 0 0 0 7px rgba(38, 72, 201, 0.14); } }
+.tb.flipping { animation: flip 0.36s ease; border-color: var(--accent); }
+@keyframes flip { 50% { transform: rotateX(90deg); } }
+.tb.next { min-width: 64px; font-size: 1.6rem; border-color: var(--accent); color: var(--accent); }
+
+/* ---- the ? key ---- */
+.key { grid-template-columns: 1fr; }
+.pmkey { display: grid; grid-template-columns: auto auto; gap: 6px 14px; align-items: center; font-family: var(--f-mono); font-weight: 700; }
+.pmkey .kx { font-size: 1rem; white-space: nowrap; }
+.pmkey .kx small { color: var(--muted); font-weight: 600; }
+.pmkey sup { font-size: 0.62em; position: relative; top: -0.5em; vertical-align: baseline; line-height: 0; }
+.pmkey .row { font-size: 1.15rem; cursor: default; padding-top: 0.9em; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pt { transition: none; } .pt.hop, .tb.pulse, .tb.flipping, .arc, .res { animation: none; }
+}
+</style>
+<body>
+<script src="../engine/exercise.js?v=2"></script>
+<script src="point-move.js?v=4"></script>
+<script>Apparatus.mount('point-move');</script>
+</body>

@@ -19,6 +19,19 @@ Every exercise spec lists **every (right answer, picked answer) pair** with its 
 | Decimal | Scientific | crossed-out "× 10?" slot | There's no × 10ⁿ, so it's not scientific notation. |
 | Decimal | Neither | crossed-out "× 10?" slot | There's no × 10ⁿ. A plain number is a decimal. |
 
+## Tap answers: an error-type matrix
+
+When the student taps or drags instead of picking a button, list **error types** instead of (right, picked) pairs: every way an answer can be wrong, how to detect it (`classify`), the cue, and the sentence. Example (`point-move`):
+
+| Error | Detected when | Sentence |
+|---|---|---|
+| dir | positive power, moved the wrong way | × 10² makes it bigger, so the point moves right. |
+| sign | negative power, moved as if positive | 10⁻² means ÷ 10², so the point moves left. / Dividing by 10⁻² is × 10², so the point moves right. |
+| count | right way (or no move), wrong number of places | × 10³ moves the point 3 places, not 2. |
+| zero | 10⁰, but moved | 10⁰ is 1, so the point doesn't move. |
+
+The cue for every error is the same: the correct hops animate (numbered arcs) and the tapped spot is marked red; for negative and zero powers the operator's "flip" (× 10⁻² = ÷ 10²) appears under the question.
+
 ## Cues
 
 A cue is a CSS class on the item that lights up exactly one deciding feature. Keep a small, consistent vocabulary:

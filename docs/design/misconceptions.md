@@ -21,3 +21,8 @@ What a particular wrong answer usually means, and what a tutor can do in 30 seco
 | ×10 "adds a zero" to a decimal (3.5 → 3.50) | Rule learned on whole numbers only | Show the digits shifting, not a zero appearing | expected |
 | Moves the point the wrong way for ÷10 | Direction not linked to bigger/smaller | "Will the answer be bigger or smaller?" first | expected |
 | Counts zeros instead of places moved | Confuses the number of zeros with the exponent | Count the jumps of the point | expected |
+| Moves the point right for × 10⁻² | Reads the exponent's number and ignores the sign | Cover the number: "10⁻² means ÷ 100. Bigger or smaller?" | expected |
+| Starts 45 × 10² from before the 4 | Doesn't see the hidden point at the end of a whole number | Write 45 as "45." first | expected |
+| Stops at the front for 3.5 ÷ 10² | Doesn't know empty places become zeros | Show the faint zeros; the point hops onto them | expected |
+| Moves the point left for 5.8 ÷ 10⁻² | Treats ÷ 10⁻ⁿ like ÷ 10ⁿ | Dividing by 10⁻² is × 10²; bigger or smaller? | expected |
+| Moves the point for × 10⁰ | Thinks 10⁰ is 10 (or 0) | 10⁰ = 1; multiplying by 1 changes nothing | expected |

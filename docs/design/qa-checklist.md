@@ -34,7 +34,13 @@ for (let i = 0; i < 40 && document.getElementById('fin').hidden; i++) {
 - [ ] Back from analytics (bfcache) shows the current state, not a stale one.
 - [ ] Again / Start over during a pending auto-advance.
 
+## Tutorial (if any)
+
+- [ ] Walk every step with real clicks (not just JS): each advances on the action; captions appear after the action; Skip works mid-animation; Replay from ? and "Show tutorial again" in analytics work; a wrong try in the last step lets them try again.
+
 ## Look
+
+- [ ] No exercise class name collides with an engine class (`.done`, `.card`, `.key`, `.fix`, `.tut`, `.bar`, `.opts`…).
 
 - [ ] Phone width (375 px, and 320 px): no horizontal scroll; the longest item plus its cue fits.
 - [ ] Light and dark; reduced motion; keyboard only; screen reader text sensible.

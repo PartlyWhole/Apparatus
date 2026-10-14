@@ -140,3 +140,17 @@ body.analytics { font: 16px/1.5 var(--f-body); }
   .analytics .idea { grid-template-columns: 5.2rem 1fr; } .analytics .idea .st { grid-column: 1 / -1; text-align: left; }
   .analytics .rule { grid-template-columns: 1fr; }
 }
+
+/* ---- tutorial chrome: caption, progress dots, Skip ---- */
+.tut { display: flex; flex-direction: column; align-items: center; gap: 22px; margin-top: -18px; width: 100%; }
+.tut p { margin: 0; min-height: 1.5em; max-width: 26rem; text-align: center; font-size: 1.12rem; line-height: 1.45; animation: fadein 0.3s ease; }
+.tut-foot { display: flex; align-items: center; gap: 18px; }
+.tdots { display: inline-flex; gap: 6px; }
+.tdots i { width: 7px; height: 7px; border-radius: 50%; background: var(--line); }
+.tdots i.d { background: var(--muted); }
+.tdots i.c { background: var(--accent); }
+.skip { border: 0; background: transparent; color: var(--muted); font-size: 0.9rem; min-height: 44px; padding: 0 8px; }
+.skip:hover { color: var(--accent); }
+.key .replay { grid-column: 1 / -1; justify-self: center; border: 0; background: transparent; color: var(--accent); font-weight: 700; font-size: 0.92rem; min-height: 36px; }
+@keyframes fadein { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .tut p { animation: none; } }

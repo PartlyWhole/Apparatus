@@ -2,6 +2,9 @@
 
 Newest first. One line per decision: date — what — why (and who asked). When a decision is reversed, add a new line; don't delete the old one. The other docs describe only the current state.
 
+- 2026-10-14 — Moving the Point (`point-move`): tap where the point lands; the point moves (not the digits); faint zeros in the tutorial and opening, then faded to dots (scaffold fading); ÷ 10⁻ⁿ and 10⁰ included as a late "twist" idea, taught by the operator "flip" (× 10⁻² = ÷ 10²). (user: "Tap to answer, include them elegantly, fade zeros, point moves")
+- 2026-10-14 — Engine: tap mode (exercise draws its answer area; feedback and analytics by error type), tutorial mode (first visit, Skip, Replay, can't be failed), late ideas. (needed by point-move; user asked for "a tutorial mode with the kind of guidance we looked at earlier")
+
 - 2026-10-14 — Shared engine (`engine/`), exercise definitions (`exercises/`), generic `analytics.html#<id>`, design docs and skills created so future exercises follow the same rules. `counters/sci-form.html` redirects to `exercises/sci-form.html`. (user: "evergreen" docs and skills)
 - 2026-10-14 — Tutor-adjustable rules on the analytics page: opening, tricky count, after-a-miss, speed, next-session check, ? key. Loosening applies now, tightening next run. Settings survive Start over. (user)
 - 2026-10-14 — A miss hits the progress bar like losing HP: instant drop, red piece drains, bar thickens briefly. Every miss lowers the bar (credit −1). (user: "stronger tell… elegant, minimal")

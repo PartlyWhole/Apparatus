@@ -30,6 +30,7 @@ Apparatus.define({
     'dec-whole': { idea: 'dec', make: () => item }, …
   },
   answer: (item, kind) => choiceId,   // optional; default: the kind's idea id (when ideas = choices)
+  // ideas[i].late: true → that idea's tricky probes come after all the others (twists)
   opening: [{ kind, item }, …],       // optional fixed contrast set
 
   render: (item, cue) => html,        // the item; with a cue class when showing feedback (and in the key)
@@ -44,15 +45,44 @@ Apparatus.define({
 
 Helpers: `Apparatus.util.r(a, b)` (random integer), `any(array)`, `shuffle(array)`.
 
+## Tap mode (the exercise draws its own answer area)
+
+Instead of `choices`, an exercise can answer by tapping/dragging in its own area (first used by `point-move`):
+
+```js
+  ask(el, item, submit, { mode }),    // draw the question + answer area into el; call submit(answer) once
+  correct: item => answer,            // the right answer (compared with ===, or define isRight(item, answer))
+  classify: (item, answer, kind) => errorType,     // for a wrong answer: what kind of error it is
+  feedback: (item, want, answer, kind, errorType) => [cue, sentenceHtml],
+  reveal(el, item, answer, { right, cue, err, slow }),   // show the outcome on the item (animations are the exercise's)
+  revealMs: 1100,                     // how long a right answer stays before moving on (default 900)
+  errors: { dir: 'moved the wrong way', … },       // labels for error types (analytics)
+  diagnose: (errorType, kind) => [whatItMeans, whatToDo],
+  keyHTML: '…',                       // the ? key as HTML (instead of key: [...])
+```
+
+The log stores the error type as `chose` ('right' when right) and the raw answer as `pick`; analytics group misses by error type. Keyboard support is the exercise's job in tap mode (e.g. arrows + Enter).
+
+## Tutorial mode
+
+```js
+  tutorial(stage, api)    // interactive steps drawn into the question area
+  // api.step(i, n)  progress dots     api.caption(html)  the line under the stage (≤ 8 words, after an action)
+  // api.alive()     false once skipped (stop timers)     api.done()  finish → the exercise starts
+```
+
+The engine shows the caption, dots and **Skip**, runs the tutorial on the first visit (rule `tutorial`), remembers it (`S.tut` = done | skipped), and adds **Replay tutorial** to the ? key and **Show tutorial again** to analytics. Tutorial answers are never graded. Advance on the student's real actions; never on a timer.
+
 ## What the engine does (so definitions don't)
 
 - **Choosing:** opening → tricky probes (interleaved by idea) → fixing ideas after a miss (easy kind, then the missed kind; never the same idea twice in a row when something else is pending) → next-session check (one tricky kind per idea).
 - **Grading:** a miss sets that idea's need to `fix`; right answers count it down. A slow right answer (speed rule) re-queues the item and changes nothing else.
 - **Progress:** `credit / (credit + remaining)`; a right answer +1 credit, a miss −1, so a miss always lowers the bar (the "hit").
 - **Persistence:** `localStorage` `apparatus.<id>.v<version>` (state and log) and `apparatus.<id>.settings` (tutor rules, kept by Start over).
-- **Debug:** `?debug` exposes `window.ex` = `{ S(), cur(), def, start(), SET() }` for simulations (`qa-checklist.md`).
+- **Debug:** `?debug` exposes `window.ex` = `{ S(), cur(), def, start(), SET(), respond(answer), state() }` for simulations (`qa-checklist.md`).
 
 ## Limits (extend when an exercise needs it)
 
-- Answers are **buttons** (choice mode). Typed answers, counters or boards need an engine extension: an exercise-provided `ask(item, area, submit)` that calls `submit(picked, right)`. Add it with the first exercise that needs it, and document it here.
+- Typed answers aren't built yet; they would be a tap-mode exercise with an input in `ask`.
+- Don't use engine class names for exercise visuals (`.done`, `.card`, `.key`, `.fix`, `.tut`, `.bar`, `.opts`…); they collide (`point-move` once used `.row.done` and its row turned vertical).
 - One state per browser (no student accounts). A shared device shares progress.
