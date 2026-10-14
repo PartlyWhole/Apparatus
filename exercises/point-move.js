@@ -124,8 +124,8 @@
       const say = () => { row.setAttribute('aria-valuetext', valueAt(it, g)); };
       // moving the point (hover, drag, arrows) previews it, with the zeros it would need, so it never floats in empty space;
       // releasing (or Enter) commits
-      const show = x => { g = x; ghost.style.setProperty('--g', g); ghost.classList.add('on'); setFills(row, it, g, 'prev'); say(); };
-      const clear = () => { ghost.classList.remove('on'); setFills(row, it, null, 'prev'); };
+      const show = x => { g = x; ghost.style.setProperty('--g', g); ghost.classList.add('on'); row.classList.toggle('previewing', g !== start(it)); setFills(row, it, g, 'prev'); say(); };
+      const clear = () => { ghost.classList.remove('on'); row.classList.remove('previewing'); setFills(row, it, null, 'prev'); };
       const send = x => { if (!live) return; live = false; ghost.remove(); submit(x); };
       let down = false;
       row.addEventListener('pointerdown', e => { if (!live) return; down = true; try { row.setPointerCapture(e.pointerId); } catch (_) {} show(gapFromX(row, it, e.clientX)); });

@@ -30,7 +30,8 @@
 /* points sit in the gaps: --g = how many places are to their left */
 .pt { position: absolute; bottom: 0.47em; left: calc(var(--g) * var(--w)); width: 0.24em; height: 0.24em; margin-left: -0.12em; border-radius: 50%; background: var(--ink); transition: left 0.28s ease; pointer-events: none; }
 .pt.start { background: var(--ink); }
-.row.answered .pt.start, .pt.start.dim { background: var(--line); }
+.pt.start { transition: opacity 0.2s; }
+.row.answered .pt.start, .row.previewing .pt.start, .pt.start.dim { opacity: 0.1; }   /* once the point moves or is committed, the old one all but disappears */
 .pt.ghost { background: var(--accent); opacity: 0; }
 .pt.ghost.on { opacity: 0.55; }
 .row:focus-visible .pt.ghost { opacity: 0.8; }
@@ -70,6 +71,6 @@
 </style>
 <body>
 <script src="../engine/exercise.js?v=3"></script>
-<script src="point-move.js?v=7"></script>
+<script src="point-move.js?v=8"></script>
 <script>Apparatus.mount('point-move');</script>
 </body>

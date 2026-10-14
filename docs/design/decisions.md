@@ -2,6 +2,7 @@
 
 Newest first. One line per decision: date — what — why (and who asked). When a decision is reversed, add a new line; don't delete the old one. The other docs describe only the current state.
 
+- 2026-10-14 — Moving the Point: once the point is moved (preview) or committed, the original point fades to ~10%. (user)
 - 2026-10-14 — Moving the Point: no placeholder zeros anywhere (not even in the tutorial or opening); a zero shows only where the point's position adds one. Replaces "faint zeros, then fade". (user)
 - 2026-10-14 — ↺ reset back on the exercise page, next to ?, asking once ("Reset?"); keeps the log and tutorial status. Reverses "no reset on the student page". (user)
 - 2026-10-14 — Moving the Point: moving the point previews the zeros it would need (light), so it never floats; placeholder dots removed. Answers commit on release, so dragging on touch previews too. (user: "Moving the dot should spawn 0s so it doesn't look like a floating dot")
