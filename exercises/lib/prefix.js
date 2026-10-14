@@ -85,13 +85,16 @@
       <button type="button" class="go">Check</button><div class="ans" aria-live="polite"></div></div>`;
     return Apparatus.define({
       id: cfg.id, title: cfg.title,
+      // every prefix counts toward passing (d, c, m, µ; da, h, k, M), mixed so neighbors aren't back to back;
+      // the 1- and 2-place ones are also the easier penalty questions after a miss
       ideas: up ? {
-        small: { name: '1 base = ? small (mL in 1 L)', easy: ['s1', 's2'], hard: ['s3', 's6'] },
-        big:   { name: '1 big = ? base (m in 1 km)', easy: ['b1', 'b2'], hard: ['b3', 'b6'] }
+        small: { name: '1 base = ? small (mL in 1 L)', easy: ['s1', 's2'], hard: ['s2', 's6', 's1', 's3'] },
+        big:   { name: '1 big = ? base (m in 1 km)', easy: ['b1', 'b2'], hard: ['b1', 'b3', 'b2', 'b6'] }
       } : {
-        big:   { name: '1 base = ? big (km in 1 m)', easy: ['b1', 'b2'], hard: ['b3', 'b6'] },
-        small: { name: '1 small = ? base (m in 1 cm)', easy: ['s1', 's2'], hard: ['s3', 's6'] }
+        big:   { name: '1 base = ? big (km in 1 m)', easy: ['b1', 'b2'], hard: ['b1', 'b3', 'b2', 'b6'] },
+        small: { name: '1 small = ? base (m in 1 cm)', easy: ['s1', 's2'], hard: ['s2', 's6', 's1', 's3'] }
       },
+      defaults: { tricky: 4 },
       kinds: { s1: mk('small', -1), s2: mk('small', -2), s3: mk('small', -3), s6: mk('small', -6), b1: mk('big', 1), b2: mk('big', 2), b3: mk('big', 3), b6: mk('big', 6) },
       opening: up ? [{ kind: 's3', item: { b: 'L', a: 0, t: -3 } }, { kind: 'b3', item: { b: 'm', a: 3, t: 0 } }]
                   : [{ kind: 'b3', item: { b: 'm', a: 0, t: 3 } }, { kind: 's2', item: { b: 'm', a: -2, t: 0 } }],

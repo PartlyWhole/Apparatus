@@ -2,6 +2,7 @@
 
 Newest first. One line per decision: date — what — why (and who asked). When a decision is reversed, add a new line; don't delete the old one. The other docs describe only the current state.
 
+- 2026-10-14 — Build Up / Break Down: every prefix (d, c, da, h too, not just k, m, M, µ) counts toward passing; 10 questions. (user)
 - 2026-10-14 — Unit Facts: "Master every fact" rule (this exercise only, default on): each fact gated individually (multiple choice then written), next-session check asks every fact written. Engine: `ideas[i].check` picks the check's kind. (user: "ensure/gate student until they master them")
 - 2026-10-14 — Prefix line: prefixes only (no unit after each), base unit as a pill in the middle, more room (narrow empty spots), hover/tap shows "kilo · 10³". (user: "letters flow from one to the other… visually confusing")
 - 2026-10-14 — Conversion Fractions: when a 1 is given on the smaller unit, the answer shown keeps it (0.01 hm / 1 m) and the sentence says why ("1 hm = 100 m, so 1 m = 0.01 hm"). (user report)

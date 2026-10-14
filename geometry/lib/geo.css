@@ -1,0 +1,75 @@
+/* Geometry — the grid (grid.js), stacked fraction boxes (frac.js), and the question layout. Colors come from engine/exercise.css. */
+.gq { display: flex; flex-direction: column; align-items: center; gap: 14px; width: 100%; }
+.gq .q { font-family: var(--f-mono); font-weight: 700; font-size: clamp(1.15rem, 5vw, 1.6rem); color: var(--ink); text-align: center; display: flex; align-items: center; justify-content: center; gap: 0.4em; flex-wrap: wrap; }
+.gq .say { margin: 0; min-height: 1.3em; text-align: center; font-size: 1.02rem; color: var(--muted); }
+.gq .go { min-height: 46px; padding: 0 28px; border-radius: 999px; border: 0; background: var(--accent); color: var(--on-accent); font-weight: 700; font-family: var(--f-body); }
+.gq .go:disabled { display: none; }
+.gq .work { font-family: var(--f-mono); font-weight: 700; font-size: clamp(0.95rem, 4vw, 1.15rem); color: var(--muted); text-align: center; line-height: 1.8; min-height: 1.2em; }
+.gq .work .ok { color: var(--good); }
+
+/* the grid */
+.gq .gridbox { width: min(84vw, 22rem); }
+.grid { width: 100%; height: auto; display: block; overflow: visible; }
+.grid .gl { stroke: var(--line); stroke-width: 0.6; }
+.grid .axis { stroke: var(--muted); stroke-width: 1.4; }
+.grid .gn { fill: var(--muted); font: 600 9px var(--f-mono); text-anchor: middle; }
+.grid .gn.gy { text-anchor: end; }
+.grid .ln { stroke: var(--ink); stroke-width: 2.4; stroke-linecap: round; }
+.grid .ln.b { stroke: var(--accent); }
+.grid .ln.faint { stroke: var(--muted); stroke-dasharray: 4 4; stroke-width: 1.6; }
+.grid .sg { stroke: var(--ink); stroke-width: 2.4; stroke-linecap: round; }
+.grid .pt { fill: var(--ink); }
+.grid .pt.pick { fill: var(--accent); }
+.grid .pt.ok { fill: var(--good); }
+.grid .pt.no { fill: var(--bad); }
+.grid .pl { fill: var(--ink); font: 700 9.5px var(--f-mono); }
+.grid.tappable { cursor: pointer; }
+/* the slope triangle: run (across) in blue, rise (up/down) in green */
+.grid .tri .run { stroke: var(--accent); stroke-width: 2.6; stroke-linecap: round; }
+.grid .tri .rise { stroke: var(--good); stroke-width: 2.6; stroke-linecap: round; }
+.grid .tri .tl { font: 700 10px var(--f-mono); text-anchor: middle; }
+.grid .tri .run-l { fill: var(--accent); }
+.grid .tri .rise-l { fill: var(--good); text-anchor: start; }
+.grid .tri .rise-l.end { text-anchor: end; }
+.grid .tri.ghost .run, .grid .tri.ghost .rise { opacity: 0.35; }
+.grid .tri.turned .run, .grid .tri.turned .rise { stroke-dasharray: 5 3; }
+
+/* stacked fraction boxes */
+.sf { display: inline-flex; flex-direction: column; align-items: center; gap: 4px; vertical-align: middle; position: relative; }
+.sf input { width: 4.2ch; padding: 4px 4px; border-radius: 10px; border: 2px solid var(--line); background: var(--surface); color: var(--ink);
+  font: inherit; font-family: var(--f-mono); font-weight: 700; text-align: center; }
+.sf input:focus { outline: none; border-color: var(--accent); }
+.sf .sf-bar { align-self: stretch; height: 3px; border-radius: 2px; background: var(--ink); }
+.sf .sf-u { margin-top: 4px; min-height: 30px; padding: 0 10px; border-radius: 999px; border: 2px solid var(--line); background: transparent; color: var(--muted);
+  font: 600 0.78rem var(--f-body); cursor: pointer; }
+.sf .sf-u[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.sf.is-undef input, .sf.is-undef .sf-bar { opacity: 0.25; }
+.sf.bad input { border-color: var(--bad); animation: gshake 0.3s ease; }
+.sf.ok input { border-color: var(--good); color: var(--good); }
+.sf.no input { border-color: var(--bad); color: var(--bad); }
+.sf.ok .sf-u[aria-pressed="true"] { border-color: var(--good); color: var(--good); }
+.sf.no .sf-u[aria-pressed="true"] { border-color: var(--bad); color: var(--bad); }
+@keyframes gshake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+.sf input:disabled, .sf .sf-u:disabled { cursor: default; }
+/* a stacked fraction in text */
+.frs { display: inline-flex; align-items: center; gap: 1px; }
+.fr { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; font-size: 0.85em; line-height: 1.05; }
+.fr span:first-child { border-bottom: 2px solid currentColor; padding: 0 2px; }
+.fr span:last-child { padding: 0 2px; }
+
+/* choices (parallel / perpendicular / neither; true / false) */
+.gmc { display: grid; grid-template-columns: repeat(var(--k, 3), minmax(0, 1fr)); gap: 10px; width: min(100%, 32rem); }
+.gmc button { min-height: 56px; padding: 6px; border-radius: 14px; border: 2px solid var(--line); background: var(--surface); color: var(--ink); font-weight: 700; font-size: 1rem; }
+.gmc button:hover:not(:disabled) { border-color: var(--accent); }
+.gmc button:disabled { cursor: default; opacity: 0.4; }
+.gmc button.ok, .gmc button.want { opacity: 1; border-color: var(--good); color: var(--good); }
+.gmc button.ok { background: var(--good-bg); }
+.gmc button.ok::before { content: "✓ "; }
+.gmc button.no { opacity: 1; border-color: var(--bad); color: var(--bad); }
+.gq .eqs { display: flex; flex-direction: column; gap: 6px; align-items: center; font-family: var(--f-mono); font-weight: 700; font-size: clamp(1.05rem, 4.6vw, 1.4rem); }
+.gq .eqs .l2 { color: var(--accent); }
+
+/* the ? key */
+.key .gk { display: grid; gap: 6px; justify-items: center; font-size: 0.95rem; }
+.key .gk .gridbox { width: min(70vw, 15rem); }
+@media (prefers-reduced-motion: reduce) { .sf.bad input { animation: none; } }

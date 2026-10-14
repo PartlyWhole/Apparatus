@@ -17,10 +17,10 @@ Each spot shows just the prefix (M k h da · d c m µ), with the base unit in th
 |---|---|---|
 | small → base: 1 base = ? small | d (10), c (100) | m (1,000: "milli is 100"?), µ (1,000,000: "µ is next to m, so 10,000") |
 | base → big: 1 big = ? base | da (10), h (100) | k (1,000), M (1,000,000: "M is next to k") |
-Opening: 1 L = ? mL, 1 km = ? m. 6 questions. Tutorial (2 steps): tap a unit on the line and watch the hops ("1 kL = 1,000 L").
+Every prefix counts toward passing (four per idea, mixed: c, µ, d, m; da, k, h, M); the 1- and 2-place ones double as the easier penalty questions. Opening: 1 L = ? mL, 1 km = ? m. 10 questions. Tutorial (2 steps): tap a unit on the line and watch the hops ("1 kL = 1,000 L").
 
 ## 2. Break down (`prefix-down`): 1 [smaller] = ? [bigger], one of them the base
-"How many km equal 1 m?" → **1 m = [ ] km** = 0.001. Mirror of 1 (base → big: 0.1 … 0.000001; small → base). Opening: 1 m = ? km, 1 cm = ? m. 6 questions.
+"How many km equal 1 m?" → **1 m = [ ] km** = 0.001. Mirror of 1 (base → big: 0.1 … 0.000001; small → base), every prefix counted. Opening: 1 m = ? km, 1 cm = ? m. 10 questions.
 
 ## 3. Between two prefixes (`prefix-between`): neither is the base
 "1 cm = ? µm" as a power of ten (**10^[±][ ]**), as a number (**[ ]**, commas), or both. Both directions (bigger → smaller is positive; smaller → bigger negative). Pairs across the gaps are the tricky ones (cm–µm 10⁴, km–cm 10⁵, km–mm 10⁶, Mm–km 10³, mm–µm 10³). Opening: 1 cm = ? µm (both). 7 questions.
