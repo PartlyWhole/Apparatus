@@ -84,6 +84,8 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .opts button.ok { opacity: 1; border-color: var(--good); color: var(--good); background: var(--good-bg); }
 .opts button.no { opacity: 1; border-color: var(--bad); color: var(--bad); }
 .opts button.ok::before { content: "✓ "; }
+.opts button.ok.slow { border-color: var(--line); color: var(--muted); background: transparent; }
+.opts button.ok.slow::before { content: "⏱ "; }
 .opts button.want { opacity: 1; border-color: var(--good); color: var(--good); }
 .fix { display: flex; flex-direction: column; align-items: center; gap: 18px; min-height: 110px; margin-top: -18px; }
 .fix p { margin: 0; max-width: 26rem; text-align: center; font-size: 1.12rem; line-height: 1.45; }
@@ -179,7 +181,22 @@ button { font: inherit; color: inherit; cursor: pointer; }
     { kind: 'dec-whole', n: { L: '4560', R: '', e: null } }
   ];
   // then the hard ones, never the same idea twice in a row
-  const PROBE = ['dec-one', 'fake-ten', 'sci-small', 'fake-small', 'dec-small', 'sci-bare'];
+  const probeList = n => { const out = []; for (let k = 0; k < n; k++) ['dec', 'none', 'sci'].forEach(i => { if (IDEAS[i].hard[k]) out.push(IDEAS[i].hard[k]); }); return out; };
+
+  // ---- rules a tutor can change on the analytics page (kept apart from progress) ----
+  //   fix:    right answers needed on an idea after a miss (1–3)
+  //   tricky: tricky questions per answer (1–2)
+  //   intro:  start with the three same-digit examples
+  //   check:  a 3-question check next session
+  //   speed:  seconds; a slower right answer doesn't count yet (0 = off)
+  //   key:    show the ? key
+  const SET_KEY = 'apparatus.sci-form.settings';
+  const DEFAULTS = { fix: 2, tricky: 2, intro: true, check: true, speed: 0, key: true };
+  let SET = DEFAULTS;
+  function loadSettings() {
+    let x = null; try { x = JSON.parse(localStorage.getItem(SET_KEY)); } catch (e) {}
+    SET = Object.assign({}, DEFAULTS, x || {});
+  }
 
   const commas = s => s.length > 3 ? s.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : s;
   const supNum = e => (e < 0 ? '−' : '') + Math.abs(e);
@@ -212,11 +229,17 @@ button { font: inherit; color: inherit; cursor: pointer; }
   // log:  every answer, for the analytics page
   const KEY = 'apparatus.sci-form.v2';
   const WARM_AFTER = 8 * 3600e3;              // a "later session" is 8+ hours after the last finish
-  const newRun = () => ({ open: 0, probe: PROBE.slice(), need: { dec: 0, sci: 0, none: 0 }, missed: {}, answers: 0, credit: 0 });
+  const newRun = () => ({ open: SET.intro ? 0 : OPENING.length, probe: probeList(SET.tricky), need: { dec: 0, sci: 0, none: 0 }, missed: {}, answers: 0, credit: 0 });
   let S;
   function load() {
     try { S = JSON.parse(localStorage.getItem(KEY)); } catch (e) { S = null; }
     if (!S || !S.run) S = { run: newRun(), warm: null, done: false, doneAt: null, checkedAt: null, log: [] };
+    // rules changed since this run began: loosening applies now, tightening from the next run
+    const R = S.run, allowed = probeList(SET.tricky);
+    R.probe = R.probe.filter(k => allowed.includes(k));
+    if (!SET.intro && R.open < OPENING.length) R.open = OPENING.length;
+    Object.keys(R.need).forEach(i => { R.need[i] = Math.min(R.need[i], SET.fix); });
+    if (!SET.check && S.warm) S.warm = null;
   }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
   const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = r(0, i); [a[i], a[j]] = [a[j], a[i]]; } return a; };
@@ -231,7 +254,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
     const other = S.warm && S.warm.length ? S.warm[0] : R.probe[0];
     let idea = needy.find(i => i !== lastIdea) || (needy.length && !other ? needy[0] : null);
     if (idea) {
-      const kind = R.need[idea] >= 2 ? any(IDEAS[idea].easy) : R.missed[idea];
+      const kind = R.need[idea] >= 2 ? any(IDEAS[idea].easy) : R.missed[idea] || any(IDEAS[idea].hard);
       return { kind, n: KINDS[kind].make(), mode: 'fix' };
     }
     if (S.warm && S.warm.length) return { kind: S.warm[0], n: KINDS[S.warm[0]].make(), mode: 'warm' };
@@ -241,19 +264,27 @@ button { font: inherit; color: inherit; cursor: pointer; }
   }
   const remaining = () => { const R = S.run; return (OPENING.length - R.open) + R.probe.length + (S.warm ? S.warm.length : 0) + Object.values(R.need).reduce((a, b) => a + b, 0); };
 
+  // returns true when a right answer was too slow to count (it comes back later)
   function grade(chose, right, ms) {
     const R = S.run, idea = KINDS[cur.kind].a;
-    S.log.push({ at: Date.now(), kind: cur.kind, idea, txt: text(cur.n), chose, right, ms, mode: cur.mode, key: keyUsed });
+    const slow = right && SET.speed > 0 && ms > SET.speed * 1000 && cur.mode !== 'open';
+    S.log.push({ at: Date.now(), kind: cur.kind, idea, txt: text(cur.n), chose, right, ms, mode: cur.mode, key: keyUsed, slow });
     R.answers++;
+    lastIdea = idea;
     if (cur.mode === 'open') R.open++;
+    if (slow) {                                   // right but slow: ask this kind again later, nothing gained or lost
+      if (cur.mode === 'probe') R.probe = R.probe.filter(k => k !== cur.kind).concat(cur.kind);
+      if (cur.mode === 'warm') S.warm.push(S.warm.shift());
+      save(); return true;
+    }
     if (cur.mode === 'probe') R.probe = R.probe.filter(k => k !== cur.kind);
     if (cur.mode === 'warm') S.warm.shift();
     // progress = right answers against what's left; a miss also costs one, so the bar always drops
     R.credit = Math.max(0, (R.credit || 0) + (right ? 1 : -1));
     if (right) { if (R.need[idea] > 0) R.need[idea]--; }
-    else { R.need[idea] = 2; R.missed[idea] = cur.kind; }
-    lastIdea = idea;
+    else { R.need[idea] = SET.fix; R.missed[idea] = cur.kind; }
     save();
+    return false;
   }
   let shown = null;
   function progress() {
@@ -305,12 +336,12 @@ button { font: inherit; color: inherit; cursor: pointer; }
   function answer(a) {
     if (state !== 'ask') return;
     const right = a === KINDS[cur.kind].a;
-    grade(a, right, Math.round(performance.now() - shownAt));
+    const slow = grade(a, right, Math.round(performance.now() - shownAt));
     progress();
     if (right) {
       state = 'wait';
-      btns.forEach(b => { b.disabled = true; if (b.dataset.a === a) b.className = 'ok'; });
-      $('say').textContent = 'Correct.';
+      btns.forEach(b => { b.disabled = true; if (b.dataset.a === a) b.className = slow ? 'ok slow' : 'ok'; });
+      $('say').textContent = slow ? 'Correct, but slow. It will come back.' : 'Correct.';
       const t = ++tick;
       setTimeout(() => { if (t === tick) next(); }, 900);
     } else {
@@ -344,13 +375,14 @@ button { font: inherit; color: inherit; cursor: pointer; }
   $('help').addEventListener('click', e => { e.stopPropagation(); toggleKey($('key').hidden); });
   document.addEventListener('click', e => { if (!$('key').hidden && !$('key').contains(e.target)) toggleKey(false); });
 
-  $('again').addEventListener('click', () => { tick++; S.run = newRun(); S.warm = null; lastIdea = null; shown = null; save(); next(); });
+  $('again').addEventListener('click', () => { tick++; loadSettings(); S.run = newRun(); S.warm = null; lastIdea = null; shown = null; save(); next(); });
 
   function start() {
-    tick++; load(); lastIdea = null; shown = null;
+    tick++; loadSettings(); load(); lastIdea = null; shown = null;
+    $('help').hidden = !SET.key; if (!SET.key) toggleKey(false);
     // a later session after finishing: a quick warm-up, one hard kind per idea
     const since = Math.max(S.doneAt || 0, S.warmAt || 0);
-    if (S.done && !S.checkedAt && !S.warm && remaining() === 0 && Date.now() - since > WARM_AFTER) {
+    if (SET.check && S.done && !S.checkedAt && !S.warm && remaining() === 0 && Date.now() - since > WARM_AFTER) {
       S.warm = shuffle(Object.keys(IDEAS).map(i => any(IDEAS[i].hard)));
       S.run.answers = 0; S.run.credit = 0; save();
     }

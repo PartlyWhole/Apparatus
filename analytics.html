@@ -44,6 +44,7 @@ h2 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; colo
 .dots { display: flex; flex-wrap: wrap; gap: 5px; }
 .dots i { width: 12px; height: 12px; border-radius: 50%; background: var(--good); }
 .dots i.no { background: var(--bad); }
+.dots i.slow { background: var(--warn); }
 .dots i.warm { outline: 2px solid var(--accent); outline-offset: 1px; }
 .dots i.key { opacity: 0.45; }
 .idea .st { font-size: 0.9rem; color: var(--muted); text-align: right; white-space: nowrap; }
@@ -70,6 +71,16 @@ td.t { color: var(--muted); text-align: right; white-space: nowrap; }
 .actions button:hover { border-color: var(--accent); }
 .actions button.armed { border-color: var(--bad); color: var(--bad); }
 .empty { color: var(--muted); }
+.rules { display: grid; gap: 14px; padding: 14px; border-radius: 14px; background: var(--surface); box-shadow: 0 0 0 1px var(--line); }
+.rule { display: grid; grid-template-columns: 1fr auto; gap: 4px 14px; align-items: center; }
+.rule > span { font-weight: 700; }
+.rule small { grid-column: 1 / -1; color: var(--muted); font-size: 0.86rem; line-height: 1.35; }
+.seg { display: inline-flex; justify-self: start; border-radius: 999px; box-shadow: 0 0 0 1px var(--line); overflow: hidden; }
+.seg button { min-width: 44px; min-height: 36px; padding: 0 12px; border: 0; background: transparent; font-weight: 700; font-size: 0.9rem; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
+.rules .sum { color: var(--muted); font-size: 0.9rem; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.rules .sum button { border: 0; background: transparent; color: var(--accent); font-weight: 700; padding: 0; font-size: 0.9rem; }
+@media (max-width: 420px) { .rule { grid-template-columns: 1fr; } }
 @media (max-width: 420px) { .idea { grid-template-columns: 5.2rem 1fr; } .idea .st { grid-column: 1 / -1; text-align: left; } }
 </style>
 
@@ -78,10 +89,11 @@ td.t { color: var(--muted); text-align: right; white-space: nowrap; }
 
   <section><div class="status" id="status"></div><div class="sub" id="sub"></div></section>
   <section><h2>By answer</h2><div class="ideas" id="ideas"></div>
-    <div class="legend"><span><i></i>right</span><span><i style="background:var(--bad)"></i>wrong</span><span><i style="outline:2px solid var(--accent);outline-offset:1px"></i>next-session check</span><span><i style="opacity:.45"></i>key was open</span></div>
+    <div class="legend"><span><i></i>right</span><span><i style="background:var(--bad)"></i>wrong</span><span><i style="outline:2px solid var(--accent);outline-offset:1px"></i>next-session check</span><span><i style="background:var(--warn)"></i>right but slow</span><span><i style="opacity:.45"></i>key was open</span></div>
   </section>
   <section><h2>What to do</h2><ul class="notes" id="notes"></ul></section>
   <section><h2>Adjust</h2><div class="actions" id="actions"></div></section>
+  <section><h2>Rules</h2><div class="rules" id="rules"></div></section>
   <details><summary>Every answer</summary><table id="log"></table></details>
 </main>
 
@@ -147,7 +159,7 @@ td.t { color: var(--muted); text-align: right; white-space: nowrap; }
     // ---- by answer ----
     $('ideas').innerHTML = ['dec', 'sci', 'none'].map(i => {
       const xs = log.filter(x => x.idea === i);
-      const dots = xs.slice(-24).map(x => `<i class="${x.right ? '' : 'no'}${x.mode === 'warm' ? ' warm' : ''}${x.key ? ' key' : ''}" title="${esc(x.txt)}${x.right ? '' : ' → ' + NAME[x.chose]}"></i>`).join('');
+      const dots = xs.slice(-24).map(x => `<i class="${x.right ? (x.slow ? 'slow' : '') : 'no'}${x.mode === 'warm' ? ' warm' : ''}${x.key ? ' key' : ''}" title="${esc(x.txt)}${x.right ? '' : ' → ' + NAME[x.chose]}"></i>`).join('');
       const med = median(xs.filter(x => x.right).map(x => x.ms));
       const st = R.need[i] > 0 ? `<span class="st no">${R.need[i]} more</span>` : xs.length ? `<span class="st ok">✓${med ? ' · ' + secs(med) : ''}</span>` : '<span class="st">—</span>';
       return `<div class="idea"><b>${NAME[i]}</b><div class="dots">${dots}</div>${st}</div>`;
@@ -178,7 +190,7 @@ td.t { color: var(--muted); text-align: right; white-space: nowrap; }
 
     // ---- every answer ----
     $('log').innerHTML = log.slice().reverse().map(x =>
-      `<tr><td class="n">${esc(x.txt)}</td><td class="${x.right ? '' : 'no'}">${x.right ? '✓ ' + NAME[x.chose] : '✗ ' + NAME[x.chose] + ' (' + NAME[x.idea] + ')'}</td><td class="t">${secs(x.ms)}${x.mode === 'warm' ? ' · check' : ''}${x.key ? ' · key' : ''}</td><td class="t">${day(x.at)}</td></tr>`).join('');
+      `<tr><td class="n">${esc(x.txt)}</td><td class="${x.right ? '' : 'no'}">${x.right ? '✓ ' + NAME[x.chose] : '✗ ' + NAME[x.chose] + ' (' + NAME[x.idea] + ')'}</td><td class="t">${secs(x.ms)}${x.slow ? ' · slow' : ''}${x.mode === 'warm' ? ' · check' : ''}${x.key ? ' · key' : ''}</td><td class="t">${day(x.at)}</td></tr>`).join('');
     actions();
   }
 
@@ -196,13 +208,45 @@ td.t { color: var(--muted); text-align: right; white-space: nowrap; }
     if (!S || !S.run) { add('Start over', () => { S = null; try { localStorage.removeItem(KEY); } catch (e) {} }, true); return; }
     ['dec', 'sci', 'none'].forEach(i => add('More ' + NAME[i], () => {
       // two more on this idea: an easier one, then a hard one
-      S.run.need[i] = 2; S.run.missed[i] = S.run.missed[i] || HARD[i][Math.floor(Math.random() * 2)];
+      S.run.need[i] = SET.fix; S.run.missed[i] = S.run.missed[i] || HARD[i][Math.floor(Math.random() * 2)];
     }));
     if (!S.done) add('Mark passed', () => { S.done = true; S.doneAt = Date.now(); S.run.open = 3; S.run.probe = []; S.run.need = { dec: 0, sci: 0, none: 0 }; S.warm = null; }, true);
     add('Start over', () => { S = null; try { localStorage.removeItem(KEY); } catch (e) {} }, true);
   }
 
+  // ---- rules (shared with the exercise; not cleared by Start over) ----
+  const SET_KEY = 'apparatus.sci-form.settings';
+  const DEFAULTS = { fix: 2, tricky: 2, intro: true, check: true, speed: 0, key: true };
+  let SET;
+  const loadSet = () => { let x = null; try { x = JSON.parse(localStorage.getItem(SET_KEY)); } catch (e) {} SET = Object.assign({}, DEFAULTS, x || {}); };
+  const RULES = [
+    ['intro', 'Opening examples', [[true, 'On'], [false, 'Off']], 'The same digits in all three forms, before the mixed questions.'],
+    ['tricky', 'Tricky questions', [[1, '1'], [2, '2']], 'Per answer. These are what count as passing.'],
+    ['fix', 'After a miss', [[1, '1'], [2, '2'], [3, '3']], 'Right answers needed on that answer before it counts as fixed.'],
+    ['speed', 'Speed', [[0, 'Off'], [10, '10 s'], [6, '6 s']], 'A slower right answer doesn’t count yet and comes back later.'],
+    ['check', 'Next-session check', [[true, 'On'], [false, 'Off']], '3 quick questions the next time the page is opened.'],
+    ['key', '? key', [[true, 'Shown'], [false, 'Hidden']], 'Examples of each form.']
+  ];
+  function rules() {
+    loadSet();
+    const qs = (SET.intro ? 3 : 0) + 3 * SET.tricky;
+    const same = Object.keys(DEFAULTS).every(k => SET[k] === DEFAULTS[k]);
+    $('rules').innerHTML = RULES.map(([k, label, opts, help]) =>
+      `<div class="rule"><span>${label}</span><span class="seg" role="group" aria-label="${label}">${opts.map(([v, t]) =>
+        `<button type="button" data-k="${k}" data-v='${JSON.stringify(v)}' aria-pressed="${SET[k] === v}">${t}</button>`).join('')}</span><small>${help}</small></div>`).join('') +
+      `<div class="sum"><span>${qs} questions with no misses</span>${same ? '' : '<button type="button" id="defaults">Defaults</button>'}</div>`;
+  }
+  $('rules').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.id === 'defaults') SET = Object.assign({}, DEFAULTS);
+    else SET[b.dataset.k] = JSON.parse(b.dataset.v);
+    try { localStorage.setItem(SET_KEY, JSON.stringify(SET)); } catch (err) {}
+    rules();
+  });
+
+  loadSet();
   render();
-  window.addEventListener('pageshow', e => { if (e.persisted) render(); });
+  rules();
+  window.addEventListener('pageshow', e => { if (e.persisted) { render(); rules(); } });
 })();
 </script>
