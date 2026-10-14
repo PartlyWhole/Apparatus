@@ -6,7 +6,9 @@ The exercises in order, what each needs first, and which later exercises review 
 |---|---|---|---|---|
 | 1 | **Scientific or Not** (`sci-form`): decimal vs. scientific vs. neither | live | — | anything that writes or reads scientific notation |
 | 2 | **Moving the Point** (`point-move`): × / ÷ 10ⁿ and × 10⁻ⁿ move the point | live | place value | factoring out powers of ten; decimal ↔ scientific |
-| 3 | *factoring out powers of ten to reach scientific notation* | idea | 1, 2 | |
+| 3 | **Factor Out** (`factor-out`): decimal → scientific by moving the point; the power counts the hops | live | 1, 2 | Conversions |
+| 4 | **Factor In** (`factor-in`): scientific → decimal; the power goes back into the number | live | 2, 3 | Conversions |
+| 5 | **Conversions** (`conversions`): both directions, multiple choice then written | live | 3, 4 | |
 
 ## Candidates (from the older progressions and the user's earlier requests, not yet designed for the new set)
 

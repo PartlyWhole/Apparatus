@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Conversions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="../engine/exercise.css?v=4">
+<link rel="stylesheet" href="lib/places.css?v=2">
+<style>
+.pq .q { font-size: clamp(1.5rem, 6.5vw, 2.2rem); color: var(--ink); text-align: center; }
+/* four choices, 2 × 2 */
+.cv-opts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; width: min(100%, 30rem); margin-top: 10px; }
+.cv-opts button { min-height: 60px; padding: 8px; border-radius: 14px; border: 2px solid var(--line); background: var(--surface); font-family: var(--f-mono); font-weight: 700; font-size: clamp(1rem, 4.4vw, 1.25rem); color: var(--ink); }
+.cv-opts button:hover:not(:disabled) { border-color: var(--accent); }
+.cv-opts button:disabled { cursor: default; opacity: 0.4; }
+.cv-opts button.ok, .cv-opts button.want { opacity: 1; border-color: var(--good); color: var(--good); }
+.cv-opts button.ok { background: var(--good-bg); }
+.cv-opts button.ok::before { content: "✓ "; }
+.cv-opts button.no { opacity: 1; border-color: var(--bad); color: var(--bad); }
+/* written answers */
+.cv-ty { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; font-size: clamp(1.4rem, 6vw, 1.9rem); margin-top: 12px; }
+.cv-ty input { width: 7ch; padding: 8px 10px; border-radius: 12px; border: 2px solid var(--line); background: var(--surface); color: var(--ink);
+  font: inherit; font-family: var(--f-mono); font-weight: 700; text-align: center; }
+.cv-ty input.v { width: 9ch; }
+.cv-ty input:focus { outline: none; border-color: var(--accent); }
+.cv-ty input.ok { border-color: var(--good); color: var(--good); }
+.cv-ty input.no { border-color: var(--bad); color: var(--bad); }
+.cv-ty input.bad { border-color: var(--bad); animation: shake 0.3s ease; }
+@keyframes shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+.cv-ty .ex { display: inline-flex; align-items: center; gap: 4px; position: relative; top: -0.6em; font-size: 0.7em; }
+.cv-ty .ex input { width: 3.6ch; padding: 6px 4px; }
+.cv-ty .pm { min-width: 36px; min-height: 36px; border-radius: 10px; border: 2px solid var(--line); background: var(--surface); color: var(--muted); font-weight: 700; }
+.cv-go { margin-top: 14px; min-height: 46px; padding: 0 28px; border-radius: 999px; border: 0; background: var(--accent); color: var(--on-accent); font-weight: 700; }
+.cv-go:disabled { display: none; }
+.pic { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 6px; }
+.pic .prow { font-size: clamp(1.3rem, 5.5vw, 1.9rem); }
+@media (prefers-reduced-motion: reduce) { .cv-ty input.bad { animation: none; } }
+</style>
+<body>
+<script src="../engine/exercise.js?v=11"></script>
+<script src="lib/places.js?v=5"></script>
+<script src="conversions.js?v=1"></script>
+<script>Apparatus.mount('conversions');</script>
+</body>

@@ -1,0 +1,62 @@
+/* Places — the shared row-of-places visual (see places.js). Used by Factor Out, Factor In and Conversions. */
+.pq { display: flex; flex-direction: column; align-items: center; gap: 14px; font-family: var(--f-mono); font-weight: 700; }
+.pq sup, .prow sup, .pkey sup { font-size: 0.6em; position: relative; top: -0.55em; vertical-align: baseline; line-height: 0; }
+.pq .lhs { font-size: clamp(1.2rem, 5vw, 1.6rem); color: var(--muted); }
+.pq .res { min-height: 1.4em; font-size: clamp(1.2rem, 5vw, 1.6rem); color: var(--ink); animation: fadein 0.3s ease; }
+.pq .res:empty { animation: none; }
+.pq .res.ok { color: var(--good); }
+
+/* the row: --pt/--pb are the room above/below the digits (the hop arcs live below) */
+.prow { --w: 0.9em; --pt: 0.3em; --pb: 1.3em; position: relative; display: flex; font-size: clamp(1.6rem, 7vw, 2.6rem); line-height: 1;
+  padding: var(--pt) 0 var(--pb); cursor: pointer; touch-action: none; outline-offset: 6px; border-radius: 8px; }
+.prow.answered, .prow.static { cursor: default; }
+.prow .s { width: var(--w); text-align: center; position: relative; }
+.prow .s.pad { color: transparent; }                                  /* empty places: invisible until the point's position adds a zero */
+.prow .s.pad.prev { color: var(--muted); }                             /* zeros a previewed point would need */
+.prow .s.pad.fill { color: var(--ink); transition: color 0.2s; }       /* zeros the point really adds */
+
+/* points sit in the gaps: --g = places to their left */
+.prow .pt { position: absolute; bottom: calc(var(--pb) + 0.02em); left: calc(var(--g) * var(--w)); width: 0.24em; height: 0.24em; margin-left: -0.12em;
+  border-radius: 50%; background: var(--ink); transition: left 0.28s ease, opacity 0.2s; pointer-events: none; }
+.prow.answered .pt.start, .prow.previewing .pt.start, .prow .pt.start.dim { opacity: 0.1; }
+.prow .pt.ghost { background: var(--accent); opacity: 0; }
+.prow .pt.ghost.on { opacity: 0.55; }
+.prow:focus-visible .pt.ghost { opacity: 0.8; }
+.prow .pt.pick.ok, .prow .pt.run { background: var(--good); }
+.prow .pt.pick.no { background: var(--bad); }
+.prow .pt.hop { animation: phop 0.3s ease; }
+@keyframes phop { 40% { transform: translateY(0.4em); } }
+
+/* the power of ten riding at the end of the row */
+.prow .pw { position: absolute; left: calc(var(--g) * var(--w) + 0.2em); bottom: var(--pb); line-height: 1; white-space: nowrap; color: var(--good);
+  transition: left 0.28s ease; pointer-events: none; }
+.prow .pw > span { font-size: 0.72em; display: inline-block; }          /* smaller text; the outer box keeps the row's em so --g lines up */
+.prow .pw.ask { color: var(--muted); }
+.prow .pw.tick > span { animation: ptick 0.3s ease; }
+@keyframes ptick { 40% { transform: scale(1.18); } }
+
+/* a "10" sliding between the hop and the power */
+.prow .tok { position: absolute; bottom: calc(var(--pb) - 0.85em); left: calc(var(--g) * var(--w)); color: var(--good); font-family: var(--f-body); line-height: 1;
+  pointer-events: none; transition: left 0.45s ease, bottom 0.45s ease, opacity 0.45s ease; }
+.prow .tok > span { font-size: 0.36em; display: inline-block; transform: translateX(-50%); }
+.prow .tok.go { bottom: calc(var(--pb) + 0.3em); opacity: 0; }
+
+/* numbered arcs under the place the point jumped across */
+.prow .arc { position: absolute; top: calc(var(--pt) + 1.08em); left: calc(var(--g) * var(--w) + 0.08em); width: calc(var(--w) - 0.16em); height: 0.42em;
+  border: 0.06em solid var(--good); border-top: 0; border-radius: 0 0 50% 50% / 0 0 100% 100%; animation: fadein 0.2s ease; pointer-events: none; }
+.prow .arc::after { content: attr(data-n); position: absolute; left: 50%; top: 100%; margin-top: 0.3em; transform: translateX(-50%); font-size: 0.36em; line-height: 1; color: var(--good); font-family: var(--f-body); }
+
+/* tutorial buttons */
+.tbtns { min-height: 52px; display: flex; gap: 10px; justify-content: center; }
+.tb { min-width: 64px; min-height: 52px; padding: 0 20px; border-radius: 14px; border: 2px solid var(--accent); color: var(--accent); background: var(--surface); font-family: var(--f-mono); font-weight: 700; font-size: 1.6rem; }
+
+/* the ? key */
+.key { grid-template-columns: 1fr; }
+.pkey { display: grid; grid-template-columns: auto auto; gap: 4px 14px; align-items: center; font-family: var(--f-mono); font-weight: 700; }
+.pkey .kx { font-size: 1rem; white-space: nowrap; color: var(--muted); }
+.pkey .prow { font-size: 1.1rem; --pt: 0.2em; --pb: 1.1em; }
+
+@media (prefers-reduced-motion: reduce) {
+  .prow .pt, .prow .pw { transition: none; } .prow .pt.hop, .prow .pw.tick, .prow .arc, .pq .res { animation: none; }
+}
+.prow .pt.run.stay { box-shadow: 0 0 0 0.12em var(--good-bg); }

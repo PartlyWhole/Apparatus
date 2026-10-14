@@ -16,11 +16,15 @@
   const id = (location.hash.slice(1) || '').replace(/[^a-z0-9-]/gi, '');
   const main = document.getElementById('main');
   if (!id) { main.innerHTML = '<p class="empty">No exercise.</p>'; return; }
+  // shared exercise libraries first (definitions may use them), then the definition
+  const lib = document.createElement('script');
+  lib.src = 'exercises/lib/places.js?v=5';
+  lib.onload = () => document.body.appendChild(s);
   const s = document.createElement('script');
   s.src = `exercises/${id}.js?v=1`;
   s.onload = () => Apparatus.analytics(Apparatus.defs[id], main, `exercises/${id}.html`);
   s.onerror = () => { main.innerHTML = '<p class="empty">No exercise.</p>'; };
-  document.body.appendChild(s);
+  document.body.appendChild(lib);
 })();
 </script>
 </body>

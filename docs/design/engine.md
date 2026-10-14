@@ -87,6 +87,10 @@ The engine shows the caption, dots and **Skip**, runs the tutorial on the first 
 - **Persistence:** `localStorage` `apparatus.<id>.v<version>` (state and log) and `apparatus.<id>.settings` (tutor rules, kept by Start over).
 - **Debug:** `?debug` exposes `window.ex` = `{ S(), cur(), def, start(), SET(), respond(answer), state() }` for simulations (`qa-checklist.md`).
 
+## Shared exercise libraries
+
+`exercises/lib/places.js` + `places.css`: the row of places (digits, invisible empty places, zeros only where the point's position adds them), moving the point (preview/commit), hops with numbered arcs underneath, the power of ten riding at the end of the row, "10" tokens, static hop pictures, and exact parsing of typed decimals. Used by factor-out, factor-in and conversions (point-move predates it). `analytics.html` loads it before any definition. Sizes inside the row are in the row's em; put smaller text in an inner span so positions still line up.
+
 ## Limits (extend when an exercise needs it)
 
 - Typed answers aren't built yet; they would be a tap-mode exercise with an input in `ask`.
