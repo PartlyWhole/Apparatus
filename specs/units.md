@@ -8,7 +8,8 @@ Status: live · Skill map: after Prefixes · Code: `exercises/lib/units.js` (fac
 The whole table is the ? key in all four exercises, and the first screen of `unit-facts` (its tutorial).
 
 ## 1. Facts (`unit-facts`)
-Ideas: length, time, volume. Each idea: two multiple-choice rounds ("1 mi = ?": 5,280 ft and three other table numbers with the same unit), then two written rounds ("1 mi = [ ] ft"). 12 questions with no misses. Errors: picked/typed the wrong number → "1 mi = 5,280 ft."
+**Master every fact** (a rule for this exercise only, on by default): each fact is its own idea — multiple choice, then written — so passing means every fact answered right, written (26 questions with no misses); a missed fact comes back (penalty) spread among the others; the next-session check asks every fact, written. Analytics shows a row per fact. With the rule off, the shorter version below.
+Ideas (rule off): length, time, volume. Each idea: two multiple-choice rounds ("1 mi = ?": 5,280 ft and three other table numbers with the same unit), then two written rounds ("1 mi = [ ] ft"). 12 questions with no misses. Errors: picked/typed the wrong number → "1 mi = 5,280 ft."
 
 ## 2. Two-step conversions (`unit-chain`): fractions
 The chain, written the way it's written on paper:

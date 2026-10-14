@@ -315,7 +315,7 @@
       // a later session after finishing: a quick check, one tricky kind per idea
       const since = Math.max(S.doneAt || 0, S.warmAt || 0);
       if (SET.check && S.done && !S.checkedAt && !S.warm && remaining(def, S) === 0 && Date.now() - since > WARM_AFTER) {
-        S.warm = shuffle(ideaIds(def).map(i => any(def.ideas[i].hard)));
+        S.warm = shuffle(ideaIds(def).map(i => def.ideas[i].check || any(def.ideas[i].hard)));   // ideas[i].check: the kind to use in the check
         S.run.answers = 0; S.run.credit = 0; save();
       }
       if (S.done && remaining(def, S) === 0) { progress(); $('card').hidden = true; $('fin').hidden = false; return; }

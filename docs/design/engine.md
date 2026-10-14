@@ -31,6 +31,7 @@ Apparatus.define({
   },
   answer: (item, kind) => choiceId,   // optional; default: the kind's idea id (when ideas = choices)
   // ideas[i].late: true → that idea's tricky probes come after all the others (twists)
+  // ideas[i].check: the kind the next-session check uses for this idea (default: a random tricky kind)
   opening: [{ kind, item }, …],       // optional fixed contrast set
 
   render: (item, cue) => html,        // the item; with a cue class when showing feedback (and in the key)
