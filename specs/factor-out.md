@@ -6,7 +6,7 @@ Status: live · Skill map: after Moving the Point; before Conversions · Code: `
 Rewrite a decimal in scientific notation by moving the point to just after the first non-zero digit; each hop left takes a 10 out into the power (× 10¹ more), each hop right a 10⁻¹. The equals sign stays: it's the same number.
 
 ## The visual
-"4,500 =" above; the number on its row of places; the power of ten rides at the end of the row and counts live as the point is previewed ("4.500 × 10³"). The student drags/taps the point where it belongs and commits. Matches paper: draw hop arcs under the number to after the first digit, count them, write × 10 to that count (positive if the number got smaller).
+"4,500 =" above; the number on its row of places; the power of ten rides at the end of the row and counts live as the point is previewed. Trailing zeros that end up after the point fade away (4500. → 45. → 4.5), so the row always reads as written on paper ("4.5 × 10³"). The student drags/taps the point where it belongs and commits. Matches paper: draw hop arcs under the number to after the first digit, count them, write × 10 to that count (positive if the number got smaller).
 
 ## Ideas and kinds
 | Idea | Easy | Tricky |

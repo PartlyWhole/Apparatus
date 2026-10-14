@@ -14,6 +14,7 @@
 .prow .s.pad { color: transparent; }                                  /* empty places: invisible until the point's position adds a zero */
 .prow .s.pad.prev { color: var(--muted); }                             /* zeros a previewed point would need */
 .prow .s.pad.fill { color: var(--ink); transition: color 0.2s; }       /* zeros the point really adds */
+.prow .s.gone { color: transparent; transition: color 0.2s; }           /* trailing zeros after the point aren't written (4.500 → 4.5) */
 
 /* points sit in the gaps: --g = places to their left */
 .prow .pt { position: absolute; bottom: calc(var(--pb) + 0.02em); left: calc(var(--g) * var(--w)); width: 0.24em; height: 0.24em; margin-left: -0.12em;

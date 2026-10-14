@@ -2,6 +2,7 @@
 
 Newest first. One line per decision: date — what — why (and who asked). When a decision is reversed, add a new line; don't delete the old one. The other docs describe only the current state.
 
+- 2026-10-14 — Places rows: trailing zeros after the point aren't shown (4.500 → 4.5); the power slides in next to the last digit. (user)
 - 2026-10-14 — Factor Out / Factor In / Conversions: move the point with an equals sign kept and the power of ten counting hops (each hop moves one 10 between number and power); Factor In shows the live power only in the tutorial and opening. Conversions: 4 multiple-choice options (answer, one place off same way, both mirrored the wrong way), then written answers (decimal field; number + exponent fields). Two intro pages + one mixed page; no fake-notation twist. (user)
 - 2026-10-14 — Finish screen: "More practice" (a fresh round of tricky questions) replaces "Again"; ↺ restarts from the beginning. (user)
 - 2026-10-14 — Bigger penalty for wrong answers, to discourage guessing: "Miss penalty" rule (1–4, default 3, was "After a miss", default 2). Only penalty questions pay it off; the bar drops by the penalty. (user: "wrong answers to have more penalty… allow tutor to adjust")

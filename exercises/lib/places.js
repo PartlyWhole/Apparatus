@@ -23,8 +23,10 @@
   const slots = d => PAD + d.length + PAD;
   // which empty places are zeros when the point is at gap g
   const isFill = (d, g, i) => { const a = PAD, b = PAD + d.length; return (g > b && i >= b && i < g) || (g <= a && i >= g - 1 && i < a); };
+  // zeros at the end of the digits that sit after the point aren't written (4.500 is 4.5): true for digit j with the point at g
+  const isTrail = (d, g, j) => PAD + j >= g && /^0+$/.test(d.slice(j));
   // the last place that shows a digit or zero, with the point at g
-  const lastShown = (d, g) => Math.max(PAD + d.length, g) - 1;
+  const lastShown = (d, g) => { let end = PAD + d.length; while (end - 1 >= g && end - 1 - PAD >= 0 && isTrail(d, g, end - 1 - PAD)) end--; return Math.max(end, g) - 1; };
 
   function rowHTML(d, p, o = {}) {
     const n = slots(d), g = o.at != null ? o.at : PAD + p;
@@ -33,11 +35,16 @@
       const j = i - PAD, dig = j >= 0 && j < d.length;
       // also: the zeros the number had with its point somewhere else are kept, but light (they're where the hops came from)
       const filled = isFill(d, g, i), was = !filled && o.also != null && isFill(d, o.also, i);
-      h += dig ? `<span class="s">${d[j]}</span>` : `<span class="s pad${filled ? ' fill' : was ? ' prev' : ''}">0</span>`;
+      h += dig ? `<span class="s${isTrail(d, g, j) ? ' gone' : ''}">${d[j]}</span>` : `<span class="s pad${filled ? ' fill' : was ? ' prev' : ''}">0</span>`;
     }
     return `<div class="prow" style="--n:${n}" aria-hidden="true">${h}<span class="pt start" style="--g:${PAD + p}"></span><span class="pw" hidden></span></div>`;
   }
+  // hide the number's own trailing zeros that are after the point at g
+  function trail(row, d, g) {
+    row.querySelectorAll('.s').forEach((s, i) => { const j = i - PAD; if (j >= 0 && j < d.length) s.classList.toggle('gone', isTrail(d, g, j)); });
+  }
   function setFills(row, d, g, cls = 'fill') {
+    if (cls === 'fill' && g != null) trail(row, d, g);
     row.querySelectorAll('.s').forEach((s, i) => s.classList.toggle(cls, g != null && isFill(d, g, i) && s.classList.contains('pad')));
   }
   // the power rides just after the last shown place; e = 0 hides it; '?' shows × 10^?
@@ -50,6 +57,7 @@
   }
   // zeros for a point at g: solid where the starting number already had them (or all, once committed); light where the move adds them
   function paint(row, d, g, start, committed) {
+    trail(row, d, g == null ? start : g);
     row.querySelectorAll('.s').forEach((s, i) => {
       if (!s.classList.contains('pad')) return;
       const need = g != null && isFill(d, g, i), had = isFill(d, start, i);
@@ -147,5 +155,5 @@
   // the significant digits and point place of a number {d, p}
   const canon = (d, p) => { const lead = d.match(/^0*/)[0].length; return { sig: d.slice(lead).replace(/0+$/, ''), pos: p - lead }; };
 
-  window.Places = { PAD, paint, fmt, sup, supHTML, powHTML, powText, commas, valueAt, numStr, slots, isFill, rowHTML, setFills, setPower, addPoint, hop, token, gapFromX, bind, staticHops, parseDecimal, parseInt10, canon, reduced };
+  window.Places = { PAD, paint, trail, fmt, sup, supHTML, powHTML, powText, commas, valueAt, numStr, slots, isFill, rowHTML, setFills, setPower, addPoint, hop, token, gapFromX, bind, staticHops, parseDecimal, parseInt10, canon, reduced };
 })();
