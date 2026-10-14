@@ -17,7 +17,7 @@
   const main = document.getElementById('main');
   if (!id) { main.innerHTML = '<p class="empty">No exercise.</p>'; return; }
   // shared exercise libraries first, in order (definitions may use them), then the definition
-  const LIBS = ['places.js?v=10', 'forms.js?v=3', 'prefix.js?v=4', 'units.js?v=2', 'chain.js?v=9'];
+  const LIBS = ['places.js?v=10', 'forms.js?v=3', 'prefix.js?v=4', 'units.js?v=2', 'chain.js?v=10'];
   const load = i => {
     if (i === LIBS.length) return document.body.appendChild(s);
     const l = document.createElement('script'); l.src = 'exercises/lib/' + LIBS[i]; l.onload = () => load(i + 1); document.body.appendChild(l);

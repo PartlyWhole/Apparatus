@@ -115,14 +115,19 @@
       const slot = $(`.cu[data-i="${i}"][data-s="${s}"]`);
       guide(`What does ${st.from} turn into?`);
       if (free) return pickFree(i, s, slot);
-      const others = Object.keys(U.KIND).filter(u => U.KIND[u] === U.KIND[st.to] && u !== st.to && u !== st.from && u !== pr.target.num && u !== pr.target.den);
-      const opts = shuffle([st.to].concat(shuffle(others).slice(0, 3)));
+      // every unit of this kind not already in the chain on this side; the planned one is right
+      const side = st.side, target = side === 'num' ? pr.target.num : pr.target.den;
+      const prefix = [side === 'num' ? pr.num : pr.den].concat(steps.slice(0, i).filter(x => x.side === side).map(x => x.to));
+      const opts = shuffle(Object.keys(U.KIND).filter(u => U.KIND[u] === U.KIND[st.from] && !prefix.includes(u)));
       chips.innerHTML = opts.map(u => `<button type="button" class="chip">${u}</button>`).join('');
       live(slot);
       chips.querySelectorAll('.chip').forEach(c => c.onclick = () => {
-        if (c.textContent !== st.to) {
-          const f = U.fact(st.from, c.textContent);
-          return miss('unit', f ? `That works, but here ${st.from} turns into ${st.to} first.` : `${c.textContent} doesn’t connect to ${st.from} with a fact you know. Try ${st.to}.`, c);
+        const v = c.textContent;
+        if (v !== st.to) {
+          if (!U.fact(st.from, v)) return miss('unit', `${v} doesn’t connect to ${st.from} with a fact you know.`, c);
+          // another valid route: redirect, not a mistake (other routes are their own exercise, Another Way)
+          if (newPath(prefix.concat(v), target, null)) { say(`That works too, but here go through ${st.to}.`, false); c.remove(); return; }
+          return miss('unit', `From ${v} there’s no way on to ${target} without going back.`, c);
         }
         chips.innerHTML = ''; fillUnit(i, s, st.to); numbers(i);
       });

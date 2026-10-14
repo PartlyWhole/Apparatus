@@ -2,6 +2,7 @@
 
 Newest first. One line per decision: date — what — why (and who asked). When a decision is reversed, add a new line; don't delete the old one. The other docs describe only the current state.
 
+- 2026-10-14 — Two-Step and Rates chains: every unused unit of the kind offered too; a valid alternative route is redirected without penalty ("That works too, but here go through min"). (user)
 - 2026-10-14 — Another Way: every unused unit of the kind is offered (not just the right ones), each wrong kind with its own sentence. (user: "There should be more options")
 - 2026-10-14 — Chains: the first step asks which unit goes in the cancelling slot (chips), not just top or bottom — less mindless. (user)
 - 2026-10-14 — Chains: no hand calculation. After cancelling, everything combines into one fraction with the units left in place, and its value is shown before Next. (user: "Setting up the equation is enough")
