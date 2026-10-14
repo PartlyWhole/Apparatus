@@ -65,6 +65,10 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .n.why-fake .x { border-color: var(--good); }
 /* what makes it a decimal: no × 10ⁿ */
 .n.why-dec .ghost { display: inline-block; opacity: 0.85; }
+/* it has a power of ten: so it isn't a plain decimal */
+.n.why-pow .x { border-color: var(--good); color: var(--good); }
+/* one digit before the point is fine */
+.n.why-one .L .d { outline-color: var(--good); background: var(--good-bg); }
 
 /* ---- answers ---- */
 .opts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; width: min(100%, 32rem); }
@@ -186,12 +190,13 @@ button { font: inherit; color: inherit; cursor: pointer; }
   const spoken = n => `${n.L}${n.R ? ' point ' + n.R : ''}${n.e === null ? '' : ' times 10 to the ' + (n.e < 0 ? 'minus ' : '') + Math.abs(n.e)}`;
   const WHY = { sci: 'why-sci', none: 'why-fake', dec: 'why-dec' };
   const NAME = { sci: 'Scientific', none: 'Neither', dec: 'Decimal' };
-  // what to say after a miss: plain words, about this number
-  function explain(n, a) {
+  // after a miss: show why the CHOSEN answer is wrong — one cue on the number, one plain sentence
+  function feedback(n, want, chose) {
     const x = `× 10<sup>${n.e === null ? 'n' : supNum(n.e)}</sup>`;
-    if (a === 'dec') return `There’s no ${x}. It’s just a decimal.`;
-    if (a === 'sci') return `Just one digit (${n.L}) before the point, then ${x}. That’s scientific notation.`;
-    return `There are ${n.L.length} digits (${n.L}) before the point. Scientific notation has just one.`;
+    if (chose === 'dec') return ['why-pow', `It has ${x}, so it’s not a decimal.`];
+    if (want === 'dec') return ['why-dec', chose === 'sci' ? `There’s no ${x}, so it’s not scientific notation.` : `There’s no ${x}. A plain number is a decimal.`];
+    if (want === 'none') return ['why-fake', `There are ${n.L.length} digits (${n.L}) before the point. Scientific notation has just one.`];
+    return ['why-sci', `One digit (${n.L}) before the point, then ${x}. That’s scientific notation.`];   // want sci, chose neither
   }
 
   // ================= state (shared with ../analytics.html) =================
@@ -291,8 +296,9 @@ button { font: inherit; color: inherit; cursor: pointer; }
       state = 'fix';
       const want = KINDS[cur.kind].a;
       btns.forEach(b => { b.disabled = true; b.className = b.dataset.a === a ? 'no' : b.dataset.a === want ? 'want' : ''; });
-      $('q').firstElementChild.classList.add(WHY[want]);   // light up what decides it
-      $('why').innerHTML = explain(cur.n, want);
+      const [cue, say] = feedback(cur.n, want, a);
+      $('q').firstElementChild.classList.add(cue);
+      $('why').innerHTML = say;
       $('okBtn').hidden = false;
       $('okBtn').focus();
     }
