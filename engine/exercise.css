@@ -62,10 +62,25 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .fix p { margin: 0; max-width: 26rem; text-align: center; font-size: 1.12rem; line-height: 1.45; }
 .fix .ok-btn { min-height: 46px; min-width: 120px; padding: 0 28px; border-radius: 999px; border: 0; background: var(--accent); color: var(--on-accent); font-weight: 700; }
 
-/* ---- the ? key ---- */
-.key { position: absolute; top: 52px; right: 0; z-index: 10; margin: 0; padding: 18px 20px; border-radius: 16px; background: var(--surface);
-  box-shadow: 0 0 0 1px var(--line), 0 12px 32px rgba(10, 20, 40, 0.14); display: grid; grid-template-columns: auto auto; gap: 16px 22px; align-items: center; }
+/* ---- the cheat sheet: a quiet button bottom-left (the analytics dot is bottom-right), a card above it ---- */
+.cs-btn { position: fixed; left: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 20; height: 36px; padding: 0 14px; border-radius: 999px; border: 0;
+  background: var(--surface); color: var(--muted); box-shadow: 0 0 0 1px var(--line); font: 600 0.85rem var(--f-body); cursor: pointer; }
+.cs-btn:hover, .cs-btn[aria-expanded="true"] { color: var(--accent); box-shadow: 0 0 0 1.5px var(--accent); }
+.cs-btn[hidden] { display: none; }
+.key { position: fixed; left: 12px; bottom: calc(56px + env(safe-area-inset-bottom)); z-index: 20; margin: 0; padding: 16px 18px; border-radius: 16px; background: var(--surface);
+  box-shadow: 0 0 0 1px var(--line), 0 12px 32px rgba(10, 20, 40, 0.14); max-width: calc(100vw - 24px); max-height: calc(100vh - 90px); overflow: auto;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
+.key[hidden] { display: none; }
+.key .kgrid { display: grid; grid-template-columns: auto auto; gap: 16px 22px; align-items: center; }
 .key b { font-size: 0.95rem; color: var(--muted); }
+/* shared pieces for cheat sheets: a rule in words, a small heading, a table of rows */
+.key .rule { font-size: 0.95rem; line-height: 1.4; color: var(--ink); max-width: 26rem; }
+.key h4 { margin: 0; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.key .ctab { display: grid; grid-template-columns: repeat(var(--cols, 3), auto); gap: 4px 12px; align-items: baseline; font-size: 0.95rem; color: var(--ink); }
+.key .ctab .m { font-family: var(--f-mono); font-weight: 700; }
+.key .ctab .d { color: var(--muted); }
+.key .ctab sup { font-size: 0.65em; }
+.key .sec { display: flex; flex-direction: column; gap: 8px; }
 
 /* ---- done ---- */
 .done { display: flex; flex-direction: column; align-items: center; gap: 24px; }
@@ -152,6 +167,10 @@ body.analytics { font: 16px/1.5 var(--f-body); }
 .tdots i.c { background: var(--accent); }
 .skip { border: 0; background: transparent; color: var(--muted); font-size: 0.9rem; min-height: 44px; padding: 0 8px; }
 .skip:hover { color: var(--accent); }
-.key .replay { grid-column: 1 / -1; justify-self: center; border: 0; background: transparent; color: var(--accent); font-weight: 700; font-size: 0.92rem; min-height: 36px; }
+.key .replay { align-self: center; border: 0; background: transparent; color: var(--accent); font-weight: 700; font-size: 0.92rem; min-height: 36px; }
 @keyframes fadein { from { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .tut p { animation: none; } }
+.key .vcheat { display: flex; flex-direction: column; gap: 12px; max-width: 30rem; }
+.key .vcheat p { margin: 0; display: flex; flex-direction: column; gap: 2px; }
+.key .vcheat b { color: var(--ink); font-size: 0.95rem; }
+.key .vcheat span { font-size: 0.9rem; color: var(--muted); }

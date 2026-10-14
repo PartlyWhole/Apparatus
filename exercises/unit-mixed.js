@@ -22,7 +22,7 @@
     text: it => it.pr ? U.chainText(it.pr) : `1 ${U.TABLE[it.fact][3]} = ? ${U.TABLE[it.fact][1]}`,
     speak: it => it.pr ? `Convert ${U.chainText(it.pr).replace(' = ?', ' to')}.` : `1 ${U.TABLE[it.fact][3]} equals how many ${U.TABLE[it.fact][1]}?`,
     ask(el, it, submit) {
-      U.cheatSheet();
+      
       if (it.pr) return Chain.mount(el, it.pr, { level: 2, onDone: submit });
       const t = U.TABLE[it.fact];
       el.innerHTML = `<div class="fq"><div class="q">1 ${t[3]} = ${F.num('answer', true)} ${t[1]}</div><button type="button" class="go">Check</button><div class="ans"></div></div>`;
@@ -35,6 +35,6 @@
     reveal(el, it, errs, o) { el._form && !it.pr && el._form.mark(o.right); },
     errors: Object.assign({ fact: 'fact not known' }, U.CHAIN_ERRORS),
     diagnose: err => err === 'fact' ? ['Doesn’t know this fact yet.', 'Back to Unit Facts for a round.'] : (U.CHAIN_DIAG[err] || ['', '']),
-    keyHTML: U.tableHTML()
+    cheat: U.cheatHTML()
   });
 })();

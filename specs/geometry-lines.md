@@ -41,7 +41,7 @@ A coordinate grid (SVG) with lattice points the student can tap. The anchor pict
 | G12 | **Classify the Quadrilateral** (guided) | Slopes of the 4 sides → parallel pairs; right angles; side lengths → parallelogram / rectangle / rhombus / square / trapezoid | rhombus vs square (equal sides but no right angle); trapezoid (one parallel pair) | 20C |
 | G13 | **Lines Review** (mixed) | Every kind above, no scaffolding, test-style multiple choice and written | — | all |
 
-Each follows the house pattern: tutorial only where the idea is new (G1, G4's turn, G10); opening contrast set; tricky probes; miss penalty; one cue + one sentence; next-session check; analytics advice for a tutor; ? key with the relevant picture (slope triangle, the 90° turn, the distance triangle).
+Each follows the house pattern: tutorial only where the idea is new (G1, G4's turn, G10); opening contrast set; tricky probes; miss penalty; one cue + one sentence; next-session check; analytics advice for a tutor; cheat sheet with the relevant picture (slope triangle, the 90° turn, the distance triangle).
 
 ## Answer formats (new building blocks)
 - **Fraction** (slopes): two stacked boxes with the minus typed in the top box (like the exponent fields); simplified required, equivalent unsimplified answers get "simplify" feedback rather than a plain miss.

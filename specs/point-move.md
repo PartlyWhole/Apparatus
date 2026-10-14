@@ -17,7 +17,7 @@ The number sits on a row of place slots. Its digits are solid; empty slots on bo
 ```
 
 ## Part 1: Tutorial (interactive, ~2 minutes)
-The student presses the real buttons; each step advances when they do it. One short caption (≤ 8 words) appears *after* the action, naming what they just saw. Progress dots, Skip, and "Replay" from the ? key.
+The student presses the real buttons; each step advances when they do it. One short caption (≤ 8 words) appears *after* the action, naming what they just saw. Progress dots, Skip, and "Replay" from the cheat sheet.
 
 | Step | Student does | Sees | Caption after |
 |---|---|---|---|
@@ -81,8 +81,8 @@ For negative and zero powers, the operator's flip (÷ 10⁻² = × 10²; × 10�
 | 10⁰ moved | Thinks 10⁰ is 10 (or 0) | 10⁰ = 1, and multiplying or dividing by 1 changes nothing |
 | ÷ 10⁻ⁿ moved left | Treats ÷ 10⁻ⁿ like ÷ 10ⁿ | Dividing by 10⁻² is × 10². Bigger or smaller? |
 
-## ? key
-Three rows, each a tiny slot row with its hops: × 10² (2 right), ÷ 10² (2 left), × 10⁻² (2 left, "= ÷ 10²"). Plus **Replay tutorial**.
+## Cheat sheet
+Rule: × 10ⁿ moves the point n places right; a negative power moves it left. Three rows, each a tiny slot row with its hops: × 10² (2 right), ÷ 10² (2 left), × 10⁻² (2 left, "= ÷ 10²"). Plus **Replay tutorial**.
 
 ## Rules
 Engine defaults. The tutorial runs on first visit only; the tutor can replay it.
@@ -96,7 +96,7 @@ Engine defaults. The tutorial runs on first visit only; the tutor can replay it.
 ## Engine work (built with this exercise)
 1. **Tap answers** (`ask` mode): the exercise draws its own answer area (the slot row) and reports what was tapped.
 2. **Error types:** feedback and analytics grouped by *kind of error* (`classify(item, tapped)`) instead of (right, picked) button pairs.
-3. **Tutorial mode:** a list of interactive steps that run before the exercise on first visit; skippable, replayable from the ? key, progress dots.
+3. **Tutorial mode:** a list of interactive steps that run before the exercise on first visit; skippable, replayable from the cheat sheet, progress dots.
 
 ## Open questions
 None.

@@ -20,18 +20,18 @@ What the student sees and does. These rules come from the user; when they change
 | **Wrong** | The picked button turns red; the right one turns green. **One cue** appears on the item and **one sentence** explains why the *picked* answer is wrong (see `feedback.md`). The student clicks **OK** (or Enter) to continue. Answer buttons are locked until then. |
 | Progress bar | Grows smoothly on a right answer. **On a miss it takes a hit:** drops at once, the lost piece stays red briefly then drains away, and the bar thickens for a moment. Elegant, no flourish. |
 | Finished | A ✓ with **More practice** and **Done**. More practice is a fresh round of tricky questions (one per idea per round, new numbers, no opening); it doesn't change "passed", and misses carry the usual penalty. (Restarting from the beginning is ↺.) |
-| Tutorial (if the exercise has one) | First visit only. The student does each step on the real visual; a short caption appears after the action; progress dots and Skip below. Replay from the ? key. |
+| Tutorial (if the exercise has one) | First visit only. The student does each step on the real visual; a short caption appears after the action; progress dots and Skip below. Replay from the cheat sheet. |
 
 ## Chrome
 
 - **Top bar:** ← (back to the library), the progress bar, **?** (if the exercise has a key or tutorial), and **↺**.
-- **? key:** a small popover with one example of each answer, its deciding feature lit up. Always available, never pushed. Opening it during a question is noted in the log.
+- **Cheat sheet:** every exercise has one — a quiet button bottom-left opening a card: the reference a student would look up (one rule sentence + drawn examples, or a table: prefixes, unit facts, terms and clues). Always available, never pushed. Opening it during a question is noted in the log; a tutor can hide it.
 - **Analytics:** a faint dot in the bottom-right corner opens `analytics.html#<id>`. Not labeled; meant for the tutor.
 - **↺ reset:** the first tap turns it into "Reset?"; a second tap within 3 s starts a fresh pass. It keeps the answer log and "tutorial seen" (the analytics page's Start over wipes everything).
 
 ## Accessibility (non-negotiable)
 
-- Keyboard: every answer by key; Enter for OK; Esc closes the key.
+- Keyboard: every answer by key; Enter for OK; Esc closes the cheat sheet.
 - Screen readers: the item is spoken (`speak`), results are announced.
 - `prefers-reduced-motion`: no animation beyond fades.
 - Touch targets ≥ 44 px; works at 320 px wide with no horizontal scroll; light and dark.

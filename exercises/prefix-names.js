@@ -82,6 +82,6 @@
       if (err === 'sign') return ['Gets the sign backwards: small prefixes have negative powers.', 'Ask: is a millimeter bigger or smaller than a meter? Smaller → negative power.'];
       return ['Knows the direction but not how many places.', 'Count the spots on the line from the base unit, empty ones too.'];
     },
-    keyHTML: `<div class="pkey2">${X.lineHTML('m', [], false, true)}</div>`
+    cheat: X.cheatHTML()
   });
 })();

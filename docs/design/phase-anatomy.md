@@ -37,7 +37,7 @@ With defaults a student who understands answers **opening + 2 × ideas** questio
 Use one only when the idea is new to the student (a tutorial adds nothing for conventional things; `evidence.md`). Rules, from the guidance research:
 - **Do, don't read:** every step is an action on the real visual (press × 10, watch the point hop). Advance on the action, never on a timer.
 - **Caption after the action**, naming what they just saw, ≤ 8 words ("× 10: the point moves one place right."). The only instruction allowed is for a non-obvious interaction ("Tap where the point lands.").
-- **≤ 5 steps**, progress dots, Skip always visible, Replay from the ? key.
+- **≤ 5 steps**, progress dots, Skip always visible, Replay from the cheat sheet.
 - **Can't be failed:** a wrong try shows the answer and lets them try again.
 - The last step is the exercise's own answer interaction, so the exercise starts with no surprises.
 
@@ -49,7 +49,7 @@ With k choices a guess is right 1/k of the time. To pass, a guesser must get the
 
 ## 5. Tutor rules
 
-A tutor can change: opening on/off, tricky questions per idea, the miss penalty (1–5), a speed limit (off / 10 s / 6 s), the next-session check, and the ? key (`analytics.md`). Defaults are in `engine/exercise.js` (`RULE_DEFAULTS`); an exercise may override them in its definition.
+A tutor can change: opening on/off, tricky questions per idea, the miss penalty (1–5), a speed limit (off / 10 s / 6 s), the next-session check, and the cheat sheet (`analytics.md`). Defaults are in `engine/exercise.js` (`RULE_DEFAULTS`); an exercise may override them in its definition.
 
 ## 6. What's a default, not a finding
 

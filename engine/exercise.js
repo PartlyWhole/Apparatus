@@ -83,10 +83,10 @@
   <div class="top">
     <a href="${root}index.html" aria-label="Apparatus">←</a>
     <div class="bar" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="100" id="barWrap"><i id="bar"></i><b id="hit"></b></div>
-    <button type="button" class="icon" id="help" aria-label="Key" aria-expanded="false" aria-controls="key" hidden>?</button>
     <button type="button" class="icon" id="reset" aria-label="Start this exercise again">↺</button>
-    <div class="key" id="key" role="dialog" aria-label="Key" hidden></div>
   </div>
+  <button type="button" class="cs-btn" id="help" aria-expanded="false" aria-controls="key" hidden>Cheat sheet</button>
+  <div class="key" id="key" role="dialog" aria-label="Cheat sheet" hidden></div>
   <div class="card" id="card">
     <div id="q"></div>
     <div class="opts" id="opts" role="group" aria-label="Answer"></div>
@@ -237,9 +237,10 @@
       if (a) { e.preventDefault(); respond(a); }
     });
 
-    // ---- the ? key (optional; opening it during a question is noted in the log) ----
+    // ---- the cheat sheet, bottom-left (optional; opening it during a question is noted in the log) ----
+    // def.cheat (HTML) is the exercise's reference card, def.cheatRule a sentence above it; older keys (def.keyHTML, or def.key: drawn examples) still work
     function buildKey() {
-      $('key').innerHTML = (def.keyHTML || (def.key ? def.key.map(k => def.render(k.item, k.cue) + `<b>${k.label}</b>`).join('') : ''))
+      $('key').innerHTML = (def.cheatRule ? `<div class="rule">${def.cheatRule}</div>` : '') + (def.cheat || def.keyHTML || (def.key ? `<div class="kgrid">${def.key.map(k => def.render(k.item, k.cue) + `<b>${k.label}</b>`).join('')}</div>` : ''))
         + (def.tutorial ? '<button type="button" class="replay" id="replay">Replay tutorial</button>' : '');
       if (def.tutorial) $('replay').addEventListener('click', () => { toggleKey(false); runTutorial(); });
     }
@@ -310,7 +311,7 @@
 
     function start() {
       tick++; configure(); S = loadState(def, SET); lastIdea = null; shown = null;
-      $('help').hidden = !((def.key || def.keyHTML) && SET.key) && !def.tutorial; if ($('help').hidden) toggleKey(false);
+      $('help').hidden = !((def.cheat || def.key || def.keyHTML) && SET.key) && !def.tutorial; if ($('help').hidden) toggleKey(false);
       if (def.tutorial && SET.tutorial && !S.tut) { progress(); return runTutorial(); }
       // a later session after finishing: a quick check, one tricky kind per idea
       const since = Math.max(S.doneAt || 0, S.warmAt || 0);
@@ -347,7 +348,7 @@
   <div class="top"><a id="back" href="${back}" aria-label="Back">←</a><h1>${esc(def.title)}</h1></div>
   <section><div class="status" id="status"></div><div class="sub" id="sub"></div></section>
   <section><h2>By idea</h2><div class="ideas" id="ideas"></div>
-    <div class="legend"><span><i></i>right</span><span><i class="no"></i>wrong</span><span><i class="slow"></i>right but slow</span><span><i class="warm"></i>next-session check</span><span><i class="key"></i>key was open</span></div></section>
+    <div class="legend"><span><i></i>right</span><span><i class="no"></i>wrong</span><span><i class="slow"></i>right but slow</span><span><i class="warm"></i>next-session check</span><span><i class="key"></i>cheat sheet was open</span></div></section>
   <section><h2>What to do</h2><ul class="notes" id="notes"></ul></section>
   <section><h2>Adjust</h2><div class="actions" id="actions"></div></section>
   <section><h2>Rules</h2><div class="rules" id="rules"></div></section>
@@ -455,7 +456,7 @@
         ['fix', 'Miss penalty', [[1, '1'], [2, '2'], [3, '3'], [4, '4'], [5, '5']], 'After a miss: this many more right answers on that idea, and the progress bar drops as much. Higher discourages guessing.'],
         ['speed', 'Speed', [[0, 'Off'], [10, '10 s'], [6, '6 s']], 'A slower right answer doesn’t count yet and comes back later.'],
         ['check', 'Next-session check', [[true, 'On'], [false, 'Off']], 'A few quick questions the next time the page is opened.'],
-        (def.key || def.keyHTML) && ['key', '? key', [[true, 'Shown'], [false, 'Hidden']], 'Examples to look back at.'],
+        (def.cheat || def.key || def.keyHTML) && ['key', 'Cheat sheet', [[true, 'Shown'], [false, 'Hidden']], 'A reference card to look back at (bottom-left).'],
         def.tutorial && ['tutorial', 'Tutorial', [[true, 'On'], [false, 'Off']], 'Runs once on the first visit. It can be replayed from the ? key.']
       ].concat(base.rules || []).filter(Boolean);           // the exercise's own rules: [key, label, [[value, text]…], help]
       const qs = (SET.intro && def.opening ? def.opening.length : 0) + probeList(def, SET.tricky).length;

@@ -30,7 +30,7 @@ for (let i = 0; i < 40 && document.getElementById('fin').hidden; i++) {
 
 ## Interaction order (bugs we've hit before)
 
-- [ ] Answering twice quickly, pressing keys during the 0.9 s after a right answer, Enter on OK, Esc with the key open.
+- [ ] Answering twice quickly, pressing keys during the 0.9 s after a right answer, Enter on OK, Esc with the cheat sheet open.
 - [ ] Back from analytics (bfcache) shows the current state, not a stale one.
 - [ ] Again / Start over during a pending auto-advance.
 

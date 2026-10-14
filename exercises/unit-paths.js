@@ -29,7 +29,7 @@
     text: it => `${U.chainText(it.pr)} (not ${SHOWN[it.k].path.join(' → ')})`,
     speak: it => `${U.chainText(it.pr).replace(' = ?', ' to')}, a different way than the one shown.`,
     ask(el, it, submit, ctx) {
-      U.cheatSheet();
+      
       Chain.mount(el, it.pr, {
         level: LEVEL[ctx.mode] ?? 1, free: { avoid: SHOWN[it.k].path }, onDone: submit,
         above: `${Chain.solvedHTML(it.pr)}<p class="another">Another way</p>`
@@ -42,6 +42,6 @@
     reveal() {},
     errors: U.CHAIN_ERRORS,
     diagnose: err => U.CHAIN_DIAG[err] || ['', ''],
-    keyHTML: U.tableHTML()
+    cheat: U.cheatHTML()
   });
 })();

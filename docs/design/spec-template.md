@@ -33,8 +33,8 @@ Generator notes: ranges, edge cases to avoid (e.g. no trailing zeros; never 0 as
 | Right | Picked | What it usually means | What a tutor can do |
 |---|---|---|---|
 
-## ? key
-<one example per answer and its cue>, or "none".
+## Cheat sheet
+<what a student would look up: a rule sentence + one example per answer, or a table>. Every exercise has one.
 
 ## Rules
 Defaults (or overrides of RULE_DEFAULTS) and why.

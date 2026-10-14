@@ -4,8 +4,8 @@ Status: live · Skill map: after Prefixes · Code: `exercises/lib/units.js` (fac
 
 ## The table (to know)
 5,280 ft = 1 mi · 3 ft = 1 yd · 12 in = 1 ft · 2.54 cm = 1 in · 60 s = 1 min · 60 min = 1 hr · 24 hr = 1 day · 365 day = 1 yr · 3,600 s = 1 hr · 1,000 cm³ = 1 L · 1,000,000 cm³ = 1 m³ · 1,000 L = 1 m³ · 1 mL = 1 cm³
-**Cheat sheet** (not to memorize; a button bottom-left): 0.3048 m = 1 ft · 1.609 km = 1 mi · 1,609 m = 1 mi · 3.785 L = 1 gal.
-The whole table is the ? key in all four exercises, and the first screen of `unit-facts` (its tutorial).
+**Not to memorize** (on the cheat sheet): 0.3048 m = 1 ft · 1.609 km = 1 mi · 1,609 m = 1 mi · 3.785 L = 1 gal.
+The cheat sheet (bottom-left) in every unit exercise is the whole table plus these, and the first screen of `unit-facts` (its tutorial).
 
 ## 1. Facts (`unit-facts`)
 **Master every fact** (a rule for this exercise only, on by default): each fact is its own idea — multiple choice, then written — so passing means every fact answered right, written (26 questions with no misses); a missed fact comes back (penalty) spread among the others; the next-session check asks every fact, written. Analytics shows a row per fact. With the rule off, the shorter version below.

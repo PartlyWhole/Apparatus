@@ -52,6 +52,6 @@
     },
     errors: { dir: 'the wrong way (big ↔ small)', count: 'wrong number of places', other: 'not a power of ten' },
     diagnose: err => X.DIAG[err] || ['', ''],
-    keyHTML: `<div class="pkey2">${X.lineHTML('m', [], false, true)}</div>`
+    cheat: X.cheatHTML('Count the places between the two prefixes. cm (10<sup>−2</sup>) to µm (10<sup>−6</sup>) is 4 places: 1 cm = 10<sup>4</sup> µm = 10,000 µm.')
   });
 })();

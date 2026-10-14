@@ -45,8 +45,8 @@ Generator notes: no trailing zeros after the point; first digit never 0 (except 
 ## Diagnose
 See `diagnose` in `exercises/sci-form.js` and the Scientific notation table in `docs/design/misconceptions.md`.
 
-## ? key
-4,560 → Decimal (`why-dec`), 4.56 × 10³ → Scientific (`why-sci`), 45.6 × 10² → Neither (`why-fake`).
+## Cheat sheet
+Rule: one digit from 1 to 9 before the point, times a power of ten; a decimal has no power of ten. Then 4,560 → Decimal (`why-dec`), 4.56 × 10³ → Scientific (`why-sci`), 45.6 × 10² → Neither (`why-fake`).
 
 ## Rules
 Engine defaults (opening on, 2 tricky, 2 after a miss, speed off, check on, key shown).

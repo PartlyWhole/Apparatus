@@ -28,3 +28,6 @@ Cue: the picked point, then the right move replays with a "10" going back into t
 
 ## Tutorial (2 steps)
 "Drag the point until the power is gone." (4.5 × 10³) → "Now this one." (4.5 × 10⁻³).
+
+## Cheat sheet
+Rule: move the point as many places as the power (positive → right, negative → left). Two drawn examples (45 × 10³, 45 × 10⁻³).

@@ -32,3 +32,6 @@ Cue: the picked point (red, with its light zeros), then the right move replays: 
 
 ## Tutorial (4 steps)
 Drag left (caption: "Each hop left takes out a 10.") → make it 4.5 ("4,500 = 4.5 × 10³") → drag right ("Each hop right takes out a 10⁻¹.") → make it 4.5 ("0.0045 = 4.5 × 10⁻³").
+
+## Cheat sheet
+Rule: move the point to just after the first digit and count the hops (left → positive power). Two drawn examples (4,500 and 0.045).

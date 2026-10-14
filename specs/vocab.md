@@ -10,3 +10,6 @@ Every term gated (26 questions with no misses); the next-session check asks ever
 
 ## What It Measures (`measure`)
 Unit → quantity ("cm³ measures… length / area / volume / mass") and quantity → unit ("Which one measures volume? cm / cm³ / N / day"). Ideas: length, volume, mass, time, the other base units (K, A, mol, cd), derived (N, J). Traps: weight for mass units (feedback: weight is a force, in newtons), area/length for volume, look-alike units (cm vs cm³, m vs m³, mm vs mL). 12 questions with no misses.
+
+## Cheat sheets
+Vocabulary: every term with its clue, A to Z. What It Measures: each quantity with its units.

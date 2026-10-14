@@ -69,6 +69,8 @@
     title: 'Vocabulary',
     ideas, kinds,
     nextOnRight: false,
+    // the cheat sheet: every term with its clue, A to Z
+    cheat: `<div class="vcheat">${T.slice().sort((a, b) => a.t.localeCompare(b.t)).map(x => `<p><b>${x.t}</b><span>${x.clue}</span></p>`).join('')}</div>`,
     text: it => it.how === 'clue' ? `clue → ${T[it.i].t}` : `${T[it.i].t}: ${it.q.replace(/<[^>]+>/g, '')}`,
     speak: it => it.q.replace(/<[^>]+>/g, ' '),
     ask(el, it, submit) {

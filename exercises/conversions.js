@@ -139,6 +139,7 @@
       return ['Counts the places wrong.', 'Draw the hops under the number and count them.'];
     },
 
+    cheatRule: 'To a decimal: move the point by the power. To scientific: move the point to just after the first digit; the hops are the power (left → positive).',
     get keyHTML() {
       const ex = [{ d: '45', n: 4 }, { d: '35', n: -3 }];
       return `<div class="pkey">${ex.map(it => `<div class="kx">${decOf(it.d, it.n)} =</div>${P.staticHops(it.d, 1 + it.n, PAD + 1, it.n)}`).join('')}</div>`;

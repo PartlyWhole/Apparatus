@@ -32,6 +32,12 @@
     }
     return `<div class="pline${names || tap ? ' names' : ''}" style="grid-template-columns:${cols.join(' ')}">${h}</div>`;
   }
+  // the cheat sheet: every prefix, its name, its power of ten and that number written out
+  function cheatHTML(rule) {
+    const rows = PRE.filter(p => p.e !== 0).map(p => `<span class="m">${p.s}</span><span>${p.name}</span><span class="m">10${supE(p.e)}</span><span class="m d">${powerVal(p.e)}</span>`);
+    rows.splice(4, 0, `<span class="m d">·</span><span class="d">base unit</span><span class="m">10${supE(0)}</span><span class="m d">1</span>`);
+    return (rule ? `<div class="rule">${rule}</div>` : '') + `<div class="ctab" style="--cols:4">${rows.join('')}</div>`;
+  }
   // hops along the line from power a to power b: numbered arcs underneath, each labelled (×10 / ÷10); done() at the end
   function hops(line, a, b, label, done) {
     line.querySelectorAll('.parc').forEach(x => x.remove());
@@ -115,7 +121,7 @@
       },
       errors: { dir: 'the wrong way (big ↔ small)', count: 'wrong number of places', other: 'not a power of ten' },
       diagnose: err => DIAG[err] || ['', ''],
-      keyHTML: `<div class="pkey2">${lineHTML('m', [], false, true)}</div>`,
+      cheat: cheatHTML('Each step along the line is one power of ten. From L to mL is 3 steps: 1 L = 1,000 mL.'),
       tutorial: cfg.tutorial ? (stage, api) => tutorial(stage, api) : undefined
     });
   }
@@ -146,5 +152,5 @@
     step(0, 'Tap a unit bigger than L.', e => e > 0, () => step(1, 'Now one smaller than L.', e => e < 0, () => { api.step(N2, N2); api.done(); }));
   }
 
-  window.Prefix = { PRE, BASES, byE, unit, lineHTML, hops, powerVal, powerError, sentence, DIAG, updown };
+  window.Prefix = { PRE, BASES, byE, unit, lineHTML, cheatHTML, hops, powerVal, powerError, sentence, DIAG, updown };
 })();

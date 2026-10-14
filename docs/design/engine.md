@@ -62,7 +62,9 @@ Instead of `choices`, an exercise can answer by tapping/dragging in its own area
   revealMs: 1100,                     // how long a right answer stays before moving on (default 900)
   errors: { dir: 'moved the wrong way', … },       // labels for error types (analytics)
   diagnose: (errorType, kind) => [whatItMeans, whatToDo],
-  keyHTML: '…',                       // the ? key as HTML (instead of key: [...])
+  cheat: '…',                         // the cheat sheet (HTML), opened from the bottom-left button
+  cheatRule: '…',                     // optional sentence above it (works with keyHTML / key too)
+  key: [{ item, cue, label }],        // older form: drawn examples of each answer (keyHTML: the same as HTML)
 ```
 
 The log stores the error type as `chose` ('right' when right) and the raw answer as `pick`; analytics group misses by error type. Keyboard support is the exercise's job in tap mode (e.g. arrows + Enter).
@@ -75,7 +77,7 @@ The log stores the error type as `chose` ('right' when right) and the raw answer
   // api.alive()     false once skipped (stop timers)     api.done()  finish → the exercise starts
 ```
 
-The engine shows the caption, dots and **Skip**, runs the tutorial on the first visit (rule `tutorial`), remembers it (`S.tut` = done | skipped), and adds **Replay tutorial** to the ? key and **Show tutorial again** to analytics. Tutorial answers are never graded. Advance on the student's real actions; never on a timer.
+The engine shows the caption, dots and **Skip**, runs the tutorial on the first visit (rule `tutorial`), remembers it (`S.tut` = done | skipped), and adds **Replay tutorial** to the cheat sheet and **Show tutorial again** to analytics. Tutorial answers are never graded. Advance on the student's real actions; never on a timer.
 
 ## What the engine does (so definitions don't)
 
@@ -95,7 +97,7 @@ The engine shows the caption, dots and **Skip**, runs the tutorial on the first 
 More shared libraries (all loaded by `analytics.html`, in this order: places, forms, prefix, units, chain):
 - `lib/forms.js` + `forms.css`: multiple choice (`Forms.choices`, keys 1–4) and written answers (`Forms.num`, `Forms.text` for a short case-kept answer, `Forms.pow` for an exponent with a typed minus, `Forms.wire` with Check/Enter and shaking empty fields).
 - `lib/prefix.js` + `prefix.css`: the prefix line by power of ten, hops along it, the Build Up / Break Down factory (`Prefix.updown`), shared prefix errors and sentences.
-- `lib/units.js`: unit sizes, the facts table, the cheat sheet (bottom-left), problem banks for chains and rates, chain errors and advice.
+- `lib/units.js`: unit sizes, the facts table, the cheat-sheet card (`cheatHTML()`: facts + not to memorize), problem banks for chains and rates, chain errors and advice.
 - `lib/chain.js` + `chain.css`: a conversion written as a chain of fractions, built step by step (place the unit to cancel, pick the next unit, numbers, cancel, then the combined fraction and its value — no hand calculation) at three levels (0 units given, 1 guided captions, 2 on your own). `free: { avoid }` lets the student choose the path (any unit with a known fact that can still reach the target by a route other than `avoid`); `solvedHTML(pr)` draws a finished chain. Mistakes are explained in place and fixed; the list of first-try mistakes is what's graded.
 
 ## Limits (extend when an exercise needs it)

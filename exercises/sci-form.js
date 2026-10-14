@@ -84,7 +84,8 @@
       return ['', ''];
     },
 
-    // the ? key: one example of each, with what decides it lit up
+    // the cheat sheet: the rule, then one example of each with what decides it lit up
+    cheatRule: 'Scientific notation is one digit from 1 to 9 before the point, times a power of ten. A decimal has no power of ten.',
     key: [
       { item: { L: '4560', R: '', e: null }, cue: 'why-dec', label: 'Decimal' },
       { item: { L: '4', R: '56', e: 3 }, cue: 'why-sci', label: 'Scientific' },

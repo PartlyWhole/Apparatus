@@ -6,10 +6,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500;600;700&display=swap">
-<link rel="stylesheet" href="engine/exercise.css?v=4">
+<link rel="stylesheet" href="engine/exercise.css?v=6">
 <body class="analytics">
 <main id="main"></main>
-<script src="engine/exercise.js?v=13"></script>
+<script src="engine/exercise.js?v=14"></script>
 <script>
 // analytics.html#<exercise id> — loads exercises/<id>.js and shows its analytics (engine: Apparatus.analytics)
 (function () {
@@ -17,7 +17,7 @@
   const main = document.getElementById('main');
   if (!id) { main.innerHTML = '<p class="empty">No exercise.</p>'; return; }
   // shared exercise libraries first, in order (definitions may use them), then the definition
-  const LIBS = ['places.js?v=10', 'forms.js?v=3', 'prefix.js?v=4', 'units.js?v=2', 'chain.js?v=10'];
+  const LIBS = ['places.js?v=10', 'forms.js?v=3', 'prefix.js?v=5', 'units.js?v=3', 'chain.js?v=10'];
   const load = i => {
     if (i === LIBS.length) return document.body.appendChild(s);
     const l = document.createElement('script'); l.src = 'exercises/lib/' + LIBS[i]; l.onload = () => load(i + 1); document.body.appendChild(l);

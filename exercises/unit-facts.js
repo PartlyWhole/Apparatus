@@ -55,7 +55,7 @@
     text: it => `1 ${T(it)[3]} = ? ${T(it)[1]} (${it.how === 'mc' ? 'choice' : 'written'})`,
     speak: it => `1 ${T(it)[3]} equals how many ${T(it)[1]}?`,
     ask(el, it, submit) {
-      U.cheatSheet();
+      
       el.innerHTML = html(it);
       if (it.how === 'mc') el._mc = F.choices(el, it.opts.map(n => `${U.fmtN(n)} ${T(it)[1]}`), submit);
       else el._form = F.wire(el, v => submit(parseFloat(v.answer.raw.replace(/,/g, ''))));
@@ -73,10 +73,10 @@
     },
     errors: { fact: 'wrong number', mixup: 'number from another fact' },
     diagnose: err => err === 'mixup' ? ['Remembers the numbers but mixes up which fact they belong to.', 'Pair each number with its units out loud: “5,280 feet in a mile.”'] : ['Doesn’t know this fact yet.', 'Look at the table together, then cover it and ask again.'],
-    keyHTML: U.tableHTML(),
+    cheat: U.cheatHTML(),
     // first visit: the table to know
     tutorial(stage, api) {
-      U.cheatSheet();
+      
       api.step(0, 1); api.caption('The ones to know.');
       stage.innerHTML = `<div class="fq">${U.tableHTML()}<div class="tbtns"><button type="button" class="tb" aria-label="Start">›</button></div></div>`;
       stage.querySelector('.tb').addEventListener('click', () => { if (api.alive()) { api.step(1, 1); api.done(); } }, { once: true });

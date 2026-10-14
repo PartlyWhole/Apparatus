@@ -204,7 +204,8 @@
         : ['Counts zeros or digits instead of hops.', 'Count the hops aloud with a finger, one per place.'];
     },
 
-    // ---- the ? key: the three moves, drawn ----
+    // ---- the cheat sheet: the rule, and the moves drawn ----
+    cheatRule: '× 10<sup>n</sup> moves the point n places right (bigger). A negative power moves it left (smaller).',
     get keyHTML() {
       const ex = [{ d: '352', p: 1, op: '×', e: 2 }].concat(DIV ? [{ d: '352', p: 1, op: '÷', e: 2 }] : [], [{ d: '352', p: 1, op: '×', e: -2 }]);
       return `<div class="pmkey">${ex.map(it => {

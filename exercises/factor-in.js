@@ -102,6 +102,7 @@
       return ['Counts the hops wrong.', 'One hop for each 1 in the power: count them aloud with a finger.'];
     },
 
+    cheatRule: 'Move the point as many places as the power: positive → right (bigger), negative → left (smaller).',
     get keyHTML() {
       const ex = [{ d: '45', e: 3 }, { d: '45', e: -3 }];
       return `<div class="pkey">${ex.map(it => `<div class="kx">${lhs(it)} =</div>${P.staticHops(it.d, 1, T(it), 0)}`).join('')}</div>`;

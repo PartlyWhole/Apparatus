@@ -2,6 +2,7 @@
 
 Newest first. One line per decision: date — what — why (and who asked). When a decision is reversed, add a new line; don't delete the old one. The other docs describe only the current state.
 
+- 2026-10-14 — Every exercise has a **Cheat sheet** (button bottom-left, card above it): a rule sentence plus drawn examples (scientific notation), a prefix table (symbol, name, power, number), the facts table plus “not to memorize” (units), every term with its clue (vocabulary), quantities with their units (What It Measures). It replaces the top-bar ? key and the units' separate cheat-sheet button; Replay tutorial lives in it. Rule renamed “Cheat sheet”; opening it during a question is still logged. (user: "Create a cheatsheet for each exercise")
 - 2026-10-14 — Vocabulary (13 terms; a clue and a creative question each, gated) and What It Measures (unit ↔ quantity with mass/weight and cm/cm³ traps), in a new Vocabulary section. (user)
 - 2026-10-14 — Prefix Names: micro's symbol is asked as multiple choice (µ isn't on most keyboards). (user)
 - 2026-10-14 — One-Step Conversions (`unit-one`) added between Unit Facts and Two-Step: the first cancelling, one fraction. (user)

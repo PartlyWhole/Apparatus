@@ -48,6 +48,8 @@
   Apparatus.define({
     id: 'measure',
     title: 'What It Measures',
+    // the cheat sheet: each quantity and its units
+    cheat: `<div class="ctab" style="--cols:2">${QUANTITIES.map(q => `<span>${q}</span><span class="m">${Object.keys(WHAT).filter(u => WHAT[u] === q).join(', ')}</span>`).join('')}</div>`,
     ideas, kinds,
     text: it => it.how === 'what' ? `${it.u} measures ?` : `Which measures ${it.q}?`,
     speak: it => it.how === 'what' ? `What does ${it.u} measure?` : `Which unit measures ${it.q}?`,

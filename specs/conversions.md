@@ -23,3 +23,6 @@ Scientific → decimal: one field. Decimal → scientific: a number field and an
 | form (written) | Scientific notation has one digit before the point: 4.5. |
 
 Cue: the right option turns green (picked one red), or the fields turn red with "= answer"; and a picture of the hops between the two forms (the original number's leftover zeros light).
+
+## Cheat sheet
+Rule: to a decimal, move the point by the power; to scientific, move it to just after the first digit (the hops are the power, left → positive). Two drawn examples.

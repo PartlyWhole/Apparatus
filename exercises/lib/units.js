@@ -34,19 +34,10 @@
     return `<div class="utable">${TABLE.map(row).join('')}</div>`;
   }
 
-  // the cheat sheet: a small button bottom-left; the facts students don't need to memorize
-  function cheatSheet() {
-    if (document.querySelector('.cs-btn')) return;
-    const btn = document.createElement('button');
-    btn.type = 'button'; btn.className = 'cs-btn'; btn.textContent = 'Cheat sheet'; btn.setAttribute('aria-expanded', 'false');
-    const panel = document.createElement('div');
-    panel.className = 'cs-panel'; panel.hidden = true; panel.setAttribute('role', 'note');
-    panel.innerHTML = OPTIONAL.map(f => `<span>${fmtN(f[0])} ${f[1]}</span><span>=</span><span>${fmtN(f[2])} ${f[3]}</span>`).join('');
-    btn.addEventListener('click', e => { e.stopPropagation(); panel.hidden = !panel.hidden; btn.setAttribute('aria-expanded', String(!panel.hidden)); });
-    document.addEventListener('click', e => { if (!panel.hidden && !panel.contains(e.target) && e.target !== btn) { panel.hidden = true; btn.setAttribute('aria-expanded', 'false'); } });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !panel.hidden) { panel.hidden = true; btn.setAttribute('aria-expanded', 'false'); } });
-    document.body.append(panel, btn);
-  }
+  // the cheat sheet (the engine's, bottom-left): the facts to know, then the ones students don't need to memorize
+  const cheatHTML = () => `<div class="sec"><h4>Facts</h4>${tableHTML()}</div>`
+    + `<div class="sec"><h4>Not to memorize</h4><div class="utable opt">${OPTIONAL.map(f => `<span>${fmtN(f[0])} ${f[1]}</span><span>=</span><span>${fmtN(f[2])} ${f[3]}</span>`).join('')}</div></div>`;
+  const cheatSheet = () => {};   // (was a separate button; the engine's cheat sheet replaces it)
 
   // ---- problem banks (shared by the unit exercises) ----
   const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -91,5 +82,5 @@
   };
   const CHAIN_ERRORS = { side: 'unit on the wrong side', unit: 'wrong next unit', number: 'top and bottom not equal', flip: 'numbers flipped', answer: 'arithmetic' };
 
-  window.Units = { SIZE, KIND, TABLE, OPTIONAL, PREFIXED, fmtN, equal, fact, factText, tableHTML, cheatSheet, PATHS, chainProblem, RATES, rateProblem, chainText, CHAIN_DIAG, CHAIN_ERRORS, pick, ri };
+  window.Units = { SIZE, KIND, TABLE, OPTIONAL, PREFIXED, fmtN, equal, fact, factText, tableHTML, cheatHTML, cheatSheet, PATHS, chainProblem, RATES, rateProblem, chainText, CHAIN_DIAG, CHAIN_ERRORS, pick, ri };
 })();

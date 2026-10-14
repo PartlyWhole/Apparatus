@@ -11,7 +11,7 @@ Grades: **A** controlled studies / meta-analyses · **B** standards, platform gu
 | Interleaving trains discrimination between categories | Ideas are mixed; never the same idea twice in a row | A |
 | Massed practice inflates confidence | A streak today isn't passing; the delayed check confirms | A |
 | Doing beats reading; people skip instructions | No intro screen; learn from the items | A (NN/g, Carroll) |
-| Front-loaded tutorials don't help, and can hurt perception | No tour, no instructions; the ? key is pull-only | A (NN/g n=70; Andersen n>45k) |
+| Front-loaded tutorials don't help, and can hurt perception | No tour, no instructions; the cheat sheet is pull-only | A (NN/g n=70; Andersen n>45k) |
 | Tutorial value grows with novelty/complexity | Guidance only where it's needed (after a miss) | A (Andersen) |
 | Contrasting cases highlight the deciding feature | The opening set: same digits, different forms | A/B |
 | Mastery learning: prove each prerequisite before moving on | Per-idea mastery; passing = baseline mastery, not automaticity | A (Bloom; Kulik) / C (Math Academy) |
@@ -23,7 +23,7 @@ Grades: **A** controlled studies / meta-analyses · **B** standards, platform gu
 | Overlearning has diminishing returns | Few problems; no drilling | A (Rohrer & Taylor) |
 | Time only once a student is accurate untimed | Speed rule off by default; times shown to the tutor only | B (IES guide) |
 | Self-explanation helps learning | Tutor asks "why?" (prompted by analytics) | A |
-| Help should be pulled, not pushed; re-findable | ? key, analytics; nothing pops up | B (NN/g) |
+| Help should be pulled, not pushed; re-findable | cheat sheet, analytics; nothing pops up | B (NN/g) |
 | Short words, one idea at a time | One sentence per miss; ≤ ~8 words on screen otherwise | D (game UX) |
 
 ## Deliberately not used (and why)

@@ -141,6 +141,7 @@
       return ['Places the point right, but doesn’t count the hops.', 'Before writing the power, count the hops aloud: one per place.'];
     },
 
+    cheatRule: 'Move the point to just after the first digit and count the hops. Moved left → positive power; moved right → negative power.',
     get keyHTML() {
       const ex = [{ d: '4500', p: 4 }, { d: '45', p: -2 }];
       return `<div class="pkey">${ex.map(it => `<div class="kx">${P.numStr(it.d, it.p)} =</div>${P.staticHops(it.d, it.p, T(), it.p - 1)}`).join('')}</div>`;

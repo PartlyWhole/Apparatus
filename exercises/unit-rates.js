@@ -16,7 +16,7 @@
     nextOnRight: true,
     text: it => U.chainText(it.pr),
     speak: it => `Convert ${U.chainText(it.pr).replace(' = ?', ' to')}.`,
-    ask(el, it, submit, ctx) { U.cheatSheet(); Chain.mount(el, it.pr, { level: LEVEL[ctx.mode] ?? 1, onDone: submit }); },
+    ask(el, it, submit, ctx) { Chain.mount(el, it.pr, { level: LEVEL[ctx.mode] ?? 1, onDone: submit }); },
     correct: () => 0,
     isRight: (it, errs) => errs.length === 0,
     classify: (it, errs) => errs[0].type,
@@ -24,6 +24,6 @@
     reveal() {},
     errors: U.CHAIN_ERRORS,
     diagnose: err => U.CHAIN_DIAG[err] || ['', ''],
-    keyHTML: U.tableHTML()
+    cheat: U.cheatHTML()
   });
 })();
