@@ -59,7 +59,7 @@
 
 /* choices (parallel / perpendicular / neither; true / false) */
 .gmc { display: grid; grid-template-columns: repeat(var(--k, 3), minmax(0, 1fr)); gap: 10px; width: min(100%, 32rem); }
-.gmc button { min-height: 56px; padding: 6px; border-radius: 14px; border: 2px solid var(--line); background: var(--surface); color: var(--ink); font-weight: 700; font-size: 1rem; }
+.gmc button { min-height: 56px; padding: 6px 4px; border-radius: 14px; border: 2px solid var(--line); background: var(--surface); color: var(--ink); font-weight: 700; font-size: clamp(0.82rem, 3.6vw, 1rem); overflow-wrap: anywhere; }
 .gmc button:hover:not(:disabled) { border-color: var(--accent); }
 .gmc button:disabled { cursor: default; opacity: 0.4; }
 .gmc button.ok, .gmc button.want { opacity: 1; border-color: var(--good); color: var(--good); }
@@ -73,3 +73,11 @@
 .key .gk { display: grid; gap: 6px; justify-items: center; font-size: 0.95rem; }
 .key .gk .gridbox { width: min(70vw, 15rem); }
 @media (prefers-reduced-motion: reduce) { .sf.bad input { animation: none; } }
+
+/* tutorial buttons */
+.tbtns { min-height: 52px; display: flex; gap: 10px; justify-content: center; }
+.tb { min-width: 64px; min-height: 52px; padding: 0 20px; border-radius: 14px; border: 2px solid var(--accent); color: var(--accent); background: var(--surface); font-family: var(--f-mono); font-weight: 700; font-size: 1.6rem; }
+.tb.wide { font-family: var(--f-body); font-size: 1.05rem; }
+.tb:disabled { opacity: 0.5; cursor: default; }
+.gq .q.two { gap: 1.4em; }
+.gq .sym { font-family: var(--f-body); font-size: 1.4em; font-weight: 700; color: var(--muted); }

@@ -1,6 +1,6 @@
 # Geometry: Lines on the Coordinate Plane (Module 4) — plan
 
-Status: designing (awaiting approval) · Source: Ch. 4 Test A (Module 4, Form A), 20 questions · Section: Geometry in the library
+Status: G1–G5 live (geometry/rise-run, two-points, equation-slope, relation, other-slope); G6–G13 designed · Source: Ch. 4 Test A (Module 4, Form A), 20 questions · Section: Geometry in the library
 
 ## The thinking behind the test
 
@@ -57,8 +57,10 @@ Each follows the house pattern: tutorial only where the idea is new (G1, G4's tu
 - Midpoint as a difference: "Halfway is the average: (1 + 11) ÷ 2 = 6."
 - b with the sign of m·x wrong: "b = y − m·x = −9 − ¼·(−4) = −8."
 
-## Open questions
-1. Fractions: stacked boxes (recommended) or one box "−1/4"?
-2. Must radical answers be simplified (as on the test), with unsimplified ones getting a "simplify" nudge?
-3. Build order: start with G1–G5 (slope and the other slope), then G6–G8, then G9–G13?
+## Decided (2026-10-14)
+- Fractions: stacked boxes; a minus typed in either box; empty bottom = 1; "undefined" is a chip.
+- An equal but unsimplified answer (2/4) gets a "Simplify." nudge and isn't graded.
+- Built in `geometry/` with its own libraries (`geometry/lib/`: grid, frac, lines, geo.css, page) and its own analytics page (`geometry/analytics.html`), so it doesn't touch the science set.
+
+## Open questions (remaining)
 4. Q16 Part A (graph the perpendicular bisector): tapping two points to draw the line is the planned interaction. OK?
