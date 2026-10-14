@@ -52,7 +52,7 @@ The student presses the real buttons; each step advances when they do it. One sh
 | t-divneg | twist (late) | tricky | 5.8 ÷ 10⁻² → 580 | "÷ always moves left" (ignores the minus sign) |
 | t-zero | twist (late) | easy + tricky | 2.4 ÷ 10⁰ → 2.4 | "10⁰ is 10 (or 0)" |
 
-Generator notes: 2–3 significant digits, first and last not 0; exponents 1–3; 4 empty places on each side; a power of 1 shows as "× 10". Empty places: faint zeros in the tutorial and the opening; invisible afterwards. Moving the point (hover, drag, arrow keys) previews the zeros it would need in a lighter shade, so the point never floats in empty space; committing (release / Enter) makes them real. After a miss, the picked point keeps its light zeros and the correct landing shows solid ones.
+Generator notes: 2–3 significant digits, first and last not 0; exponents 1–3; 4 empty places on each side; a power of 1 shows as "× 10". Empty places are invisible everywhere (tutorial included); a zero shows only where the point's position adds one. Moving the point (hover, drag, arrow keys) previews the zeros it would need in a lighter shade, so the point never floats in empty space; committing (release / Enter) makes them real. After a miss, the picked point keeps its light zeros and the correct landing shows solid ones.
 
 **Opening contrast set:** the same number three ways, so ÷ 10² and × 10⁻² visibly land in the same place:
 3.52 × 10² · 3.52 ÷ 10² · 3.52 × 10⁻²

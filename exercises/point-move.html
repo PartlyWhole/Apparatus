@@ -23,8 +23,7 @@
 .row { --w: 0.9em; position: relative; display: flex; font-size: clamp(1.7rem, 7.6vw, 2.8rem); line-height: 1; padding: 1.2em 0 0.45em; cursor: pointer; touch-action: none; outline-offset: 6px; border-radius: 8px; }
 .row.answered { cursor: default; }
 .s { width: var(--w); text-align: center; position: relative; }
-.s.pad { color: transparent; }                                  /* empty places: invisible (faint zeros only in the tutorial and opening) */
-.row.faint .s.pad { color: var(--line); }
+.s.pad { color: transparent; }                                  /* empty places: invisible until the point's position adds a zero */
 .row .s.pad.prev { color: var(--muted); }                        /* zeros a previewed (uncommitted) point would need */
 .row .s.pad.fill { color: var(--ink); transition: color 0.2s; }  /* zeros the point has really passed */
 
@@ -71,6 +70,6 @@
 </style>
 <body>
 <script src="../engine/exercise.js?v=3"></script>
-<script src="point-move.js?v=6"></script>
+<script src="point-move.js?v=7"></script>
 <script>Apparatus.mount('point-move');</script>
 </body>

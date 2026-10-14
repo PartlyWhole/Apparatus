@@ -32,7 +32,7 @@
   const flipHTML = it => it.e === 0 ? '× 1' : `${it.op === '×' ? '÷' : '×'} 10<sup>${-it.e}</sup>`;
 
   // ---------- the slot row ----------
-  // faint: show empty places as faint zeros (tutorial, opening); otherwise as small dots
+  // empty places are invisible; a zero shows only where the point's position adds one
   // filled: when the point is at gap `filled`, which empty places it has turned into zeros
   const isFill = (it, g, i) => { const a = PAD, b = PAD + it.d.length; return (g > b && i >= b && i < g) || (g <= a && i >= g - 1 && i < a); };
   function rowHTML(it, faint, filled) {
