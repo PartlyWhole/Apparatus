@@ -12,9 +12,10 @@
 .prow.answered, .prow.static { cursor: default; }
 .prow .s { width: var(--w); text-align: center; position: relative; }
 .prow .s.pad { color: transparent; }                                  /* empty places: invisible until the point's position adds a zero */
-.prow .s.pad.prev { color: var(--muted); }                             /* zeros a previewed point would need */
+.prow .s.pad.prev { color: var(--ink); }                               /* zeros a previewed point needs: same color, so it reads as one number */
+.prow.answered .s.pad.prev, .prow.static .s.pad.prev { color: var(--muted); }   /* light only for a wrong pick's zeros, and where hops came from in pictures */
 .prow .s.pad.fill { color: var(--ink); transition: color 0.2s; }       /* zeros the point really adds */
-.prow .s.gone { color: transparent; transition: color 0.2s; }           /* trailing zeros after the point aren't written (4.500 → 4.5) */
+.prow .s.gone { color: var(--line); transition: color 0.2s; }           /* trailing zeros after the point: ghosted (4.5|00), not part of the written number */
 
 /* points sit in the gaps: --g = places to their left */
 .prow .pt { position: absolute; bottom: calc(var(--pb) + 0.02em); left: calc(var(--g) * var(--w)); width: 0.24em; height: 0.24em; margin-left: -0.12em;

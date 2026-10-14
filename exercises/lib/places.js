@@ -23,10 +23,10 @@
   const slots = d => PAD + d.length + PAD;
   // which empty places are zeros when the point is at gap g
   const isFill = (d, g, i) => { const a = PAD, b = PAD + d.length; return (g > b && i >= b && i < g) || (g <= a && i >= g - 1 && i < a); };
-  // zeros at the end of the digits that sit after the point aren't written (4.500 is 4.5): true for digit j with the point at g
+  // zeros at the end of the digits that sit after the point aren't part of the written number (4.500 is 4.5); they're ghosted
   const isTrail = (d, g, j) => PAD + j >= g && /^0+$/.test(d.slice(j));
-  // the last place that shows a digit or zero, with the point at g
-  const lastShown = (d, g) => { let end = PAD + d.length; while (end - 1 >= g && end - 1 - PAD >= 0 && isTrail(d, g, end - 1 - PAD)) end--; return Math.max(end, g) - 1; };
+  // the last place that shows a digit or zero (ghosted trailing zeros included), with the point at g
+  const lastShown = (d, g) => Math.max(PAD + d.length, g) - 1;
 
   function rowHTML(d, p, o = {}) {
     const n = slots(d), g = o.at != null ? o.at : PAD + p;
@@ -136,7 +136,7 @@
   function staticHops(d, p, T, e) {
     const a = PAD + p, lo = Math.min(a, T);
     const arcs = Array.from({ length: Math.abs(T - a) }, (_, k) => `<span class="arc" style="--g:${lo + k}"></span>`).join('');
-    return rowHTML(d, p, { at: T, also: a }).replace('<span class="pw" hidden></span>',
+    return rowHTML(d, p, { at: T, also: a }).replace('class="prow"', 'class="prow static"').replace('<span class="pw" hidden></span>',
       `${arcs}<span class="pt run" style="--g:${T}"></span>${e ? `<span class="pw" style="--g:${Math.max(lastShown(d, T), lastShown(d, a)) + 1}"><span>${powHTML(e)}</span></span>` : ''}`)
       .replace('class="pt start"', 'class="pt start dim"');
   }

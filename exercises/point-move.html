@@ -24,7 +24,8 @@
 .row.answered { cursor: default; }
 .s { width: var(--w); text-align: center; position: relative; }
 .s.pad { color: transparent; }                                  /* empty places: invisible until the point's position adds a zero */
-.row .s.pad.prev { color: var(--muted); }                        /* zeros a previewed (uncommitted) point would need */
+.row .s.pad.prev { color: var(--ink); }                          /* zeros a previewed point needs: same color, so it reads as one number */
+.row.answered .s.pad.prev { color: var(--muted); }               /* light only for a wrong pick's zeros */
 .row .s.pad.fill { color: var(--ink); transition: color 0.2s; }  /* zeros the point has really passed */
 
 /* points sit in the gaps: --g = how many places are to their left */
