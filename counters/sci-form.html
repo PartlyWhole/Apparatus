@@ -39,8 +39,13 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .top a, .icon { min-width: 44px; min-height: 44px; display: grid; place-items: center; color: var(--muted); text-decoration: none; font-size: 1.1rem;
   border: 0; background: transparent; padding: 0; position: relative; }
 .top a:hover, .icon:hover { color: var(--accent); }
-.bar { flex: 1; height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; margin: 0 6px; }
+.bar { flex: 1; height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; margin: 0 6px; position: relative; }
 .bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width 0.5s ease; }
+/* a miss: the bar drops at once, and the lost piece lingers red, then drains away */
+.bar b { position: absolute; top: 0; height: 100%; width: 0; background: var(--bad); }
+.bar b.drain { transition: width 0.6s ease-in 0.35s; }
+.bar { transition: height 0.15s ease; }
+.bar.hurt { height: 7px; border-radius: 3.5px; }
 
 .card { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 44px; padding-bottom: 10vh; }
 
@@ -104,6 +109,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 @media (max-width: 380px) { .opts button { font-size: 0.92rem; } }
 @media (prefers-reduced-motion: reduce) {
   .bar i, .n .d, .n .x { transition: none; }
+  .bar b.drain { transition: opacity 0.4s ease 0.5s; opacity: 0; width: var(--lost) !important; }
   .n .ghost { animation: none; }
 }
 </style>
@@ -111,7 +117,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 <div class="page">
   <div class="top">
     <a href="../index.html" aria-label="Apparatus">←</a>
-    <div class="bar" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="100" id="barWrap"><i id="bar"></i></div>
+    <div class="bar" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="100" id="barWrap"><i id="bar"></i><b id="hit"></b></div>
     <button type="button" class="icon" id="help" aria-label="Key" aria-expanded="false" aria-controls="key">?</button>
     <div class="key" id="key" role="dialog" aria-label="Key" hidden></div>
   </div>
@@ -206,7 +212,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
   // log:  every answer, for the analytics page
   const KEY = 'apparatus.sci-form.v2';
   const WARM_AFTER = 8 * 3600e3;              // a "later session" is 8+ hours after the last finish
-  const newRun = () => ({ open: 0, probe: PROBE.slice(), need: { dec: 0, sci: 0, none: 0 }, missed: {}, answers: 0 });
+  const newRun = () => ({ open: 0, probe: PROBE.slice(), need: { dec: 0, sci: 0, none: 0 }, missed: {}, answers: 0, credit: 0 });
   let S;
   function load() {
     try { S = JSON.parse(localStorage.getItem(KEY)); } catch (e) { S = null; }
@@ -242,15 +248,29 @@ button { font: inherit; color: inherit; cursor: pointer; }
     if (cur.mode === 'open') R.open++;
     if (cur.mode === 'probe') R.probe = R.probe.filter(k => k !== cur.kind);
     if (cur.mode === 'warm') S.warm.shift();
+    // progress = right answers against what's left; a miss also costs one, so the bar always drops
+    R.credit = Math.max(0, (R.credit || 0) + (right ? 1 : -1));
     if (right) { if (R.need[idea] > 0) R.need[idea]--; }
     else { R.need[idea] = 2; R.missed[idea] = cur.kind; }
     lastIdea = idea;
     save();
   }
+  let shown = null;
   function progress() {
-    const done = S.run.answers, left = remaining();
-    const pct = done + left ? Math.round(100 * done / (done + left)) : 100;
-    $('bar').style.width = pct + '%'; $('barWrap').setAttribute('aria-valuenow', pct);
+    const done = S.run.credit || 0, left = remaining();
+    const pct = done + left ? 100 * done / (done + left) : 100;
+    const bar = $('bar'), hit = $('hit');
+    if (shown !== null && pct < shown - 0.5) {
+      bar.style.transition = 'none';                               // drop now…
+      hit.className = ''; hit.style.left = pct + '%'; hit.style.width = (shown - pct) + '%';
+      hit.style.setProperty('--lost', (shown - pct) + '%'); hit.style.opacity = '';
+      void hit.offsetWidth;
+      hit.className = 'drain'; hit.style.width = '0';               // …then the red piece drains
+      const wrap = $('barWrap'); wrap.classList.add('hurt'); clearTimeout(progress.t);
+      progress.t = setTimeout(() => wrap.classList.remove('hurt'), 900);
+    }
+    bar.style.width = pct + '%'; void bar.offsetWidth; bar.style.transition = '';
+    shown = pct; $('barWrap').setAttribute('aria-valuenow', Math.round(pct));
   }
 
   // ================= the page =================
@@ -286,6 +306,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
     if (state !== 'ask') return;
     const right = a === KINDS[cur.kind].a;
     grade(a, right, Math.round(performance.now() - shownAt));
+    progress();
     if (right) {
       state = 'wait';
       btns.forEach(b => { b.disabled = true; if (b.dataset.a === a) b.className = 'ok'; });
@@ -323,15 +344,15 @@ button { font: inherit; color: inherit; cursor: pointer; }
   $('help').addEventListener('click', e => { e.stopPropagation(); toggleKey($('key').hidden); });
   document.addEventListener('click', e => { if (!$('key').hidden && !$('key').contains(e.target)) toggleKey(false); });
 
-  $('again').addEventListener('click', () => { tick++; S.run = newRun(); S.warm = null; lastIdea = null; save(); next(); });
+  $('again').addEventListener('click', () => { tick++; S.run = newRun(); S.warm = null; lastIdea = null; shown = null; save(); next(); });
 
   function start() {
-    tick++; load(); lastIdea = null;
+    tick++; load(); lastIdea = null; shown = null;
     // a later session after finishing: a quick warm-up, one hard kind per idea
     const since = Math.max(S.doneAt || 0, S.warmAt || 0);
     if (S.done && !S.checkedAt && !S.warm && remaining() === 0 && Date.now() - since > WARM_AFTER) {
       S.warm = shuffle(Object.keys(IDEAS).map(i => any(IDEAS[i].hard)));
-      S.run.answers = 0; save();
+      S.run.answers = 0; S.run.credit = 0; save();
     }
     if (S.done && remaining() === 0) { progress(); $('card').hidden = true; $('fin').hidden = false; return; }
     next();
