@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Scientific or Not</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="../engine/exercise.css?v=1">
+<style>
+/* ---- a number, with parts that can light up ---- */
+.n { font-family: var(--f-mono); font-weight: 700; font-size: clamp(1.9rem, 9vw, 3.2rem); line-height: 1; white-space: nowrap;
+  display: inline-flex; align-items: baseline; position: relative; }
+.n sup { font-size: 0.55em; position: relative; top: -0.75em; vertical-align: baseline; line-height: 0; margin-left: 0.05em; }
+.n .L { display: inline-flex; gap: 0.08em; }
+.n .d { display: inline-block; border-radius: 0.14em; padding: 0.06em 0.04em; outline: 0.08em solid transparent; outline-offset: 0; }
+.n .x { margin-left: 0.35em; border-bottom: 0.08em solid transparent; padding-bottom: 0.06em; }
+.n .ghost { margin-left: 0.35em; color: var(--muted); display: none; position: relative; white-space: nowrap; animation: fadein 0.25s ease;
+  border: 0.06em dashed currentColor; border-radius: 0.18em; padding: 0.1em 0.2em; font-size: 0.8em; }
+.n .ghost::after { content: ""; position: absolute; left: -8%; right: -8%; top: 50%; height: 0.08em; background: var(--bad); transform: rotate(-12deg); }
+@keyframes fadein { from { opacity: 0; } }
+.key .n { font-size: 1.35rem; justify-self: end; }
+
+/* cues — each shows one reason (see the feedback matrix in specs/sci-form.md) */
+.n.why-sci .L .d { outline-color: var(--good); background: var(--good-bg); }     /* one digit, then × 10ⁿ */
+.n.why-sci .x { border-color: var(--good); }
+.n.why-fake .L .d { outline-color: var(--bad); background: var(--bad-bg); color: var(--bad); }   /* too many digits before the point */
+.n.why-fake .x { border-color: var(--good); }
+.n.why-dec .ghost { display: inline-block; opacity: 0.85; }                      /* no × 10ⁿ */
+.n.why-pow .x { border-color: var(--good); color: var(--good); }                  /* has × 10ⁿ, so not a decimal */
+@media (prefers-reduced-motion: reduce) { .n .ghost { animation: none; } }
+</style>
+<body>
+<script src="../engine/exercise.js?v=1"></script>
+<script src="sci-form.js?v=1"></script>
+<script>Apparatus.mount('sci-form');</script>
+</body>

@@ -1,0 +1,2 @@
+# GitHub Pages: keep design docs and specs in the repo but off the site
+exclude: [docs, specs, CLAUDE.md, README.md]
