@@ -2,6 +2,8 @@
 // Needs lib/places.js (parsing).
 (function () {
   const P = window.Places;
+  // a short text answer (a prefix symbol): case kept
+  const text = name => `<input class="f" data-n="${name}" data-text="1" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="${name}">`;
   const num = (name, wide) => `<input class="f${wide ? ' wide' : ''}" data-n="${name}" inputmode="decimal" autocomplete="off" aria-label="${name}">`;
   // 10^[ ] — the exponent, minus typed if negative ("-" or "−"); a text field, since phone number pads have no minus key
   const pow = name => `<span class="pow">10<span class="up"><input class="f exp" data-n="${name}" data-pow="1" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="${name}"></span></span>`;
@@ -20,7 +22,8 @@
     function check() {
       const vals = {}, bad = [];
       fields.forEach(f => {
-        if (f.dataset.pow) { const v = readers[f.dataset.n](); if (v == null) bad.push(f); else vals[f.dataset.n] = v; }
+        if (f.dataset.text) { const v = f.value.trim(); if (!v) bad.push(f); else vals[f.dataset.n] = v; }
+        else if (f.dataset.pow) { const v = readers[f.dataset.n](); if (v == null) bad.push(f); else vals[f.dataset.n] = v; }
         else { const v = P.parseDecimal(f.value); if (!v) bad.push(f); else vals[f.dataset.n] = Object.assign(v, { raw: f.value }); }
       });
       if (bad.length) { bad.forEach(f => { f.classList.remove('bad'); void f.offsetWidth; f.classList.add('bad'); }); bad[0].focus(); return; }
@@ -47,5 +50,5 @@
   // a value { sig, pos } as a power of ten, or null if it isn't one (1, 10, 0.01 …)
   const powerOf = v => v && v.sig === '1' ? v.pos - 1 : null;
 
-  window.Forms = { num, pow, wire, choices, powerOf };
+  window.Forms = { num, text, pow, wire, choices, powerOf };
 })();

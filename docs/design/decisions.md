@@ -2,6 +2,7 @@
 
 Newest first. One line per decision: date — what — why (and who asked). When a decision is reversed, add a new line; don't delete the old one. The other docs describe only the current state.
 
+- 2026-10-14 — Prefix Names: also the reverse, name → symbol (deca = da), written and case-sensitive. (user)
 - 2026-10-14 — Prefix Names (`prefix-names`): each prefix symbol → its name (multiple choice) and its power of ten (written); every prefix gated. (user)
 - 2026-10-14 — Build Up / Break Down: every prefix (d, c, da, h too, not just k, m, M, µ) counts toward passing; 10 questions. (user)
 - 2026-10-14 — Unit Facts: "Master every fact" rule (this exercise only, default on): each fact gated individually (multiple choice then written), next-session check asks every fact written. Engine: `ideas[i].check` picks the check's kind. (user: "ensure/gate student until they master them")

@@ -30,3 +30,5 @@
 .fq .ans { font-family: var(--f-mono); font-weight: 700; font-size: clamp(1.1rem, 4.6vw, 1.4rem); color: var(--muted); min-height: 1.4em; }
 @media (prefers-reduced-motion: reduce) { .fq input.f.bad { animation: none; } }
 .fq .q .sym { font-size: 1.3em; color: var(--accent); }
+.fq .q .word { color: var(--accent); }
+.fq input.f[data-text] { width: 3.4ch; }
