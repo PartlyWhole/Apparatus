@@ -131,16 +131,18 @@
     function pickFree(i, s, slot) {
       const st = steps[i], target = pr.target.num, seen = new Set([pr.num].concat(steps.slice(0, i).map(x => x.to)));
       const prefix = [pr.num].concat(steps.slice(0, i).map(x => x.to));
-      // only units that can still reach the target by a route other than the one shown
+      // offer every unused unit of this kind; only those that reach the target by a new route are right
       const ok = neighbors(st.from).filter(v => !seen.has(v) && newPath(prefix.concat(v), target, free.avoid));
-      const decoys = Object.keys(U.KIND).filter(u => U.KIND[u] === U.KIND[st.from] && !seen.has(u) && !ok.includes(u) && !U.fact(st.from, u));
-      chips.innerHTML = shuffle(ok.concat(shuffle(decoys).slice(0, Math.max(0, 4 - ok.length)))).map(u => `<button type="button" class="chip">${u}</button>`).join('');
+      const all = Object.keys(U.KIND).filter(u => U.KIND[u] === U.KIND[st.from] && !seen.has(u));
+      chips.innerHTML = shuffle(all).slice(0, 6).concat(ok.filter(v => !all.slice(0, 6).includes(v))).map(u => `<button type="button" class="chip">${u}</button>`).join('');
       live(slot);
       chips.querySelectorAll('.chip').forEach(c => c.onclick = () => {
         const v = c.textContent;
-        if (!ok.includes(v)) return miss('unit', `${v} doesn’t connect to ${st.from} with a fact you know.`, c);
-        const path = [pr.num].concat(steps.slice(0, i).map(x => x.to), v);
-        if (v === target && free.avoid && path.join() === free.avoid.join()) { say('That’s the way above. Find another.', false); c.remove(); return; }
+        if (!ok.includes(v)) {
+          if (!U.fact(st.from, v)) return miss('unit', `${v} doesn’t connect to ${st.from} with a fact you know.`, c);
+          if (newPath(prefix.concat(v), target, null)) { say('That’s the way above. Find another.', false); c.remove(); return; }   // only leads back to the route shown
+          return miss('unit', `From ${v} there’s no way on to ${target} without going back.`, c);
+        }
         st.to = v; st.frac = fraction(st, st.side);
         chips.innerHTML = ''; fillUnit(i, s, v); numbers(i);
       });
