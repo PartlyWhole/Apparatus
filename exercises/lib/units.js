@@ -10,7 +10,7 @@
   const KIND = { s: 't', min: 't', hr: 't', day: 't', yr: 't', in: 'l', ft: 'l', yd: 'l', mi: 'l', mm: 'l', cm: 'l', m: 'l', km: 'l', 'cm³': 'v', mL: 'v', L: 'v', 'm³': 'v', gal: 'v' };
   // facts: [a, small, b, big] means a small = b big. TABLE is to know; OPTIONAL is the cheat sheet; PREFIX facts were learned before.
   const TABLE = [
-    [5280, 'ft', 1, 'mi'], [3, 'ft', 1, 'yd'], [2.54, 'cm', 1, 'in'],
+    [5280, 'ft', 1, 'mi'], [3, 'ft', 1, 'yd'], [12, 'in', 1, 'ft'], [2.54, 'cm', 1, 'in'],
     [60, 's', 1, 'min'], [60, 'min', 1, 'hr'], [24, 'hr', 1, 'day'], [365, 'day', 1, 'yr'], [3600, 's', 1, 'hr'],
     [1000, 'cm³', 1, 'L'], [1000000, 'cm³', 1, 'm³'], [1000, 'L', 1, 'm³'], [1, 'mL', 1, 'cm³']
   ];
@@ -54,9 +54,9 @@
   // two-step chains: the path of units; 'up' ends in a smaller unit (bigger number), 'down' in a bigger one
   const PATHS = {
     'up-time':    [['day', 'hr', 'min'], ['hr', 'min', 's'], ['yr', 'day', 'hr'], ['day', 'hr', 's']],
-    'up-other':   [['km', 'm', 'cm'], ['m³', 'L', 'mL'], ['mi', 'ft', 'yd']],
+    'up-other':   [['km', 'm', 'cm'], ['m³', 'L', 'mL'], ['mi', 'ft', 'yd'], ['yd', 'ft', 'in'], ['ft', 'in', 'cm']],
     'down-time':  [['s', 'min', 'hr'], ['min', 'hr', 'day'], ['hr', 'day', 'yr']],
-    'down-other': [['cm', 'm', 'km'], ['mL', 'L', 'm³'], ['yd', 'ft', 'mi']]
+    'down-other': [['cm', 'm', 'km'], ['mL', 'L', 'm³'], ['yd', 'ft', 'mi'], ['in', 'ft', 'yd']]
   };
   // a chain problem from a path; up: start with 1–5; down: pick the answer (1–5) and work back to the start amount
   function chainProblem(kind, path) {

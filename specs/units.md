@@ -3,7 +3,7 @@
 Status: live · Skill map: after Prefixes · Code: `exercises/lib/units.js` (facts), `exercises/lib/chain.js` (+ `chain.css`), `exercises/unit-*.js`
 
 ## The table (to know)
-5,280 ft = 1 mi · 3 ft = 1 yd · 2.54 cm = 1 in · 60 s = 1 min · 60 min = 1 hr · 24 hr = 1 day · 365 day = 1 yr · 3,600 s = 1 hr · 1,000 cm³ = 1 L · 1,000,000 cm³ = 1 m³ · 1,000 L = 1 m³ · 1 mL = 1 cm³
+5,280 ft = 1 mi · 3 ft = 1 yd · 12 in = 1 ft · 2.54 cm = 1 in · 60 s = 1 min · 60 min = 1 hr · 24 hr = 1 day · 365 day = 1 yr · 3,600 s = 1 hr · 1,000 cm³ = 1 L · 1,000,000 cm³ = 1 m³ · 1,000 L = 1 m³ · 1 mL = 1 cm³
 **Cheat sheet** (not to memorize; a button bottom-left): 0.3048 m = 1 ft · 1.609 km = 1 mi · 1,609 m = 1 mi · 3.785 L = 1 gal.
 The whole table is the ? key in all four exercises, and the first screen of `unit-facts` (its tutorial).
 
@@ -23,7 +23,7 @@ Step-by-step, one slot active at a time (it pulses), unit chips below to tap:
 3. **Cancel:** matching units on top and bottom strike through.
 4. **Answer:** multiply what's left: "= [ ] min".
 Scaffolding fades: in the opening the units are given (numbers only); then the captions guide each step; the next-session check and later questions have no captions. A wrong step shakes, turns red, and gets one sentence ("day is on top in 2 day, so put it on the bottom to cancel."); the student fixes it and goes on. Any first-try mistake makes the question a miss (penalty) — it's the step-level mistakes the tutor sees in analytics.
-Problems: day→min, hr→s, yr→hr, day→s, mi→yd, km→cm, m³→mL, L→… (start amounts 1–5).
+Problems: day→min, hr→s, yr→hr, day→s, mi→yd, yd→in, ft→cm (via in), km→cm, m³→mL; and back: s→hr, min→day, hr→yr, cm→km, mL→m³, yd→mi, in→yd (start amounts 1–5, or worked back from a 1–5 answer).
 
 ## 3. Rates (`unit-rates`): two units at once
 "60 mi/hr = ? m/s": the given is itself a fraction; one factor converts the top unit, one the bottom (hr is on the bottom, so the factor has hr on top: 1 hr / 3,600 s). Same steps and guidance. Problems: mi/hr→m/s (cheat-sheet 1,609 m = 1 mi), km/hr→m/s, ft/s→mi/hr, m/s→km/hr, L/min→mL/s, cm³/s→L/min. Answers to about 3 digits (within 1%).
@@ -42,4 +42,5 @@ Facts (written), two-step chains and rates, no captions. 9 questions.
 
 ## Interpretations to confirm
 - Unit names: s, min, hr, day, yr; ft, yd, mi, in, cm; cm³, mL, L, m³, gal.
+- 12 in = 1 ft added to the table (user, 2026-10-14).
 - Chains follow one fixed path (day → hr → min); a different valid path isn't accepted yet.

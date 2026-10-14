@@ -2,8 +2,8 @@
 // Spec: specs/units.md (1). Uses lib/units.js, lib/forms.js, lib/places.js.
 (function () {
   const U = Units, F = Forms, { shuffle } = Apparatus.util;
-  const GROUP = { length: [0, 1, 2], time: [3, 4, 5, 6, 7], volume: [8, 9, 10, 11] };    // indexes into Units.TABLE
-  const POOL = [3, 10, 12, 24, 60, 100, 365, 1000, 2.54, 3600, 5280, 1000000];
+  const GROUP = { length: [0, 1, 2, 3], time: [4, 5, 6, 7, 8], volume: [9, 10, 11, 12] };    // indexes into Units.TABLE
+  const POOL = [3, 10, 12, 24, 36, 60, 100, 365, 1000, 2.54, 3600, 5280, 1000000];
   let recent = [];
   // an item: { f: index into TABLE, how: 'mc' | 'ty', opts?, ans? } — "1 big = ? small"
   function make(group, how) {
