@@ -19,7 +19,7 @@ The chain, written the way it's written on paper:
         [ ? day ]   [ ? hr  ]
 ```
 Step-by-step, one slot active at a time (it pulses), unit chips below to tap:
-1. **Units:** the unit to get rid of goes where it cancels (day on the bottom, since 2 day has it on top); then the unit it turns into on top. Caption: "Put day where it cancels." / "What does day turn into?"
+1. **Units:** the slot where the cancelling unit goes is active (the bottom, or the top when the unit is underneath, as in rates), and the student picks **which unit** goes there from chips (the one that cancels, among others from the problem); then the unit it turns into. Captions: "What goes on the bottom?" / "What does day turn into?"
 2. **Numbers:** fill both numbers so top and bottom are equal (any equal pair: 24 hr / 1 day). Caption: "Make top and bottom equal."
 3. **Cancel:** matching units on top and bottom strike through.
 4. **Result (no hand calculation):** everything combines into one fraction — every number on its side, the units left over in their places (2 × 24 × 60 min / 1 × 1) — and its value is shown (= 2,880 min). Setting up the chain is the skill; then Next.

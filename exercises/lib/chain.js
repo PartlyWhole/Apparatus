@@ -91,18 +91,20 @@
       }
       const st = steps[i], f = st.frac, side = free ? 'b' : f.bu === st.from ? 'b' : 't';
       cur = { key: i + 'side' };
-      const slots = $$(`.cu[data-i="${i}"]`);
       if (level === 0) { fillUnit(i, 't', f.tu); fillUnit(i, 'b', f.bu); return numbers(i); }
-      guide(`Where does ${st.from} go so it cancels?`);
-      chips.innerHTML = `<span class="token">${st.from}</span>`;
-      slots.forEach(s => { s.disabled = false; s.textContent = '?'; });
-      live(slots);
-      slots.forEach(s => s.onclick = () => {
-        if (s.dataset.s !== side) {
-          const where = st.side === 'num' ? 'on top' : 'on the bottom';
-          return miss('side', `${st.from} is ${where} already, so it goes ${side === 'b' ? 'on the bottom' : 'on top'} to cancel.`, s);
+      // the slot where the cancelling unit goes is active; the student picks WHICH unit goes there (not just top or bottom)
+      const slot = $(`.cu[data-i="${i}"][data-s="${side}"]`), where = side === 'b' ? 'bottom' : 'top';
+      guide(`What goes on the ${where}?`);
+      const near = [pr.target.num, pr.target.den, pr.num, pr.den].concat(steps.slice(0, i).map(x => x.to));
+      const others = [...new Set(near.concat(Object.keys(U.KIND).filter(u => U.KIND[u] === U.KIND[st.from])))].filter(u => u && u !== st.from);
+      chips.innerHTML = shuffle([st.from].concat(shuffle(others).slice(0, 3))).map(u => `<button type="button" class="chip">${u}</button>`).join('');
+      live(slot);
+      chips.querySelectorAll('.chip').forEach(c => c.onclick = () => {
+        if (c.textContent !== st.from) {
+          const has = st.side === 'num' ? 'on top' : 'on the bottom';
+          return miss('side', `${st.from} is ${has} now, so the ${where} needs ${st.from} to cancel it.`, c);
         }
-        slots.forEach(x => { x.onclick = null; x.disabled = true; x.classList.remove('wrong'); });
+        chips.innerHTML = '';
         fillUnit(i, side, st.from); pickTo(i, side === 'b' ? 't' : 'b');
       });
     }
