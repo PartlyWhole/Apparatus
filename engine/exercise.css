@@ -33,6 +33,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .top a, .icon { min-width: 44px; min-height: 44px; display: grid; place-items: center; color: var(--muted); text-decoration: none; font-size: 1.1rem;
   border: 0; background: transparent; padding: 0; position: relative; }
 .top a:hover, .icon:hover { color: var(--accent); }
+.icon.armed { color: var(--bad); font-size: 0.85rem; padding: 0 4px; }
 
 /* ---- progress; a miss drops it at once and the lost piece lingers red, then drains (like losing HP) ---- */
 .bar { flex: 1; height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; margin: 0 6px; position: relative; transition: height 0.15s ease; }

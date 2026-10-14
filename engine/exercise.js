@@ -75,6 +75,7 @@
     <a href="${root}index.html" aria-label="Apparatus">←</a>
     <div class="bar" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="100" id="barWrap"><i id="bar"></i><b id="hit"></b></div>
     <button type="button" class="icon" id="help" aria-label="Key" aria-expanded="false" aria-controls="key" hidden>?</button>
+    <button type="button" class="icon" id="reset" aria-label="Start this exercise again">↺</button>
     <div class="key" id="key" role="dialog" aria-label="Key" hidden></div>
   </div>
   <div class="card" id="card">
@@ -233,7 +234,22 @@
     $('help').addEventListener('click', e => { e.stopPropagation(); toggleKey($('key').hidden); });
     document.addEventListener('click', e => { if (!$('key').hidden && !$('key').contains(e.target)) toggleKey(false); });
 
-    $('again').addEventListener('click', () => { tick++; SET = A.loadSettings(def); S.run = newRun(def, SET); S.warm = null; lastIdea = null; shown = null; save(); next(); });
+    // a fresh pass; the answer log (analytics) and "tutorial seen" are kept
+    function restart() { tick++; SET = A.loadSettings(def); S.run = newRun(def, SET); S.warm = null; lastIdea = null; shown = null; save(); next(); }
+    $('again').addEventListener('click', restart);
+    // ↺ asks once ("Reset?") before it acts
+    let armT;
+    $('reset').addEventListener('click', () => {
+      const b = $('reset');
+      if (!b.classList.contains('armed')) {
+        b.classList.add('armed'); b.textContent = 'Reset?';
+        armT = setTimeout(() => { b.classList.remove('armed'); b.textContent = '↺'; }, 3000);
+        return;
+      }
+      clearTimeout(armT); b.classList.remove('armed'); b.textContent = '↺';
+      if (state === 'tut') { tutTick++; S.tut = S.tut || 'skipped'; $('tut').hidden = true; $('why').parentNode.hidden = false; $('opts').hidden = TAP; }
+      restart();
+    });
 
     // ---- tutorial: the exercise runs its own interactive steps in the question area; the engine gives
     //      a caption line, progress dots, Skip, and remembers it was seen (replay from the ? key) ----

@@ -78,6 +78,7 @@ The engine shows the caption, dots and **Skip**, runs the tutorial on the first 
 - **Choosing:** opening → tricky probes (interleaved by idea) → fixing ideas after a miss (easy kind, then the missed kind; never the same idea twice in a row when something else is pending) → next-session check (one tricky kind per idea).
 - **Grading:** a miss sets that idea's need to `fix`; right answers count it down. A slow right answer (speed rule) re-queues the item and changes nothing else.
 - **Progress:** `credit / (credit + remaining)`; a right answer +1 credit, a miss −1, so a miss always lowers the bar (the "hit").
+- **Reset (↺ in the top bar, and Again):** a fresh run; the log and `S.tut` are kept.
 - **Persistence:** `localStorage` `apparatus.<id>.v<version>` (state and log) and `apparatus.<id>.settings` (tutor rules, kept by Start over).
 - **Debug:** `?debug` exposes `window.ex` = `{ S(), cur(), def, start(), SET(), respond(answer), state() }` for simulations (`qa-checklist.md`).
 

@@ -24,10 +24,10 @@ What the student sees and does. These rules come from the user; when they change
 
 ## Chrome
 
-- **Top bar:** ← (back to the library), the progress bar, and **?** if the exercise has a key.
+- **Top bar:** ← (back to the library), the progress bar, **?** (if the exercise has a key or tutorial), and **↺**.
 - **? key:** a small popover with one example of each answer, its deciding feature lit up. Always available, never pushed. Opening it during a question is noted in the log.
 - **Analytics:** a faint dot in the bottom-right corner opens `analytics.html#<id>`. Not labeled; meant for the tutor.
-- No reset on the student page (it's on the analytics page).
+- **↺ reset:** the first tap turns it into "Reset?"; a second tap within 3 s starts a fresh pass. It keeps the answer log and "tutorial seen" (the analytics page's Start over wipes everything).
 
 ## Accessibility (non-negotiable)
 
