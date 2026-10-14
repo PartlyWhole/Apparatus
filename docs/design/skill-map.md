@@ -4,6 +4,8 @@ The exercises in order, what each needs first, and which later exercises review 
 
 | # | Exercise | Status | Needs first | Reviewed implicitly by |
 |---|---|---|---|---|
+| 0a | **Vocabulary** (`vocab`): the chapter's 13 terms, two ways each | live | — | — |
+| 0b | **What It Measures** (`measure`): unit ↔ quantity | live | — | Unit Facts, prefixes |
 | 1 | **Scientific or Not** (`sci-form`): decimal vs. scientific vs. neither | live | — | anything that writes or reads scientific notation |
 | 2 | **Moving the Point** (`point-move`): × / ÷ 10ⁿ and × 10⁻ⁿ move the point | live | place value | factoring out powers of ten; decimal ↔ scientific |
 | 3 | **Factor Out** (`factor-out`): decimal → scientific by moving the point; the power counts the hops | live | 1, 2 | Conversions |

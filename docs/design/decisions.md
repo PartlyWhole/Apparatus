@@ -2,6 +2,7 @@
 
 Newest first. One line per decision: date — what — why (and who asked). When a decision is reversed, add a new line; don't delete the old one. The other docs describe only the current state.
 
+- 2026-10-14 — Vocabulary (13 terms; a clue and a creative question each, gated) and What It Measures (unit ↔ quantity with mass/weight and cm/cm³ traps), in a new Vocabulary section. (user)
 - 2026-10-14 — Prefix Names: micro's symbol is asked as multiple choice (µ isn't on most keyboards). (user)
 - 2026-10-14 — One-Step Conversions (`unit-one`) added between Unit Facts and Two-Step: the first cancelling, one fraction. (user)
 - 2026-10-14 — Two-Step and Rates chains: every unused unit of the kind offered too; a valid alternative route is redirected without penalty ("That works too, but here go through min"). (user)

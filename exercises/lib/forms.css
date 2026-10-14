@@ -32,3 +32,11 @@
 .fq .q .sym { font-size: 1.3em; color: var(--accent); }
 .fq .q .word { color: var(--accent); }
 .fq input.f[data-text] { width: 3.4ch; }
+
+/* vocabulary: a question in words (and pictures), choices in words, one column */
+.fq.vocab .vq { font-size: clamp(1.05rem, 4.4vw, 1.3rem); text-align: center; max-width: 30rem; line-height: 1.4; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.fq.vocab .vpic { width: 110px; height: auto; color: var(--ink); }
+.fq.vocab .vfrac { display: inline-flex; flex-direction: column; align-items: center; gap: 4px; font-family: var(--f-mono); font-weight: 700; font-size: 1.4rem; }
+.fq.vocab .vbar { align-self: stretch; height: 3px; border-radius: 2px; background: var(--ink); }
+.mc.words { grid-template-columns: 1fr; width: min(92vw, 26rem); }
+.mc.words button { font-family: var(--f-body); font-size: 1.05rem; min-height: 52px; }
