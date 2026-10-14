@@ -30,9 +30,11 @@
     return want !== 0 && got === -want ? 'flip' : 'count';
   }
   // the nicest correct pair: 1 on the side of the bigger unit
+  // the right fraction: keeps the given 1 where it is (1 m on the bottom → 0.01 hm on top); with both blank, 1 goes with the bigger unit
   function answerHTML(it) {
     const k = topWhenBot1(it);
-    const [tn, bn] = k >= 0 ? [X.powerVal(k), '1'] : ['1', X.powerVal(-k)];
+    const [tn, bn] = it.given === 'bot' ? [X.powerVal(k), '1'] : it.given === 'top' ? ['1', X.powerVal(-k)]
+      : k >= 0 ? [X.powerVal(k), '1'] : ['1', X.powerVal(-k)];
     return `<div class="frac"><span class="row1"><span class="given">${tn}</span> ${X.unit(it.top, it.b)}</span><span class="fbar"></span><span class="row1"><span class="given">${bn}</span> ${X.unit(it.bot, it.b)}</span></div>`;
   }
 
@@ -62,9 +64,12 @@
     feedback(it, want, v, kind, err) {
       const A = X.unit(it.top, it.b), B = X.unit(it.bot, it.b), k = topWhenBot1(it);
       const big = k < 0 ? A : B, small = k < 0 ? B : A, n = X.powerVal(Math.abs(k));
-      if (err === 'flip') return ['ans', `1 ${big} is bigger than 1 ${small}, so it takes ${n} ${small} to equal 1 ${big}.`];
-      if (err === 'other') return ['ans', `Top and bottom must be equal: 1 ${big} = ${n} ${small}.`];
-      return ['ans', `1 ${big} = ${n} ${small}: that’s ${Math.abs(k)} place${Math.abs(k) === 1 ? '' : 's'}.`];
+      // with a 1 given on the smaller unit, the answer is a decimal: say that part too (1 hm = 100 m, so 1 m = 0.01 hm)
+      const givenSmall = (it.given === 'bot' && B === small) || (it.given === 'top' && A === small);
+      const so = givenSmall ? `, so 1 ${small} = ${X.powerVal(-Math.abs(k))} ${big}` : '';
+      if (err === 'flip') return ['ans', `1 ${big} is bigger than 1 ${small}: 1 ${big} = ${n} ${small}${so}.`];
+      if (err === 'other') return ['ans', `Top and bottom must be equal: 1 ${big} = ${n} ${small}${so}.`];
+      return ['ans', `1 ${big} = ${n} ${small}${so}.`];
     },
     revealMs: 1400,
     reveal(el, it, v, o) {
