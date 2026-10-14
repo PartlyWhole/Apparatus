@@ -1,0 +1,24 @@
+/* Prefix — the prefix line (see prefix.js). */
+.pline { position: relative; display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); width: min(100%, 36rem); padding-bottom: 2.2rem; }
+.pline .pc { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 0; border: 0; background: transparent; color: var(--muted); font: inherit; border-radius: 10px; }
+.pline .pc b { font-family: var(--f-mono); font-weight: 700; font-size: clamp(0.78rem, 3.4vw, 1.05rem); color: var(--ink); white-space: nowrap; }
+.pline .pc i { font-style: normal; font-size: clamp(0.52rem, 2.2vw, 0.7rem); color: var(--muted); white-space: nowrap; }
+.pline .pc.gap b { color: var(--line); }
+.pline .pc.base b { text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--line); }
+.pline .pc.hi { background: var(--good-bg); box-shadow: 0 0 0 2px var(--good) inset; }
+.pline .pc.hi b { color: var(--good); }
+.pline button.pc { cursor: pointer; }
+.pline button.pc:hover:not(:disabled) { box-shadow: 0 0 0 2px var(--accent) inset; }
+.pline button.pc:disabled { cursor: default; }
+/* hops under the line: from the middle of one spot to the middle of the next */
+.pline .parc { position: absolute; top: calc(100% - 2.1rem); left: calc((var(--c) + 0.5) * 100% / var(--n)); width: calc(100% / var(--n)); height: 0.7rem;
+  border: 2px solid var(--good); border-top: 0; border-radius: 0 0 50% 50% / 0 0 100% 100%; animation: fadein 0.2s ease; }
+.pline .parc::after { content: attr(data-n); position: absolute; left: 50%; top: 100%; margin-top: 3px; transform: translateX(-50%); font-size: clamp(0.55rem, 2.2vw, 0.7rem); color: var(--good); white-space: nowrap; }
+.key .pkey2 .pline { width: min(80vw, 30rem); }
+@media (prefers-reduced-motion: reduce) { .pline .parc { animation: none; } }
+
+/* the conversion fraction (prefix-fraction) */
+.frac { display: inline-flex; flex-direction: column; align-items: center; gap: 6px; font-family: var(--f-mono); font-weight: 700; }
+.frac .fbar { align-self: stretch; height: 3px; border-radius: 2px; background: var(--ink); }
+.frac .row1 { display: flex; align-items: center; gap: 8px; }
+.frac .given { min-width: 3ch; text-align: right; }

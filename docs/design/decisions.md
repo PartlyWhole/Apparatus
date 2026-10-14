@@ -2,6 +2,7 @@
 
 Newest first. One line per decision: date — what — why (and who asked). When a decision is reversed, add a new line; don't delete the old one. The other docs describe only the current state.
 
+- 2026-10-14 — Prefix set (Build Up, Break Down, Between Prefixes, Conversion Fractions): the prefix line by power of ten with empty spots for 10⁵, 10⁴, 10⁻⁴, 10⁻⁵ so the k–M and m–µ jumps show; hops along it after a miss. "? cm / ? ml" read as two non-base prefixes of the same base. (user request; interpretation flagged)
 - 2026-10-14 — Miss penalty default raised to 4 (options 1–5): students should be getting most right. (user)
 - 2026-10-14 — Exponent sign is a + / − toggle beside a digits-only field (typing "-" flips the toggle); it never edits the number. Shared helper `Places.signToggle`. (user correction)
 - 2026-10-14 — Factor Out: after the opening the power is hidden while moving; once the point is right the student writes the power (× 10^[ ]), so they must count, not just click the right spot. (user)

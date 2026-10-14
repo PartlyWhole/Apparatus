@@ -1,0 +1,35 @@
+/* Forms — multiple choice and written answers shared by the prefix and unit exercises. */
+.fq { display: flex; flex-direction: column; align-items: center; gap: 16px; width: 100%; }
+.fq .q { font-family: var(--f-mono); font-weight: 700; font-size: clamp(1.4rem, 6vw, 2rem); color: var(--ink); text-align: center; display: flex; align-items: center; justify-content: center; gap: 0.35em; flex-wrap: wrap; }
+.fq sup { font-size: 0.6em; position: relative; top: -0.55em; vertical-align: baseline; line-height: 0; }
+
+/* four choices, 2 × 2 */
+.mc { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; width: min(100%, 30rem); }
+.mc button { min-height: 60px; padding: 8px; border-radius: 14px; border: 2px solid var(--line); background: var(--surface); font-family: var(--f-mono); font-weight: 700; font-size: clamp(1rem, 4.4vw, 1.25rem); color: var(--ink); }
+.mc button:hover:not(:disabled) { border-color: var(--accent); }
+.mc button:disabled { cursor: default; opacity: 0.4; }
+.mc button.ok, .mc button.want { opacity: 1; border-color: var(--good); color: var(--good); }
+.mc button.ok { background: var(--good-bg); }
+.mc button.ok::before { content: "✓ "; }
+.mc button.no { opacity: 1; border-color: var(--bad); color: var(--bad); }
+
+/* written answers: fields sit inside the question line */
+.fq input.f { width: 7ch; padding: 6px 8px; border-radius: 12px; border: 2px solid var(--line); background: var(--surface); color: var(--ink);
+  font: inherit; font-family: var(--f-mono); font-weight: 700; text-align: center; }
+.fq input.f.wide { width: 10ch; }
+.fq input.f.exp { width: 3ch; font-size: 0.7em; padding: 4px; }
+.fq input.f:focus { outline: none; border-color: var(--accent); }
+.fq input.f.ok { border-color: var(--good); color: var(--good); }
+.fq input.f.no { border-color: var(--bad); color: var(--bad); }
+.fq input.f.bad { border-color: var(--bad); animation: fshake 0.3s ease; }
+@keyframes fshake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+.fq .pow { display: inline-flex; align-items: flex-start; gap: 0.1em; }
+.fq .pow .up { display: inline-flex; align-items: center; gap: 3px; position: relative; top: -0.55em; }
+.fq .sg { min-width: 1.6em; height: 1.6em; border-radius: 8px; border: 2px solid var(--line); background: var(--surface); color: var(--ink);
+  font-family: var(--f-mono); font-weight: 700; font-size: 0.7em; line-height: 1; padding: 0; }
+.fq .sg.neg { border-color: var(--accent); color: var(--accent); }
+.fq .sg:disabled { opacity: 0.6; }
+.fq .go { min-height: 46px; padding: 0 28px; border-radius: 999px; border: 0; background: var(--accent); color: var(--on-accent); font-weight: 700; font-family: var(--f-body); }
+.fq .go:disabled { display: none; }
+.fq .ans { font-family: var(--f-mono); font-weight: 700; font-size: clamp(1.1rem, 4.6vw, 1.4rem); color: var(--muted); min-height: 1.4em; }
+@media (prefers-reduced-motion: reduce) { .fq input.f.bad { animation: none; } }

@@ -9,6 +9,10 @@ The exercises in order, what each needs first, and which later exercises review 
 | 3 | **Factor Out** (`factor-out`): decimal → scientific by moving the point; the power counts the hops | live | 1, 2 | Conversions |
 | 4 | **Factor In** (`factor-in`): scientific → decimal; the power goes back into the number | live | 2, 3 | Conversions |
 | 5 | **Conversions** (`conversions`): both directions, multiple choice then written | live | 3, 4 | |
+| 6 | **Build Up** (`prefix-up`): 1 L = ? mL on the prefix line | live | 2 | 7–9 |
+| 7 | **Break Down** (`prefix-down`): 1 m = ? km | live | 6 | 8, 9 |
+| 8 | **Between Prefixes** (`prefix-between`): 1 cm = ? µm, as 10ⁿ and as a number | live | 6, 7 | 9 |
+| 9 | **Conversion Fractions** (`prefix-fraction`): ? m / ? cm, no line | live | 6–8 | unit chains |
 
 ## Candidates (from the older progressions and the user's earlier requests, not yet designed for the new set)
 
