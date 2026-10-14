@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Scientific or Not</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500;600;700&display=swap">
+<style>
+:root {
+  --bg: #EEF2F7; --surface: #FFFFFF; --ink: #13203A; --muted: #5F6F8A; --line: #D3DBE7;
+  --accent: #2648C9; --on-accent: #FFFFFF; --good: #17804F; --bad: #C2413A;
+  --good-bg: rgba(23, 128, 79, 0.10); --bad-bg: rgba(194, 65, 58, 0.10);
+  --f-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B1120; --surface: #131C2E; --ink: #E4EAF4; --muted: #95A4BF; --line: #26344F;
+    --accent: #8AA8FF; --on-accent: #0B1120; --good: #4CC38A; --bad: #FF8F85;
+    --good-bg: rgba(76, 195, 138, 0.14); --bad-bg: rgba(255, 143, 133, 0.14); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B1120; --surface: #131C2E; --ink: #E4EAF4; --muted: #95A4BF; --line: #26344F;
+  --accent: #8AA8FF; --on-accent: #0B1120; --good: #4CC38A; --bad: #FF8F85;
+  --good-bg: rgba(76, 195, 138, 0.14); --bad-bg: rgba(255, 143, 133, 0.14); color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--f-body); }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.page { min-height: 100%; max-width: 40rem; margin: 0 auto; padding: 24px 16px 40px; display: flex; flex-direction: column; gap: 28px; }
+.top { display: flex; align-items: center; gap: 6px; position: relative; }
+.top a, .icon { min-width: 44px; min-height: 44px; display: grid; place-items: center; color: var(--muted); text-decoration: none; font-size: 1.1rem;
+  border: 0; background: transparent; padding: 0; position: relative; }
+.top a:hover, .icon:hover { color: var(--accent); }
+.bar { flex: 1; height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; margin: 0 6px; }
+.bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width 0.5s ease; }
+.icon.armed { color: var(--bad); font-size: 0.85rem; }
+/* the beacon: a dot on ? after repeated misses */
+.icon.beacon::after { content: ""; position: absolute; top: 9px; right: 9px; width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
+  animation: pulse 1.6s ease-in-out infinite; }
+@keyframes pulse { 50% { transform: scale(1.6); opacity: 0.4; } }
+
+.card { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 44px; padding-bottom: 10vh; }
+
+/* ---- a number, with parts that can light up ---- */
+.n { font-family: var(--f-mono); font-weight: 700; font-size: clamp(1.9rem, 9vw, 3.2rem); line-height: 1; white-space: nowrap;
+  display: inline-flex; align-items: baseline; position: relative; }
+.n sup { font-size: 0.55em; position: relative; top: -0.75em; vertical-align: baseline; line-height: 0; margin-left: 0.05em; }
+.n .L { display: inline-flex; gap: 0.08em; }
+.n .d { display: inline-block; border-radius: 0.14em; padding: 0.06em 0.04em; outline: 0.08em solid transparent; outline-offset: 0;
+  transition: outline-color 0.2s, background-color 0.2s; }
+.n .x { margin-left: 0.35em; border-bottom: 0.08em solid transparent; padding-bottom: 0.06em; transition: border-color 0.2s; }
+.n .ghost { margin-left: 0.35em; color: var(--muted); display: none; position: relative; white-space: nowrap; animation: fadein 0.25s ease;
+  border: 0.06em dashed currentColor; border-radius: 0.18em; padding: 0.1em 0.2em; font-size: 0.8em; }
+.n .ghost::after { content: ""; position: absolute; left: -8%; right: -8%; top: 50%; height: 0.08em; background: var(--bad); transform: rotate(-12deg); }
+@keyframes fadein { from { opacity: 0; } }
+
+/* what makes it scientific: one digit before the point, and × 10ⁿ */
+.n.why-sci .L .d { outline-color: var(--good); background: var(--good-bg); }
+.n.why-sci .x { border-color: var(--good); }
+/* what makes it neither: × 10ⁿ, but more than one digit before the point */
+.n.why-fake .L .d { outline-color: var(--bad); background: var(--bad-bg); color: var(--bad); }
+.n.why-fake .x { border-color: var(--good); }
+/* what makes it a decimal: no × 10ⁿ */
+.n.why-dec .ghost { display: inline-block; opacity: 0.85; }
+
+/* ---- answers ---- */
+.opts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; width: min(100%, 32rem); }
+.opts button { min-height: 60px; padding: 8px 6px; border-radius: 14px; border: 2px solid var(--line); background: var(--surface);
+  font-weight: 700; font-size: 1.02rem; transition: border-color 0.15s, color 0.15s, opacity 0.15s; }
+.opts button:hover:not(:disabled) { border-color: var(--accent); }
+.opts button:disabled { cursor: default; opacity: 0.4; }
+.opts button.ok { opacity: 1; border-color: var(--good); color: var(--good); background: var(--good-bg); }
+.opts button.no { opacity: 1; border-color: var(--bad); color: var(--bad); }
+.opts button.want { opacity: 1; border-color: var(--good); color: var(--good); animation: want 1.2s ease-in-out infinite; }
+@keyframes want { 50% { box-shadow: 0 0 0 6px var(--good-bg); } }
+
+/* ---- the key (re-findable reference) ---- */
+.key { position: absolute; top: 52px; right: 0; z-index: 10; margin: 0; padding: 18px 20px; border-radius: 16px; background: var(--surface);
+  box-shadow: 0 0 0 1px var(--line), 0 12px 32px rgba(10, 20, 40, 0.14); display: grid; grid-template-columns: auto auto; gap: 16px 22px; align-items: center; }
+.key .n { font-size: 1.35rem; justify-self: end; }
+.key b { font-size: 0.95rem; color: var(--muted); }
+
+/* ---- done ---- */
+.done { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+.done .mark { width: 88px; height: 88px; border-radius: 50%; display: grid; place-items: center; font-size: 2.6rem; color: var(--good); background: var(--good-bg); }
+.done nav { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.done a, .done button { min-height: 46px; padding: 0 24px; border-radius: 999px; display: inline-grid; place-items: center; font-weight: 700; text-decoration: none; }
+.done .go { border: 0; background: var(--accent); color: var(--on-accent); }
+.done .again { border: 2px solid var(--line); background: var(--surface); color: var(--ink); }
+
+@media (max-width: 380px) { .opts button { font-size: 0.92rem; } }
+@media (prefers-reduced-motion: reduce) {
+  .bar i, .n .d, .n .x { transition: none; }
+  .n .ghost { animation: none; }
+  .icon.beacon::after, .opts button.want { animation: none; }
+}
+</style>
+
+<div class="page">
+  <div class="top">
+    <a href="../index.html" aria-label="Apparatus">←</a>
+    <div class="bar" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="100" id="barWrap"><i id="bar"></i></div>
+    <button type="button" class="icon" id="help" aria-label="Key" aria-expanded="false" aria-controls="key">?</button>
+    <button type="button" class="icon" id="wipe" aria-label="Start over">↺</button>
+    <div class="key" id="key" role="dialog" aria-label="Key" hidden></div>
+  </div>
+  <div class="card" id="card">
+    <div id="q"></div>
+    <div class="opts" id="opts" role="group" aria-label="Which is it?">
+      <button type="button" data-a="dec">Decimal</button>
+      <button type="button" data-a="sci">Scientific</button>
+      <button type="button" data-a="none">Neither</button>
+    </div>
+    <p class="sr" id="say" aria-live="polite"></p>
+  </div>
+  <div class="card" id="fin" hidden>
+    <div class="done">
+      <div class="mark" aria-hidden="true">✓</div>
+      <nav>
+        <button type="button" class="again" id="again">Again</button>
+        <a class="go" href="progression.html?skill=sci-point">Next →</a>
+      </nav>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  // ================= the numbers =================
+  // Each kind makes one random number. tier 2 kinds unlock after tier 1 is solid.
+  const r = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  const digits = n => Array.from({ length: n }, (_, i) => String(i ? r(0, 9) : r(1, 9))).join('');
+  const nz = s => s.replace(/0+$/, '') || '';                 // no trailing zeros after the point
+  const exp = (lo, hi, neg) => (neg ? -1 : 1) * r(lo, hi);
+  const frac = n => { const s = nz(digits(n)); return s; };
+  // a number: { L: digits before the point, R: digits after (may be ''), e: exponent or null }
+  const KINDS = [
+    // decimals
+    { id: 'dec-whole', a: 'dec', tier: 1, make: () => ({ L: digits(r(3, 7)) + '' , R: '', e: null }) },
+    { id: 'dec-point', a: 'dec', tier: 1, make: () => ({ L: digits(r(2, 3)), R: frac(r(1, 2)), e: null }) },
+    { id: 'dec-small', a: 'dec', tier: 2, make: () => ({ L: '0', R: '0'.repeat(r(1, 3)) + digits(r(1, 2)), e: null }) },
+    { id: 'dec-one',   a: 'dec', tier: 2, make: () => ({ L: String(r(1, 9)), R: frac(r(1, 3)) || '5', e: null }) },  // looks like the front of scientific
+    // scientific
+    { id: 'sci-big',   a: 'sci', tier: 1, make: () => ({ L: String(r(1, 9)), R: frac(r(1, 3)) || '2', e: exp(2, 9) }) },
+    { id: 'sci-small', a: 'sci', tier: 2, make: () => ({ L: String(r(1, 9)), R: frac(r(1, 3)) || '4', e: exp(2, 8, true) }) },
+    { id: 'sci-bare',  a: 'sci', tier: 2, make: () => ({ L: String(r(1, 9)), R: '', e: exp(3, 9, Math.random() < 0.4) }) },
+    // neither: × 10ⁿ, but too many digits before the point
+    { id: 'fake-big',  a: 'none', tier: 1, make: () => ({ L: digits(r(2, 3)), R: frac(r(1, 2)), e: exp(2, 8) }) },
+    { id: 'fake-small',a: 'none', tier: 2, make: () => ({ L: digits(r(2, 3)), R: Math.random() < 0.5 ? frac(r(1, 2)) : '', e: exp(2, 7, true) }) },
+    { id: 'fake-ten',  a: 'none', tier: 2, make: () => ({ L: '10', R: frac(r(1, 2)), e: exp(2, 8, Math.random() < 0.4) }) }  // 10.x looks almost right
+  ];
+  // the first three: one of each, the same digits, so only the form changes
+  const OPENING = [
+    { kind: 'sci-big',  n: { L: '4', R: '56', e: 3 } },
+    { kind: 'fake-big', n: { L: '45', R: '6', e: 2 } },
+    { kind: 'dec-whole', n: { L: '4560', R: '', e: null } }
+  ];
+
+  const commas = s => s.length > 3 ? s.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : s;
+  const supNum = e => (e < 0 ? '−' : '') + Math.abs(e);
+  function render(n, opts) {
+    // decimals over 999 get commas; the digits before the point each get a box so they can be counted
+    const L = n.e === null ? commas(n.L) : n.L;
+    const ds = Array.from(L).map(c => c === ',' ? ',' : `<span class="d">${c}</span>`).join('');
+    const pt = n.R ? `.${n.R}` : '';
+    const x = n.e === null ? `<span class="ghost" aria-hidden="true">× 10<sup>?</sup></span>` : `<span class="x">× 10<sup>${supNum(n.e)}</sup></span>`;
+    return `<span class="n${opts ? ' ' + opts : ''}"><span class="L">${ds}</span>${pt}${x}</span>`;
+  }
+  const spoken = n => `${n.L}${n.R ? ' point ' + n.R : ''}${n.e === null ? '' : ' times 10 to the ' + (n.e < 0 ? 'minus ' : '') + Math.abs(n.e)}`;
+  const WHY = { sci: 'why-sci', none: 'why-fake', dec: 'why-dec' };
+  const NAME = { sci: 'Scientific', none: 'Neither', dec: 'Decimal' };
+  const REASON = {
+    sci: 'one digit before the point, times a power of ten',
+    none: 'more than one digit before the point',
+    dec: 'no power of ten'
+  };
+
+  // ================= spaced repetition (a box per kind) =================
+  const GAP = [2, 3, 6, 10];       // after a right answer in box b, ask again in GAP[b] questions
+  const DONE = 2;                  // a kind is solid at box 2; finished when every kind is
+  const KEY = 'apparatus.sci-form.v1';
+  let S;
+  const fresh = () => ({ n: 0, open: 0, box: Object.fromEntries(KINDS.map(k => [k.id, { b: 0, due: 0, seen: 0 }])) });
+  function load() {
+    try { S = JSON.parse(localStorage.getItem(KEY)); } catch (e) { S = null; }
+    if (!S || !S.box) S = fresh();
+    KINDS.forEach(k => { if (!S.box[k.id]) S.box[k.id] = { b: 0, due: 0, seen: 0 }; });
+  }
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+  const tier2 = () => KINDS.filter(k => k.tier === 1).every(k => S.box[k.id].b >= DONE);
+  const live = () => KINDS.filter(k => k.tier === 1 || tier2());
+  const finished = () => KINDS.every(k => S.box[k.id].b >= DONE);
+
+  let last = [], cur = null, missRun = 0;
+  function pick() {
+    if (S.open < OPENING.length) { const o = OPENING[S.open]; return { kind: KINDS.find(k => k.id === o.kind), n: o.n, opening: true }; }
+    const ks = live();
+    const lastKind = last[last.length - 1];
+    // not the same kind twice in a row, and not the same answer three times in a row
+    const ans = id => KINDS.find(k => k.id === id).a;
+    const same3 = last.length >= 2 && ans(last[last.length - 2]) === ans(lastKind) ? ans(lastKind) : null;
+    let pool = ks.filter(k => k.id !== lastKind && k.a !== same3);
+    if (!pool.length) pool = ks.filter(k => k.id !== lastKind);
+    // due first (oldest due), then the least-known; a little shuffle among ties
+    const due = pool.filter(k => S.box[k.id].due <= S.n && S.box[k.id].b < DONE + 2);
+    const by = (a, b) => (S.box[a.id].b - S.box[b.id].b) || (S.box[a.id].due - S.box[b.id].due) || (Math.random() - 0.5);
+    const k = (due.length ? due : pool).slice().sort(by)[0];
+    return { kind: k, n: k.make() };
+  }
+  function grade(right) {
+    const bx = S.box[cur.kind.id];
+    bx.seen++;
+    if (right) { bx.b = Math.min(bx.b + 1, GAP.length - 1); bx.due = S.n + GAP[bx.b]; }
+    else { bx.b = 0; bx.due = S.n + 2; }
+    if (cur.opening) S.open++;
+    S.n++;
+    last.push(cur.kind.id); if (last.length > 3) last.shift();
+    save();
+  }
+  function progress() {
+    const ks = KINDS, got = ks.reduce((s, k) => s + Math.min(S.box[k.id].b, DONE), 0);
+    const pct = Math.round(100 * got / (ks.length * DONE));
+    $('bar').style.width = pct + '%'; $('barWrap').setAttribute('aria-valuenow', pct);
+  }
+
+  // ================= the page =================
+  const $ = id => document.getElementById(id);
+  const btns = Array.from(document.querySelectorAll('#opts button'));
+  let state = 'ask', tick = 0;          // ask → (right: wait → next) | (wrong: fix → next)
+
+  function next() {
+    progress();
+    if (finished()) { $('card').hidden = true; $('fin').hidden = false; $('fin').querySelector('.go').focus(); return; }
+    cur = pick();
+    $('q').innerHTML = render(cur.n);
+    $('say').textContent = spoken(cur.n);
+    btns.forEach(b => { b.disabled = false; b.className = ''; });
+    state = 'ask';
+  }
+
+  function answer(a) {
+    if (state === 'fix') {                          // after a miss: only the right one continues
+      if (a === cur.kind.a) { next(); }
+      return;
+    }
+    if (state !== 'ask') return;
+    const right = a === cur.kind.a;
+    const n = $('q').firstElementChild;
+    n.classList.add(WHY[cur.kind.a]);               // light up what decides it, right or wrong
+    grade(right);
+    if (right) {
+      missRun = 0;
+      state = 'wait';
+      btns.forEach(b => { b.disabled = true; if (b.dataset.a === a) b.className = 'ok'; });
+      $('say').textContent = 'Yes. ' + REASON[a] + '.';
+      const t = ++tick;
+      setTimeout(() => { if (t === tick) next(); }, 900);
+    } else {
+      missRun++;
+      state = 'fix';
+      btns.forEach(b => {
+        if (b.dataset.a === a) { b.className = 'no'; b.disabled = true; }
+        else if (b.dataset.a === cur.kind.a) { b.className = 'want'; }
+        else b.disabled = true;
+      });
+      $('say').textContent = `${NAME[cur.kind.a]}: ${REASON[cur.kind.a]}.`;
+      if (missRun >= 2 && $('key').hidden) $('help').classList.add('beacon');
+      btns.find(b => b.dataset.a === cur.kind.a).focus();
+    }
+  }
+
+  btns.forEach(b => b.addEventListener('click', () => answer(b.dataset.a)));
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && !$('key').hidden) { toggleKey(false); $('help').focus(); return; }
+    if (e.metaKey || e.ctrlKey || e.altKey || !$('fin').hidden) return;
+    const a = { '1': 'dec', '2': 'sci', '3': 'none', d: 'dec', s: 'sci', n: 'none' }[e.key.toLowerCase()];
+    if (a) { e.preventDefault(); answer(a); }
+  });
+
+  // ---- the key: one example of each, with what decides it lit up ----
+  $('key').innerHTML = [['dec', { L: '4560', R: '', e: null }], ['sci', { L: '4', R: '56', e: 3 }], ['none', { L: '45', R: '6', e: 2 }]]
+    .map(([a, n]) => render(n, WHY[a]) + `<b>${NAME[a]}</b>`).join('');
+  function toggleKey(on) {
+    $('key').hidden = !on; $('help').setAttribute('aria-expanded', String(on));
+    if (on) $('help').classList.remove('beacon');
+  }
+  $('help').addEventListener('click', e => { e.stopPropagation(); toggleKey($('key').hidden); });
+  document.addEventListener('click', e => { if (!$('key').hidden && !$('key').contains(e.target)) toggleKey(false); });
+
+  // ---- start over (asks once) ----
+  let armT;
+  $('wipe').addEventListener('click', () => {
+    const w = $('wipe');
+    if (!w.classList.contains('armed')) {
+      w.classList.add('armed'); w.textContent = 'Reset?';
+      armT = setTimeout(() => { w.classList.remove('armed'); w.textContent = '↺'; }, 3000);
+      return;
+    }
+    clearTimeout(armT); w.classList.remove('armed'); w.textContent = '↺';
+    restart();
+  });
+  function restart() { tick++; S = fresh(); last = []; missRun = 0; save(); $('fin').hidden = true; $('card').hidden = false; next(); }
+  $('again').addEventListener('click', restart);
+
+  load();
+  next();
+  if (/[?&]debug\b/.test(location.search)) window.sf = { S: () => S, cur: () => cur, KINDS, render };
+})();
+</script>
