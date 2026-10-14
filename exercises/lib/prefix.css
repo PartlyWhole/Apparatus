@@ -1,9 +1,16 @@
 /* Prefix — the prefix line (see prefix.js). */
-.pline { position: relative; display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); width: min(100%, 36rem); padding-bottom: 2.2rem; }
-.pline .pc { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 0; border: 0; background: transparent; color: var(--muted); font: inherit; border-radius: 10px; }
-.pline .pc b { font-family: var(--f-mono); font-weight: 700; font-size: clamp(0.78rem, 3.4vw, 1.05rem); color: var(--ink); white-space: nowrap; }
+.pline { position: relative; display: grid; width: min(92vw, 34rem); padding-bottom: 2.2rem; }   /* vw: the question area shrinks to its content, so % would too */
+.pline .pc { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 0; border: 0; background: transparent; color: var(--muted); font: inherit; border-radius: 10px; outline-offset: 2px; }
+.pline .pc b { font-family: var(--f-mono); font-weight: 700; font-size: clamp(1rem, 4.6vw, 1.35rem); color: var(--ink); white-space: nowrap; }
+/* hover / focus / tap: the full name and the power of ten from the base unit */
+.pline .pc[data-tip]:hover::after, .pline .pc[data-tip]:focus-visible::after, .pline .pc[data-tip]:focus::after {
+  content: attr(data-tip); position: absolute; bottom: calc(100% + 4px); left: 50%; transform: translateX(-50%); z-index: 5; padding: 4px 8px; border-radius: 8px;
+  background: var(--surface); box-shadow: 0 0 0 1px var(--line), 0 6px 16px rgba(10, 20, 40, 0.14); color: var(--ink); font-size: 0.8rem; font-weight: 700; white-space: nowrap; pointer-events: none; }
 .pline .pc i { font-style: normal; font-size: clamp(0.52rem, 2.2vw, 0.7rem); color: var(--muted); white-space: nowrap; }
 .pline .pc.gap b { color: var(--line); }
+/* the base unit in the middle: a quiet pill, so meter's m doesn't read as milli's m */
+.pline .pc.base b { padding: 1px 7px; border-radius: 999px; box-shadow: 0 0 0 1.5px var(--line); }
+.pline .pc.base.hi b { box-shadow: 0 0 0 1.5px var(--good); }
 /* names only under the highlighted units (all names in .names lines: the ? key, the tutorial) */
 .pline .pc i { visibility: hidden; }
 .pline.names .pc i, .pline .pc.hi i { visibility: visible; }
@@ -12,7 +19,7 @@
 .pline button.pc:hover:not(:disabled) b { color: var(--accent); }
 .pline button.pc:disabled { cursor: default; }
 /* hops under the line: from the middle of one spot to the middle of the next */
-.pline .parc { position: absolute; top: calc(100% - 2.1rem); left: calc((var(--c) + 0.5) * 100% / var(--n)); width: calc(100% / var(--n)); height: 0.7rem;
+.pline .parc { position: absolute; top: calc(100% - 2.1rem); height: 0.7rem;
   border: 2px solid var(--good); border-top: 0; border-radius: 0 0 50% 50% / 0 0 100% 100%; animation: fadein 0.2s ease; }
 .pline .parc::after { content: attr(data-n); position: absolute; left: 50%; top: 100%; margin-top: 3px; transform: translateX(-50%); font-size: clamp(0.55rem, 2.2vw, 0.7rem); color: var(--good); white-space: nowrap; }
 .key .pkey2 .pline { width: min(80vw, 30rem); }

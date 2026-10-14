@@ -9,7 +9,7 @@ One line of units for a base unit (m, L or g), placed by power of ten, with empt
 Mm  ·  ·  km  hm  dam  m  dm  cm  mm  ·  ·  µm
 10⁶          10³              10⁰              10⁻⁶
 ```
-Each unit shows its symbol large and its prefix name small (Mega, kilo, hecto, deca, deci, centi, milli, micro). The two units in a question are highlighted. Every step along the line is one power of ten, so going from one unit to another is the hop model from Moving the Point: the empty spots make the k–M and m–µ jumps (3 places) visible. After a miss the hops animate along the line (numbered arcs, ×10 or ÷10 each), ending on the answer.
+Each spot shows just the prefix (M k h da · d c m µ), with the base unit in the middle as a quiet pill (so meter's m isn't read as milli's m); empty spots are narrower so the prefixes get room. Hover, focus or tap shows the full name and the power from the base ("kilo · 10³"). The two units in a question are green, with their names underneath. Every step along the line is one power of ten, so going from one unit to another is the hop model from Moving the Point: the empty spots make the k–M and m–µ jumps (3 places) visible. After a miss the hops animate along the line (numbered arcs, ×10 or ÷10 each), ending on the answer.
 
 ## 1. Build up (`prefix-up`): 1 [bigger] = ? [smaller], one of them the base
 "How many mL add up to 1 L?" → **1 L = [ ] mL** (typed; commas fine).

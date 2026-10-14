@@ -16,15 +16,21 @@
   const powerVal = k => P.fmt('1', 1 + k);     // 10^k written out: 1,000 or 0.001
 
   // the line; hi: powers to highlight; tap: make units tappable (tutorial); names: show every prefix name (the ? key, tutorial)
+  // each spot shows just the prefix (the base unit in the middle); hover / focus / tap shows its name and power (kilo · 10³).
+  // Empty spots are narrower so the prefixes get room.
+  const BASE_NAME = { m: 'meter', L: 'liter', g: 'gram' };
+  const supE = e => P.sup(e);
   function lineHTML(b, hi = [], tap, names) {
-    let h = '';
+    let h = '', cols = [];
     for (let c = 0; c < N; c++) {
       const e = 6 - c, p = byE(e);
-      if (!p) { h += `<span class="pc gap" style="--c:${c}"><b>·</b></span>`; continue; }
-      const name = p.e === 0 ? '' : p.name;
-      h += `<${tap ? 'button type="button"' : 'span'} class="pc${hi.includes(e) ? ' hi' : ''}${e === 0 ? ' base' : ''}" data-e="${e}" style="--c:${c}"><b>${unit(e, b)}</b><i>${name}</i></${tap ? 'button' : 'span'}>`;
+      if (!p) { h += `<span class="pc gap" data-e="${e}"><b>·</b></span>`; cols.push('0.5fr'); continue; }
+      cols.push('1fr');
+      const name = p.e === 0 ? (BASE_NAME[b] || b) : p.name, tip = `${name} · 10${supE(e)}`;
+      const tag = tap ? 'button type="button"' : 'span tabindex="0"';
+      h += `<${tag} class="pc${hi.includes(e) ? ' hi' : ''}${e === 0 ? ' base' : ''}" data-e="${e}" data-tip="${tip}" aria-label="${tip}"><b>${e === 0 ? b : p.s}</b><i>${p.e === 0 ? '' : p.name}</i></${tap ? 'button' : 'span'}>`;
     }
-    return `<div class="pline${names || tap ? ' names' : ''}" style="--n:${N}">${h}</div>`;
+    return `<div class="pline${names || tap ? ' names' : ''}" style="grid-template-columns:${cols.join(' ')}">${h}</div>`;
   }
   // hops along the line from power a to power b: numbered arcs underneath, each labelled (×10 / ÷10); done() at the end
   function hops(line, a, b, label, done) {
@@ -35,8 +41,11 @@
     (function step() {
       if (!line.isConnected) return;
       const from = e; e += dir; k++;
+      // the arc runs from the middle of one spot to the middle of the next (spots have different widths)
+      const box = line.getBoundingClientRect(), mid = x => { const r = line.querySelector(`.pc[data-e="${x}"]`).getBoundingClientRect(); return r.left + r.width / 2 - box.left; };
+      const x1 = Math.min(mid(from), mid(e)), x2 = Math.max(mid(from), mid(e));
       const arc = document.createElement('span');
-      arc.className = 'parc'; arc.style.setProperty('--c', Math.min(col(from), col(e))); arc.dataset.n = label || k;
+      arc.className = 'parc'; arc.style.left = x1 + 'px'; arc.style.width = (x2 - x1) + 'px'; arc.dataset.n = label || k;
       line.appendChild(arc);
       if (e !== b) setTimeout(step, ms); else setTimeout(() => done && done(), ms);
     })();

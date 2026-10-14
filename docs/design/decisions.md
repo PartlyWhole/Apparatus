@@ -2,6 +2,8 @@
 
 Newest first. One line per decision: date — what — why (and who asked). When a decision is reversed, add a new line; don't delete the old one. The other docs describe only the current state.
 
+- 2026-10-14 — Prefix line: prefixes only (no unit after each), base unit as a pill in the middle, more room (narrow empty spots), hover/tap shows "kilo · 10³". (user: "letters flow from one to the other… visually confusing")
+- 2026-10-14 — Conversion Fractions: when a 1 is given on the smaller unit, the answer shown keeps it (0.01 hm / 1 m) and the sentence says why ("1 hm = 100 m, so 1 m = 0.01 hm"). (user report)
 - 2026-10-14 — No sign toggle for exponents: the student types the minus ("-" or "−") in the field. Fields use the text keyboard on phones (number pads have no minus). Replaces the + / − toggle. (user)
 - 2026-10-14 — Another Way (`unit-paths`): other valid conversion paths as their own exercise; the student builds a different route than the solved one shown. (user)
 - 2026-10-14 — Prefix line decluttered: no boxes (highlighted units are just green), prefix names only under the highlighted units (all names on the ? key and in the tutorial), no base underline. (user: "Feels a bit cluttered")
