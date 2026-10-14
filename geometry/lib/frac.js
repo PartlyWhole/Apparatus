@@ -44,7 +44,7 @@
       if (b.classList.contains('is-undef')) return { v: UNDEF, raw: 'undefined' };
       const t = readNum(b.querySelector('.sf-t').value), bt = b.querySelector('.sf-b').value.trim(), d = bt === '' ? 1 : readNum(bt);
       if (t == null || d == null || !Number.isInteger(t) || !Number.isInteger(d)) return null;
-      return { v: of(t, d), raw: { n: t, d }, reduced: d !== 0 && gcd(t, d) === 1 && d > 0 };
+      return { v: of(t, d), raw: { n: t, d }, reduced: d !== 0 && gcd(t, d) === 1 };
     };
     const shake = b => { b.classList.remove('bad'); void b.offsetWidth; b.classList.add('bad'); b.querySelector('input').focus(); };
     function check() {
