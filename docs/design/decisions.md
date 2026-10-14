@@ -2,6 +2,8 @@
 
 Newest first. One line per decision: date — what — why (and who asked). When a decision is reversed, add a new line; don't delete the old one. The other docs describe only the current state.
 
+- 2026-10-14 — Another Way (`unit-paths`): other valid conversion paths as their own exercise; the student builds a different route than the solved one shown. (user)
+- 2026-10-14 — Prefix line decluttered: no boxes (highlighted units are just green), prefix names only under the highlighted units (all names on the ? key and in the tutorial), no base underline. (user: "Feels a bit cluttered")
 - 2026-10-14 — 12 in = 1 ft added to the facts table, with chains yd→in, ft→cm (via in), in→yd. (user)
 - 2026-10-14 — Unit set (Unit Facts, Two-Step Conversions, Rates, Mixed): the table as the facts tutorial and ? key; optional facts in a cheat sheet (bottom-left); chains built step by step with in-place fixes; first-try mistakes graded. Unit names s, min, hr, day, yr, ft, yd, mi, in, cm, cm³, mL, L, m³, gal; one fixed path per chain. (user request; interpretations flagged)
 - 2026-10-14 — Prefix set (Build Up, Break Down, Between Prefixes, Conversion Fractions): the prefix line by power of ten with empty spots for 10⁵, 10⁴, 10⁻⁴, 10⁻⁵ so the k–M and m–µ jumps show; hops along it after a miss. "? cm / ? ml" read as two non-base prefixes of the same base. (user request; interpretation flagged)

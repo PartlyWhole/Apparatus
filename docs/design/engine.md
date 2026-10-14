@@ -95,7 +95,7 @@ More shared libraries (all loaded by `analytics.html`, in this order: places, fo
 - `lib/forms.js` + `forms.css`: multiple choice (`Forms.choices`, keys 1–4) and written answers (`Forms.num`, `Forms.pow` with the sign toggle, `Forms.wire` with Check/Enter and shaking empty fields).
 - `lib/prefix.js` + `prefix.css`: the prefix line by power of ten, hops along it, the Build Up / Break Down factory (`Prefix.updown`), shared prefix errors and sentences.
 - `lib/units.js`: unit sizes, the facts table, the cheat sheet (bottom-left), problem banks for chains and rates, chain errors and advice.
-- `lib/chain.js` + `chain.css`: a conversion written as a chain of fractions, built step by step (place the unit to cancel, pick the next unit, numbers, cancel, answer) at three levels (0 units given, 1 guided captions, 2 on your own). Mistakes are explained in place and fixed; the list of first-try mistakes is what's graded.
+- `lib/chain.js` + `chain.css`: a conversion written as a chain of fractions, built step by step (place the unit to cancel, pick the next unit, numbers, cancel, answer) at three levels (0 units given, 1 guided captions, 2 on your own). `free: { avoid }` lets the student choose the path (any unit with a known fact that can still reach the target by a route other than `avoid`); `solvedHTML(pr)` draws a finished chain. Mistakes are explained in place and fixed; the list of first-try mistakes is what's graded.
 
 ## Limits (extend when an exercise needs it)
 

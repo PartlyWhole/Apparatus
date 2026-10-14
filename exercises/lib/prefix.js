@@ -15,8 +15,8 @@
   const N = 13, col = e => 6 - e;             // 13 spots, 10⁶ on the left
   const powerVal = k => P.fmt('1', 1 + k);     // 10^k written out: 1,000 or 0.001
 
-  // the line; hi: powers to highlight; tap: make units tappable (tutorial)
-  function lineHTML(b, hi = [], tap) {
+  // the line; hi: powers to highlight; tap: make units tappable (tutorial); names: show every prefix name (the ? key, tutorial)
+  function lineHTML(b, hi = [], tap, names) {
     let h = '';
     for (let c = 0; c < N; c++) {
       const e = 6 - c, p = byE(e);
@@ -24,7 +24,7 @@
       const name = p.e === 0 ? '' : p.name;
       h += `<${tap ? 'button type="button"' : 'span'} class="pc${hi.includes(e) ? ' hi' : ''}${e === 0 ? ' base' : ''}" data-e="${e}" style="--c:${c}"><b>${unit(e, b)}</b><i>${name}</i></${tap ? 'button' : 'span'}>`;
     }
-    return `<div class="pline" style="--n:${N}">${h}</div>`;
+    return `<div class="pline${names || tap ? ' names' : ''}" style="--n:${N}">${h}</div>`;
   }
   // hops along the line from power a to power b: numbered arcs underneath, each labelled (×10 / ÷10); done() at the end
   function hops(line, a, b, label, done) {
@@ -103,7 +103,7 @@
       },
       errors: { dir: 'the wrong way (big ↔ small)', count: 'wrong number of places', other: 'not a power of ten' },
       diagnose: err => DIAG[err] || ['', ''],
-      keyHTML: `<div class="pkey2">${lineHTML('m')}</div>`,
+      keyHTML: `<div class="pkey2">${lineHTML('m', [], false, true)}</div>`,
       tutorial: cfg.tutorial ? (stage, api) => tutorial(stage, api) : undefined
     });
   }

@@ -55,3 +55,8 @@
   font-family: var(--f-mono); font-weight: 700; font-size: 0.95rem; color: var(--ink); }
 .cs-panel span:nth-child(3n+2) { color: var(--muted); }
 .cs-panel[hidden] { display: none; }
+
+/* Another Way: the solved chain shown above (quiet), and its label */
+.chain.solved { font-size: clamp(0.85rem, 3.6vw, 1.05rem); opacity: 0.6; }
+.chain.solved b { font-weight: 700; }
+.another { margin: 2px 0 0; color: var(--muted); font-size: 0.95rem; }

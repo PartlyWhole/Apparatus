@@ -52,6 +52,6 @@
     },
     errors: { dir: 'the wrong way (big ↔ small)', count: 'wrong number of places', other: 'not a power of ten' },
     diagnose: err => X.DIAG[err] || ['', ''],
-    keyHTML: `<div class="pkey2">${X.lineHTML('m')}</div>`
+    keyHTML: `<div class="pkey2">${X.lineHTML('m', [], false, true)}</div>`
   });
 })();

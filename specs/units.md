@@ -25,6 +25,9 @@ Step-by-step, one slot active at a time (it pulses), unit chips below to tap:
 Scaffolding fades: in the opening the units are given (numbers only); then the captions guide each step; the next-session check and later questions have no captions. A wrong step shakes, turns red, and gets one sentence ("day is on top in 2 day, so put it on the bottom to cancel."); the student fixes it and goes on. Any first-try mistake makes the question a miss (penalty) — it's the step-level mistakes the tutor sees in analytics.
 Problems: day→min, hr→s, yr→hr, day→s, mi→yd, yd→in, ft→cm (via in), km→cm, m³→mL; and back: s→hr, min→day, hr→yr, cm→km, mL→m³, yd→mi, in→yd (start amounts 1–5, or worked back from a 1–5 answer).
 
+## 2b. Another Way (`unit-paths`): other valid paths
+A solved chain is shown (quiet), labelled "Another way" below it; the student builds a different route to the same answer. Any unit connected to the current one by a known fact (table, cheat sheet, prefixes) is offered, but only those that can still reach the target by a route other than the one shown; the chain grows a fraction per hop. Ideas: **shorter** (hr → s in one step; s → hr), **different** (m³ → cm³ → mL instead of → L →; mL → cm³ → m³; ft → m → cm with the cheat sheet), **longer** (hr → min → s instead of hr → s; day → hr → min → s). Same step checks and errors as the chains.
+
 ## 3. Rates (`unit-rates`): two units at once
 "60 mi/hr = ? m/s": the given is itself a fraction; one factor converts the top unit, one the bottom (hr is on the bottom, so the factor has hr on top: 1 hr / 3,600 s). Same steps and guidance. Problems: mi/hr→m/s (cheat-sheet 1,609 m = 1 mi), km/hr→m/s, ft/s→mi/hr, m/s→km/hr, L/min→mL/s, cm³/s→L/min. Answers to about 3 digits (within 1%).
 
@@ -43,4 +46,4 @@ Facts (written), two-step chains and rates, no captions. 9 questions.
 ## Interpretations to confirm
 - Unit names: s, min, hr, day, yr; ft, yd, mi, in, cm; cm³, mL, L, m³, gal.
 - 12 in = 1 ft added to the table (user, 2026-10-14).
-- Chains follow one fixed path (day → hr → min); a different valid path isn't accepted yet.
+- Two-Step Conversions and Rates follow one fixed path; other valid paths are their own page (Another Way), as the user asked.

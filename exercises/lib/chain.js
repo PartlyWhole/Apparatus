@@ -26,6 +26,27 @@
     const f = U.fact(st.from, st.to), n = x => x === f.small ? f.a : f.b;
     return side === 'num' ? { tu: st.to, tn: n(st.to), bu: st.from, bn: n(st.from) } : { tu: st.from, tn: n(st.from), bu: st.to, bn: n(st.to) };
   }
+  // ---- the facts as a graph (for free paths): which units connect directly, and can a unit still reach the target? ----
+  const FACTS = () => U.TABLE.concat(U.OPTIONAL, U.PREFIXED);
+  const neighbors = u => [...new Set(FACTS().filter(f => f[1] === u || f[3] === u).map(f => f[1] === u ? f[3] : f[1]))];
+  function reaches(u, target, seen) {
+    if (u === target) return true;
+    return neighbors(u).some(v => !seen.has(v) && reaches(v, target, new Set([...seen, v])));
+  }
+  // is there a path from the end of `path` to target (no unit twice) that isn't `avoid`?
+  function newPath(path, target, avoid) {
+    const u = path[path.length - 1];
+    if (u === target) return !avoid || path.join() !== avoid.join();
+    return neighbors(u).some(v => !path.includes(v) && newPath(path.concat(v), target, avoid));
+  }
+  const valueOf = (qty, steps) => steps.reduce((v, st) => v * (st.side === 'num' ? U.SIZE[st.from] / U.SIZE[st.to] : U.SIZE[st.to] / U.SIZE[st.from]), qty);
+  // a finished chain as a picture (no fields): given × fractions = answer, cancelled units struck
+  function solvedHTML(pr) {
+    const sd = sides(pr), last = pr.steps.length - 1;
+    const fr = pr.steps.map((st, i) => { const f = fraction(st, sd[i]);
+      return `<span class="op">×</span><span class="cf"><span class="ct"><b>${U.fmtN(f.tn)}</b> <u class="${i === last ? '' : 'gone'}">${f.tu}</u></span><span class="cbar"></span><span class="cb"><b>${U.fmtN(f.bn)}</b> <u class="gone">${f.bu}</u></span></span>`; }).join('');
+    return `<div class="chain solved"><span class="cg"><b>${U.fmtN(pr.qty)}</b> <u class="gone">${pr.num}</u></span>${fr}<span class="op">=</span><span class="cg"><b>${nice(answer(pr))}</b> ${pr.target.num}</span></div>`;
+  }
   const nice = v => { const r = Math.abs(v) >= 100 ? Math.round(v) : Math.round(v * 100) / 100; return U.fmtN(r); };
   const unitsOf = pr => pr.target.den ? `${pr.target.num}/${pr.target.den}` : pr.target.num;
 
@@ -43,10 +64,11 @@
 
   // mount(el, pr, { level: 0 units given | 1 guided | 2 on your own, onDone(errors), say(text, bad) })
   function mount(el, pr, o) {
-    const level = o.level, errs = [], sd = sides(pr);
-    const steps = pr.steps.map((st, i) => Object.assign({}, st, { side: sd[i], frac: fraction(st, sd[i]) }));
-    el.innerHTML = `<div class="chain-q"><div class="chain">${givenHTML(pr)}${steps.map((_, i) => `<span class="op">×</span>${fracHTML(i)}`).join('')}
-        <span class="op">=</span><span class="cans"><input class="ca" inputmode="decimal" autocomplete="off" aria-label="Answer" disabled> <span class="tu">${unitsOf(pr)}</span></span></div>
+    // o.free: { avoid: [units of a path not to repeat] } — the student picks the path; fractions are added as they go
+    const level = o.level, errs = [], free = o.free, sd = free ? [] : sides(pr);
+    const steps = free ? [] : pr.steps.map((st, i) => Object.assign({}, st, { side: sd[i], frac: fraction(st, sd[i]) }));
+    el.innerHTML = `<div class="chain-q">${o.above || ''}<div class="chain">${givenHTML(pr)}${steps.map((_, i) => `<span class="op">×</span>${fracHTML(i)}`).join('')}
+        <span class="op eqop">=</span><span class="cans"><input class="ca" inputmode="decimal" autocomplete="off" aria-label="Answer" disabled> <span class="tu">${unitsOf(pr)}</span></span></div>
       <p class="csay" aria-live="polite"></p><div class="chips" aria-label="Units"></div><button type="button" class="go" hidden>Check</button></div>`;
     const $ = s => el.querySelector(s), $$ = s => Array.from(el.querySelectorAll(s));
     // the guidance line under the chain (a mistake shows in red there)
@@ -63,7 +85,11 @@
 
     // ---- 1. place the unit to cancel: tap top or bottom ----
     function placeFrom(i) {
-      const st = steps[i], f = st.frac, side = f.bu === st.from ? 'b' : 't';
+      if (free && !steps[i]) {                       // a new fraction for the next hop of the student's own path
+        steps[i] = { from: i === 0 ? pr.num : steps[i - 1].to, to: null, side: 'num' };
+        $('.eqop').insertAdjacentHTML('beforebegin', `<span class="op">×</span>${fracHTML(i)}`);
+      }
+      const st = steps[i], f = st.frac, side = free ? 'b' : f.bu === st.from ? 'b' : 't';
       cur = { key: i + 'side' };
       const slots = $$(`.cu[data-i="${i}"]`);
       if (level === 0) { fillUnit(i, 't', f.tu); fillUnit(i, 'b', f.bu); return numbers(i); }
@@ -86,6 +112,7 @@
       cur = { key: i + 'unit' };
       const slot = $(`.cu[data-i="${i}"][data-s="${s}"]`);
       guide(`What does ${st.from} turn into?`);
+      if (free) return pickFree(i, s, slot);
       const others = Object.keys(U.KIND).filter(u => U.KIND[u] === U.KIND[st.to] && u !== st.to && u !== st.from && u !== pr.target.num && u !== pr.target.den);
       const opts = shuffle([st.to].concat(shuffle(others).slice(0, 3)));
       chips.innerHTML = opts.map(u => `<button type="button" class="chip">${u}</button>`).join('');
@@ -96,6 +123,24 @@
           return miss('unit', f ? `That works, but here ${st.from} turns into ${st.to} first.` : `${c.textContent} doesn’t connect to ${st.from} with a fact you know. Try ${st.to}.`, c);
         }
         chips.innerHTML = ''; fillUnit(i, s, st.to); numbers(i);
+      });
+    }
+    // free path: any unit with a fact to this one that can still reach the target is right; the path shown above is nudged away
+    function pickFree(i, s, slot) {
+      const st = steps[i], target = pr.target.num, seen = new Set([pr.num].concat(steps.slice(0, i).map(x => x.to)));
+      const prefix = [pr.num].concat(steps.slice(0, i).map(x => x.to));
+      // only units that can still reach the target by a route other than the one shown
+      const ok = neighbors(st.from).filter(v => !seen.has(v) && newPath(prefix.concat(v), target, free.avoid));
+      const decoys = Object.keys(U.KIND).filter(u => U.KIND[u] === U.KIND[st.from] && !seen.has(u) && !ok.includes(u) && !U.fact(st.from, u));
+      chips.innerHTML = shuffle(ok.concat(shuffle(decoys).slice(0, Math.max(0, 4 - ok.length)))).map(u => `<button type="button" class="chip">${u}</button>`).join('');
+      live(slot);
+      chips.querySelectorAll('.chip').forEach(c => c.onclick = () => {
+        const v = c.textContent;
+        if (!ok.includes(v)) return miss('unit', `${v} doesn’t connect to ${st.from} with a fact you know.`, c);
+        const path = [pr.num].concat(steps.slice(0, i).map(x => x.to), v);
+        if (v === target && free.avoid && path.join() === free.avoid.join()) { say('That’s the way above. Find another.', false); c.remove(); return; }
+        st.to = v; st.frac = fraction(st, st.side);
+        chips.innerHTML = ''; fillUnit(i, s, v); numbers(i);
       });
     }
     function fillUnit(i, s, u) {
@@ -118,6 +163,7 @@
         if (U.equal(tv, f.tu, bv, f.bu)) {
           [t, b].forEach(x => { x.disabled = true; x.classList.remove('wrong'); x.classList.add('set'); });
           go.hidden = true; go.onclick = null; [t, b].forEach(x => { x.onkeydown = null; });
+          if (free) return st.to === pr.target.num ? cancel() : placeFrom(i + 1);
           return i + 1 < steps.length ? placeFrom(i + 1) : cancel();
         }
         const fx = U.fact(f.tu, f.bu);
@@ -151,7 +197,7 @@
     }
     // ---- 5. the answer ----
     function result() {
-      const want = answer(pr), a = $('.ca');
+      const want = free ? valueOf(pr.qty, steps) : answer(pr), a = $('.ca');
       cur = { key: 'answer' };
       a.disabled = false; live(a); go.hidden = false; a.focus({ preventScroll: true });
       guide('Multiply what’s left.');
@@ -173,5 +219,5 @@
     placeFrom(0);
   }
 
-  window.Chain = { mount, answer, fraction, sides, nice };
+  window.Chain = { mount, answer, fraction, sides, nice, solvedHTML, neighbors, reaches, newPath };
 })();

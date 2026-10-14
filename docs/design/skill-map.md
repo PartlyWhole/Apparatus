@@ -15,6 +15,7 @@ The exercises in order, what each needs first, and which later exercises review 
 | 9 | **Conversion Fractions** (`prefix-fraction`): ? m / ? cm, no line | live | 6–8 | unit chains |
 | 10 | **Unit Facts** (`unit-facts`): the table, multiple choice then written | live | — | 11–13 |
 | 11 | **Two-Step Conversions** (`unit-chain`): fraction chains, step by step | live | 9, 10 | 12, 13 |
+| 11b | **Another Way** (`unit-paths`): the same conversion by a different path | live | 11 | 13 |
 | 12 | **Rates** (`unit-rates`): mi/hr → m/s, two units at once | live | 11 | 13 |
 | 13 | **Mixed Conversions** (`unit-mixed`): facts, chains, rates on their own | live | 10–12 | |
 

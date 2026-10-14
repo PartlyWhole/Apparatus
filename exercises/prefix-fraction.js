@@ -73,7 +73,7 @@
     },
     errors: { flip: 'numbers on the wrong side', count: 'wrong number of places', other: 'top and bottom not equal' },
     diagnose: err => err === 'other' ? ['Doesn’t make top and bottom equal amounts.', 'Ask: is 1 m the same length as 100 cm? A conversion fraction is always worth exactly 1.'] : (X.DIAG[err] || ['', '']),
-    keyHTML: `<div class="pkey2">${X.lineHTML('m')}</div>`,
+    keyHTML: `<div class="pkey2">${X.lineHTML('m', [], false, true)}</div>`,
 
     // ---- tutorial: an equation becomes a fraction ----
     tutorial(stage, api) {
