@@ -50,7 +50,7 @@
     speak: it => `${plain(given(it))}. Write the parallel slope and the perpendicular slope.`,
     ask(el, it, submit) {
       el.innerHTML = `<div class="gq"><div class="q">${given(it)}</div>
-        <div class="q two"><span><b class="sym">∥</b> ${F.box('par', { undef: true })}</span><span><b class="sym">⟂</b> ${F.box('perp', { undef: true })}</span></div>
+        <div class="q two"><span class="col"><span class="rl"><b class="sym">∥</b> parallel</span>${F.box('par')}</span><span class="col"><span class="rl"><b class="sym">⟂</b> perpendicular</span>${F.box('perp')}</span></div>
         <p class="say" aria-live="polite"></p><button type="button" class="go">Check</button><div class="gridbox pic"></div></div>`;
       el._f = F.wire(el, { want: n => n === 'par' ? it.m : F.perp(it.m), onSubmit: submit });
     },

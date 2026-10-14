@@ -55,7 +55,7 @@
     text: it => plain(eqHTML(it)),
     speak: it => `${plain(eqHTML(it))}. What is the slope?`,
     ask(el, it, submit) {
-      el.innerHTML = `<div class="gq"><div class="q">${eqHTML(it)}</div><div class="q">slope = ${F.box('slope', { undef: true })}</div>
+      el.innerHTML = `<div class="gq"><div class="q">${eqHTML(it)}</div><div class="q">slope = ${F.box('slope')}</div>
         <p class="say" aria-live="polite"></p><button type="button" class="go">Check</button><div class="work" aria-live="polite"></div></div>`;
       el._f = F.wire(el, { want: () => slope(it), onSubmit: v => submit(v.slope) });
     },

@@ -45,7 +45,7 @@
   function steps(it) {
     const n = newSlope(it), out = [
       ['m =', 'given', gSlope(it.g), 'given'],
-      [`${it.rel === 'par' ? '∥' : '⟂'} m =`, 'slope', n, 'slope']
+      [`${it.rel === 'par' ? '∥ parallel' : '⟂ perpendicular'} m =`, 'slope', n, 'slope']
     ];
     if (n.undef) out.push(['x =', 'x', it.p[0], 'hv']);
     else if (n.n === 0) out.push(['y =', 'y', it.p[1], 'hv']);
@@ -56,7 +56,7 @@
   // In the next-session check (warm) it's the answer at once: y = [m]x + [b] (or y = [ ] / x = [ ]).
   function mount(el, it, direct, done) {
     const errs = [];
-    el.innerHTML = `<div class="gq"><div class="q">${it.rel === 'par' ? '∥' : '⟂'} to ${gHTML(it.g)}</div><div class="q small">through P${pt(it.p)}</div>
+    el.innerHTML = `<div class="gq"><div class="q small">${it.rel === 'par' ? '∥ parallel' : '⟂ perpendicular'} to</div><div class="q">${gHTML(it.g)}</div><div class="q small">through P${pt(it.p)}</div>
       <div class="wl"></div><p class="say" aria-live="polite"></p><div class="q final"></div></div>`;
     const list = el.querySelector('.wl'), sayEl = el.querySelector('.say'), n = newSlope(it);
     const flatOrUp = n.undef || n.n === 0;
@@ -70,7 +70,7 @@
       const [lab, boxes] = all[i], row = document.createElement('div');
       row.className = 'q step'; list.appendChild(row);
       (function build() {
-        const bx = boxes.map(([name, , , u], k) => `${k ? '<span>x +</span> ' : ''}${F.box(name, { undef: u })}`).join(' ');
+        const bx = boxes.map(([name, , , u], k) => `${k ? '<span>x +</span> ' : ''}${F.box(name)}`).join(' ');
         row.innerHTML = `<span class="lab">${lab}</span> ${bx} <button type="button" class="go">Check</button>`;
         const f = F.wire(row, { say: sayEl, want: nm => boxes.find(x => x[0] === nm)[1], onSubmit: v => {
           const bad = boxes.filter(([name, want]) => !F.eq(v[name].v, want));

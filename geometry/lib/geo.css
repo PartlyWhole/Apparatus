@@ -42,17 +42,14 @@
   font: inherit; font-family: var(--f-mono); font-weight: 700; text-align: center; }
 .sf input:focus { outline: none; border-color: var(--accent); }
 .sf .sf-bar { align-self: stretch; height: 3px; border-radius: 2px; background: var(--ink); }
-.sf .sf-u { margin-top: 4px; min-height: 30px; padding: 0 10px; border-radius: 999px; border: 2px solid var(--line); background: transparent; color: var(--muted);
-  font: 600 0.78rem var(--f-body); cursor: pointer; }
-.sf .sf-u[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
-.sf.is-undef input, .sf.is-undef .sf-bar { opacity: 0.25; }
+.sf .sf-u { position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 2px; font: 600 0.78rem var(--f-body); color: var(--muted); white-space: nowrap; }
+.sf.ok .sf-u { color: var(--good); }
+.sf.no .sf-u { color: var(--bad); }
 .sf.bad input { border-color: var(--bad); animation: gshake 0.3s ease; }
 .sf.ok input { border-color: var(--good); color: var(--good); }
 .sf.no input { border-color: var(--bad); color: var(--bad); }
-.sf.ok .sf-u[aria-pressed="true"] { border-color: var(--good); color: var(--good); }
-.sf.no .sf-u[aria-pressed="true"] { border-color: var(--bad); color: var(--bad); }
 @keyframes gshake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
-.sf input:disabled, .sf .sf-u:disabled { cursor: default; }
+.sf input:disabled { cursor: default; }
 /* a stacked fraction in text */
 .frs { display: inline-flex; align-items: center; gap: 1px; }
 .fr { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; font-size: 0.85em; line-height: 1.05; }
@@ -103,3 +100,9 @@
 .grid .pl { fill: var(--muted); }
 .grid .pl.end { text-anchor: end; }
 .grid .pl .pn { fill: var(--ink); font-size: 11px; }
+/* a labelled box: "∥ parallel" over its fraction */
+.gq .col { display: inline-flex; flex-direction: column; align-items: center; gap: 8px; }
+.gq .col .rl { font-family: var(--f-body); font-size: clamp(0.95rem, 4.2vw, 1.1rem); font-weight: 700; color: var(--muted); display: inline-flex; align-items: center; gap: 0.3em; }
+.gq .col .rl .sym { font-size: 1.35em; line-height: 1; }
+.gq .q.step .lab { font-family: var(--f-body); }
+.gq .sf { margin-bottom: 1.1em; }

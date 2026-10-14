@@ -40,7 +40,7 @@
     speak: it => `The points ${pt(it.a)} and ${pt(it.b)}. What is the slope?`,
     ask(el, it, submit) {
       el.innerHTML = `<div class="gq">${onGrid(it) ? '<div class="gridbox"></div>' : ''}<div class="q two"><span>A${pt(it.a)}</span><span>B${pt(it.b)}</span></div>
-        <div class="q">slope = ${F.box('slope', { undef: true })}</div><p class="say" aria-live="polite"></p><button type="button" class="go">Check</button><div class="work" aria-live="polite"></div></div>`;
+        <div class="q">slope = ${F.box('slope')}</div><p class="say" aria-live="polite"></p><button type="button" class="go">Check</button><div class="work" aria-live="polite"></div></div>`;
       if (onGrid(it)) { const g = G.make(el.querySelector('.gridbox')); g.line(it.a, it.b, 'ln faint'); g.dot(it.a, 'pt', 'A' + pt(it.a), dir(it)); g.dot(it.b, 'pt', 'B' + pt(it.b), dir(it)); el._g = g; }
       el._f = F.wire(el, { want: () => slope(it), onSubmit: v => submit(v.slope) });
     },
