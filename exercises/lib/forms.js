@@ -1,10 +1,10 @@
 // Forms — multiple choice and written answers for the prefix and unit exercises (styles: forms.css).
-// Needs lib/places.js (parsing, the sign toggle).
+// Needs lib/places.js (parsing).
 (function () {
   const P = window.Places;
   const num = (name, wide) => `<input class="f${wide ? ' wide' : ''}" data-n="${name}" inputmode="decimal" autocomplete="off" aria-label="${name}">`;
-  // 10^[±][ ] — the exponent's sign is a toggle, the field digits only
-  const pow = name => `<span class="pow">10<span class="up"><button type="button" class="sg"></button><input class="f exp" data-n="${name}" data-pow="1" inputmode="numeric" autocomplete="off" aria-label="${name}"></span></span>`;
+  // 10^[ ] — the exponent, minus typed if negative ("-" or "−"); a text field, since phone number pads have no minus key
+  const pow = name => `<span class="pow">10<span class="up"><input class="f exp" data-n="${name}" data-pow="1" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="${name}"></span></span>`;
 
   // wire the fields in el: a Check button (and Enter) reads them; empty/invalid fields shake and nothing is sent.
   // onSubmit(values): { name: { sig, pos, raw } for numbers, name: integer for powers }
@@ -12,7 +12,7 @@
     const fields = Array.from(el.querySelectorAll('input.f'));
     const readers = {};
     fields.forEach(f => {
-      if (f.dataset.pow) { const sg = f.parentNode.querySelector('.sg'); readers[f.dataset.n] = P.signToggle(sg, f); }
+      if (f.dataset.pow) readers[f.dataset.n] = () => P.parseInt10(f.value);
       f.addEventListener('input', () => f.classList.remove('bad'));
       f.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); check(); } });
     });
@@ -24,7 +24,7 @@
         else { const v = P.parseDecimal(f.value); if (!v) bad.push(f); else vals[f.dataset.n] = Object.assign(v, { raw: f.value }); }
       });
       if (bad.length) { bad.forEach(f => { f.classList.remove('bad'); void f.offsetWidth; f.classList.add('bad'); }); bad[0].focus(); return; }
-      fields.forEach(f => { f.disabled = true; }); el.querySelectorAll('.sg').forEach(b => { b.disabled = true; }); if (go) go.disabled = true;
+      fields.forEach(f => { f.disabled = true; }); if (go) go.disabled = true;
       onSubmit(vals);
     }
     if (go) go.addEventListener('click', check);

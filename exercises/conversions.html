@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500;600;700&display=swap">
 <link rel="stylesheet" href="../engine/exercise.css?v=4">
-<link rel="stylesheet" href="lib/places.css?v=8">
+<link rel="stylesheet" href="lib/places.css?v=9">
 <style>
 .pq .q { font-size: clamp(1.5rem, 6.5vw, 2.2rem); color: var(--ink); text-align: center; }
 /* four choices, 2 × 2 */
@@ -30,10 +30,7 @@
 .cv-ty input.bad { border-color: var(--bad); animation: shake 0.3s ease; }
 @keyframes shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
 .cv-ty .ex { display: inline-flex; align-items: center; gap: 4px; position: relative; top: -0.6em; font-size: 0.7em; }
-.cv-ty .ex input { width: 3.6ch; padding: 6px 4px; }
-.cv-ty .sg { min-width: 40px; min-height: 40px; border-radius: 10px; border: 2px solid var(--line); background: var(--surface); color: var(--ink); font-family: var(--f-mono); font-weight: 700; font-size: 1.1em; }
-.cv-ty .sg.neg { border-color: var(--accent); color: var(--accent); }
-.cv-ty .sg:disabled { opacity: 0.6; }
+.cv-ty .ex input { width: 4ch; padding: 6px 4px; }
 .cv-go { margin-top: 14px; min-height: 46px; padding: 0 28px; border-radius: 999px; border: 0; background: var(--accent); color: var(--on-accent); font-weight: 700; }
 .cv-go:disabled { display: none; }
 .pic { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 6px; }
@@ -42,7 +39,7 @@
 </style>
 <body>
 <script src="../engine/exercise.js?v=12"></script>
-<script src="lib/places.js?v=9"></script>
-<script src="conversions.js?v=2"></script>
+<script src="lib/places.js?v=10"></script>
+<script src="conversions.js?v=3"></script>
 <script>Apparatus.mount('conversions');</script>
 </body>

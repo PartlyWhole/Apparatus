@@ -2,6 +2,7 @@
 
 Newest first. One line per decision: date — what — why (and who asked). When a decision is reversed, add a new line; don't delete the old one. The other docs describe only the current state.
 
+- 2026-10-14 — No sign toggle for exponents: the student types the minus ("-" or "−") in the field. Fields use the text keyboard on phones (number pads have no minus). Replaces the + / − toggle. (user)
 - 2026-10-14 — Another Way (`unit-paths`): other valid conversion paths as their own exercise; the student builds a different route than the solved one shown. (user)
 - 2026-10-14 — Prefix line decluttered: no boxes (highlighted units are just green), prefix names only under the highlighted units (all names on the ? key and in the tutorial), no base underline. (user: "Feels a bit cluttered")
 - 2026-10-14 — 12 in = 1 ft added to the facts table, with chains yd→in, ft→cm (via in), in→yd. (user)

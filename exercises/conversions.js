@@ -87,10 +87,10 @@
         ? `<div class="pq"><div class="q">${question(it)}</div><div class="cv-ty"><input class="v" inputmode="decimal" autocomplete="off" aria-label="Decimal"></div>
            <button type="button" class="cv-go">Check</button><div class="pic"></div></div>`
         : `<div class="pq"><div class="q">${question(it)}</div><div class="cv-ty"><input class="m" inputmode="decimal" autocomplete="off" aria-label="Number">
-           <span>× 10</span><span class="ex"><button type="button" class="sg"></button><input class="x" inputmode="numeric" autocomplete="off" aria-label="Exponent"></span></div>
+           <span>× 10</span><span class="ex"><input class="x" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Exponent"></span></div>
            <button type="button" class="cv-go">Check</button><div class="pic"></div></div>`;
       const q = s => el.querySelector(s), go = q('.cv-go');
-      const readX = q('.sg') ? P.signToggle(q('.sg'), q('.x')) : null;    // the exponent's sign is a toggle; the field holds digits only
+      const readX = () => P.parseInt10(q('.x').value);    // a minus is typed ("-" or "−")
       const fields = Array.from(el.querySelectorAll('input'));
       fields.forEach(f => f.addEventListener('input', () => f.classList.remove('bad')));
       const check = () => {
@@ -98,7 +98,7 @@
           : [P.parseDecimal(q('.m').value) ? null : q('.m'), readX() != null ? null : q('.x')];
         const missing = bad.filter(Boolean);
         if (missing.length) { missing.forEach(f => { f.classList.remove('bad'); void f.offsetWidth; f.classList.add('bad'); }); missing[0].focus(); return; }
-        fields.forEach(f => { f.disabled = true; }); go.disabled = true; if (q('.sg')) q('.sg').disabled = true;
+        fields.forEach(f => { f.disabled = true; }); go.disabled = true;
         submit(it.to === 'dec' ? { v: q('.v').value } : { m: q('.m').value, x: String(readX()) });
       };
       go.addEventListener('click', check);

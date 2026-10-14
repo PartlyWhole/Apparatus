@@ -17,7 +17,7 @@
 .fq input.f { width: 7ch; padding: 6px 8px; border-radius: 12px; border: 2px solid var(--line); background: var(--surface); color: var(--ink);
   font: inherit; font-family: var(--f-mono); font-weight: 700; text-align: center; }
 .fq input.f.wide { width: 10ch; }
-.fq input.f.exp { width: 3ch; font-size: 0.7em; padding: 4px; }
+.fq input.f.exp { width: 3.4ch; font-size: 0.7em; padding: 4px; }
 .fq input.f:focus { outline: none; border-color: var(--accent); }
 .fq input.f.ok { border-color: var(--good); color: var(--good); }
 .fq input.f.no { border-color: var(--bad); color: var(--bad); }
@@ -25,10 +25,6 @@
 @keyframes fshake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
 .fq .pow { display: inline-flex; align-items: flex-start; gap: 0.1em; }
 .fq .pow .up { display: inline-flex; align-items: center; gap: 3px; position: relative; top: -0.55em; }
-.fq .sg { min-width: 1.6em; height: 1.6em; border-radius: 8px; border: 2px solid var(--line); background: var(--surface); color: var(--ink);
-  font-family: var(--f-mono); font-weight: 700; font-size: 0.7em; line-height: 1; padding: 0; }
-.fq .sg.neg { border-color: var(--accent); color: var(--accent); }
-.fq .sg:disabled { opacity: 0.6; }
 .fq .go { min-height: 46px; padding: 0 28px; border-radius: 999px; border: 0; background: var(--accent); color: var(--on-accent); font-weight: 700; font-family: var(--f-body); }
 .fq .go:disabled { display: none; }
 .fq .ans { font-family: var(--f-mono); font-weight: 700; font-size: clamp(1.1rem, 4.6vw, 1.4rem); color: var(--muted); min-height: 1.4em; }

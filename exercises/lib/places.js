@@ -151,25 +151,9 @@
     if (!sig) return { sig: '0', pos: 1 };
     return { sig, pos: i.length - lead };
   }
-  // a sign toggle beside a digits-only field: the button shows + or − and flips on tap; the field never holds the sign
-  // (typing - or − in the field flips the toggle instead). Returns read(): the signed integer, or null if the field is empty.
-  function signToggle(btn, input) {
-    let neg = false;
-    const draw = () => {
-      btn.textContent = neg ? '−' : '+'; btn.classList.toggle('neg', neg);
-      btn.setAttribute('aria-pressed', String(neg)); btn.setAttribute('aria-label', neg ? 'Negative. Tap for positive' : 'Positive. Tap for negative');
-    };
-    btn.addEventListener('click', () => { neg = !neg; draw(); input.focus(); });
-    input.addEventListener('input', () => {
-      if (/[-−]/.test(input.value)) { neg = !neg; draw(); }
-      input.value = input.value.replace(/[^\d]/g, '');
-    });
-    draw();
-    return () => { const v = input.value === '' ? null : parseInt(input.value, 10); return v == null || isNaN(v) ? null : (neg && v !== 0 ? -v : v); };
-  }
   const parseInt10 = str => { const t = String(str).replace(/\s/g, '').replace('−', '-'); return /^-?\d+$/.test(t) ? parseInt(t, 10) : null; };
   // the significant digits and point place of a number {d, p}
   const canon = (d, p) => { const lead = d.match(/^0*/)[0].length; return { sig: d.slice(lead).replace(/0+$/, ''), pos: p - lead }; };
 
-  window.Places = { PAD, paint, trail, signToggle, fmt, sup, supHTML, powHTML, powText, commas, valueAt, numStr, slots, isFill, rowHTML, setFills, setPower, addPoint, hop, token, gapFromX, bind, staticHops, parseDecimal, parseInt10, canon, reduced };
+  window.Places = { PAD, paint, trail, fmt, sup, supHTML, powHTML, powText, commas, valueAt, numStr, slots, isFill, rowHTML, setFills, setPower, addPoint, hop, token, gapFromX, bind, staticHops, parseDecimal, parseInt10, canon, reduced };
 })();
