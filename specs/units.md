@@ -11,6 +11,9 @@ The whole table is the ? key in all four exercises, and the first screen of `uni
 **Master every fact** (a rule for this exercise only, on by default): each fact is its own idea — multiple choice, then written — so passing means every fact answered right, written (26 questions with no misses); a missed fact comes back (penalty) spread among the others; the next-session check asks every fact, written. Analytics shows a row per fact. With the rule off, the shorter version below.
 Ideas (rule off): length, time, volume. Each idea: two multiple-choice rounds ("1 mi = ?": 5,280 ft and three other table numbers with the same unit), then two written rounds ("1 mi = [ ] ft"). 12 questions with no misses. Errors: picked/typed the wrong number → "1 mi = 5,280 ft."
 
+## 1b. One-Step Conversions (`unit-one`)
+One fraction applied to an amount — 3 mi × (5,280 ft / 1 mi) = 15,840 ft — the first time a unit cancels. Same chain steps as below (the unit that cancels, what it turns into, equal numbers, cancel, the combined result). Ideas: to a smaller unit (start 1–5) and to a bigger one (worked back from a 1–5 answer), across time, length and volume facts (not 1 mL = 1 cm³). Opening: 3 mi → ft with the units given. 7 questions with no misses.
+
 ## 2. Two-step conversions (`unit-chain`): fractions
 The chain, written the way it's written on paper:
 
