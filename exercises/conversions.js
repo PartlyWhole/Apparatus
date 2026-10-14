@@ -87,20 +87,19 @@
         ? `<div class="pq"><div class="q">${question(it)}</div><div class="cv-ty"><input class="v" inputmode="decimal" autocomplete="off" aria-label="Decimal"></div>
            <button type="button" class="cv-go">Check</button><div class="pic"></div></div>`
         : `<div class="pq"><div class="q">${question(it)}</div><div class="cv-ty"><input class="m" inputmode="decimal" autocomplete="off" aria-label="Number">
-           <span>× 10</span><span class="ex"><button type="button" class="pm" aria-label="Make the exponent negative">±</button><input class="x" inputmode="numeric" autocomplete="off" aria-label="Exponent"></span></div>
+           <span>× 10</span><span class="ex"><button type="button" class="sg"></button><input class="x" inputmode="numeric" autocomplete="off" aria-label="Exponent"></span></div>
            <button type="button" class="cv-go">Check</button><div class="pic"></div></div>`;
       const q = s => el.querySelector(s), go = q('.cv-go');
-      const pm = q('.pm');
-      if (pm) pm.addEventListener('click', () => { const x = q('.x'); x.value = x.value.startsWith('−') || x.value.startsWith('-') ? x.value.slice(1) : '−' + x.value; x.focus(); });
+      const readX = q('.sg') ? P.signToggle(q('.sg'), q('.x')) : null;    // the exponent's sign is a toggle; the field holds digits only
       const fields = Array.from(el.querySelectorAll('input'));
       fields.forEach(f => f.addEventListener('input', () => f.classList.remove('bad')));
       const check = () => {
         const bad = it.to === 'dec' ? [P.parseDecimal(q('.v').value) ? null : q('.v')]
-          : [P.parseDecimal(q('.m').value) ? null : q('.m'), P.parseInt10(q('.x').value) != null ? null : q('.x')];
+          : [P.parseDecimal(q('.m').value) ? null : q('.m'), readX() != null ? null : q('.x')];
         const missing = bad.filter(Boolean);
         if (missing.length) { missing.forEach(f => { f.classList.remove('bad'); void f.offsetWidth; f.classList.add('bad'); }); missing[0].focus(); return; }
-        fields.forEach(f => { f.disabled = true; }); go.disabled = true;
-        submit(it.to === 'dec' ? { v: q('.v').value } : { m: q('.m').value, x: q('.x').value });
+        fields.forEach(f => { f.disabled = true; }); go.disabled = true; if (q('.sg')) q('.sg').disabled = true;
+        submit(it.to === 'dec' ? { v: q('.v').value } : { m: q('.m').value, x: String(readX()) });
       };
       go.addEventListener('click', check);
       fields.forEach(f => f.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); check(); } }));

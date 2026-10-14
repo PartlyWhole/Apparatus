@@ -12,7 +12,7 @@ Convert decimal ↔ scientific notation without the hop tool: first by recognizi
 The answer, one close answer the same direction (one place off), and the same two the wrong direction (sign flipped). For 895: 8.95 × 10², 8.95 × 10¹, 8.95 × 10⁻², 8.95 × 10⁻¹. For 8.28 × 10³: 8,280, 828, 0.00828, 0.0828. Keys 1–4.
 
 ## Written
-Scientific → decimal: one field. Decimal → scientific: a number field and an exponent field (± button for the minus; "-" or "−" typed also works). Check (or Enter); blank or non-numeric fields shake and aren't graded. Commas allowed; 4.50 = 4.5.
+Scientific → decimal: one field. Decimal → scientific: a number field and an exponent field; the exponent's sign is a + / − toggle beside it (the field holds digits only; typing "-" flips the toggle). Check (or Enter); blank or non-numeric fields shake and aren't graded. Commas allowed; 4.50 = 4.5.
 
 ## Error types and feedback
 | Error | Sentence |

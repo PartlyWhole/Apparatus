@@ -25,24 +25,23 @@
     if (e !== before && e !== 0) { pw.classList.remove('tick'); void pw.offsetWidth; pw.classList.add('tick'); }
   }
 
-  // after the point is placed: the power shows as × 10^[ ] at the end of the row; the student writes it (± for the minus)
+  // after the point is placed: the power shows as × 10^[± ][ ] at the end of the row; the student writes it (the sign is a toggle)
   function askPower(el, row, it, g, done) {
     const pw = row.querySelector('.pw');
     P.setPower(row, it.d, g, '?');
     pw.classList.add('askx');
-    pw.innerHTML = `<span>× 10<sup><input class="px" inputmode="numeric" autocomplete="off" aria-label="Power of ten"></sup></span>`;
+    pw.innerHTML = `<span>× 10<sup><button type="button" class="sg"></button><input class="px" inputmode="numeric" autocomplete="off" aria-label="Power of ten"></sup></span>`;
     const ctl = document.createElement('div');
     ctl.className = 'pctl';
-    ctl.innerHTML = '<button type="button" class="pm" aria-label="Make it negative">±</button><button type="button" class="go">Check</button>';
+    ctl.innerHTML = '<button type="button" class="go">Check</button>';
     row.after(ctl);
-    const x = pw.querySelector('input');
+    const x = pw.querySelector('input'), sg = pw.querySelector('.sg'), read = P.signToggle(sg, x);
     const check = () => {
-      const v = P.parseInt10(x.value);
+      const v = read();
       if (v == null) { x.classList.remove('bad'); void x.offsetWidth; x.classList.add('bad'); x.focus(); return; }
-      x.disabled = true; ctl.querySelectorAll('button').forEach(b => { b.disabled = true; });
+      x.disabled = true; sg.disabled = true; ctl.querySelectorAll('button').forEach(b => { b.disabled = true; });
       done(v);
     };
-    ctl.querySelector('.pm').addEventListener('click', () => { x.value = /^[-−]/.test(x.value) ? x.value.slice(1) : '−' + x.value; x.focus(); });
     ctl.querySelector('.go').addEventListener('click', check);
     x.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); check(); } });
     x.addEventListener('input', () => x.classList.remove('bad'));
