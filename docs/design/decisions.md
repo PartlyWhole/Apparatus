@@ -2,6 +2,8 @@
 
 Newest first. One line per decision: date — what — why (and who asked). When a decision is reversed, add a new line; don't delete the old one. The other docs describe only the current state.
 
+- 2026-10-14 — Moving the Point: moving the point previews the zeros it would need (light), so it never floats; placeholder dots removed. Answers commit on release, so dragging on touch previews too. (user: "Moving the dot should spawn 0s so it doesn't look like a floating dot")
+- 2026-10-14 — Moving the Point: hop numbers sit above their arcs, clear of the digits. (user correction)
 - 2026-10-14 — Moving the Point (`point-move`): tap where the point lands; the point moves (not the digits); faint zeros in the tutorial and opening, then faded to dots (scaffold fading); ÷ 10⁻ⁿ and 10⁰ included as a late "twist" idea, taught by the operator "flip" (× 10⁻² = ÷ 10²). (user: "Tap to answer, include them elegantly, fade zeros, point moves")
 - 2026-10-14 — Engine: tap mode (exercise draws its answer area; feedback and analytics by error type), tutorial mode (first visit, Skip, Replay, can't be failed), late ideas. (needed by point-move; user asked for "a tutorial mode with the kind of guidance we looked at earlier")
 

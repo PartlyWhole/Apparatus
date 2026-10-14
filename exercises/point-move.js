@@ -45,8 +45,9 @@
     return `<div class="row${faint ? ' faint' : ''}" style="--n:${n}" aria-hidden="true">${h}<span class="pt start" style="--g:${start(it)}"></span></div>`;
   }
   // solid zeros between the digits and a point at gap g (and the 0 before a leading point)
-  function setFills(row, it, g) {
-    row.querySelectorAll('.s').forEach((s, i) => s.classList.toggle('fill', isFill(it, g, i) && s.classList.contains('pad')));
+  // cls 'fill' = solid zeros (committed); 'prev' = light zeros previewing an uncommitted point (null g clears)
+  function setFills(row, it, g, cls = 'fill') {
+    row.querySelectorAll('.s').forEach((s, i) => s.classList.toggle(cls, g != null && isFill(it, g, i) && s.classList.contains('pad')));
   }
   const addPoint = (row, cls, g) => { const p = document.createElement('span'); p.className = 'pt ' + cls; p.style.setProperty('--g', g); row.appendChild(p); return p; };
   // hop a point from gap a to gap b, one place at a time, drawing numbered arcs
@@ -121,11 +122,17 @@
       const ghost = addPoint(row, 'ghost', start(it));
       let g = start(it), live = true;
       const say = () => { row.setAttribute('aria-valuetext', valueAt(it, g)); };
-      const show = x => { g = x; ghost.style.setProperty('--g', g); ghost.classList.add('on'); say(); };
+      // moving the point (hover, drag, arrows) previews it, with the zeros it would need, so it never floats in empty space;
+      // releasing (or Enter) commits
+      const show = x => { g = x; ghost.style.setProperty('--g', g); ghost.classList.add('on'); setFills(row, it, g, 'prev'); say(); };
+      const clear = () => { ghost.classList.remove('on'); setFills(row, it, null, 'prev'); };
       const send = x => { if (!live) return; live = false; ghost.remove(); submit(x); };
-      row.addEventListener('pointermove', e => { if (live && e.pointerType === 'mouse') show(gapFromX(row, it, e.clientX)); });
-      row.addEventListener('pointerleave', () => ghost.classList.remove('on'));
-      row.addEventListener('click', e => send(gapFromX(row, it, e.clientX)));
+      let down = false;
+      row.addEventListener('pointerdown', e => { if (!live) return; down = true; try { row.setPointerCapture(e.pointerId); } catch (_) {} show(gapFromX(row, it, e.clientX)); });
+      row.addEventListener('pointermove', e => { if (live && (down || e.pointerType === 'mouse')) show(gapFromX(row, it, e.clientX)); });
+      row.addEventListener('pointerup', e => { if (!live || !down) return; down = false; send(gapFromX(row, it, e.clientX)); });
+      row.addEventListener('pointercancel', () => { down = false; if (live) clear(); });
+      row.addEventListener('pointerleave', () => { if (live && !down) clear(); });   // after answering, the picked point keeps its zeros
       row.addEventListener('keydown', e => {
         if (!live) return;
         if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { e.preventDefault(); show(Math.max(1, Math.min(slots(it) - 1, g + (e.key === 'ArrowRight' ? 1 : -1)))); }

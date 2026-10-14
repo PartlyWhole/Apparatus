@@ -41,7 +41,7 @@ Use one only when the idea is new to the student (a tutorial adds nothing for co
 - **Can't be failed:** a wrong try shows the answer and lets them try again.
 - The last step is the exercise's own answer interaction, so the exercise starts with no surprises.
 
-**Fading scaffolds:** support shown in the tutorial and the opening (point-move's faint zeros) is removed for the tricky questions and comes back only in feedback.
+**Fading scaffolds:** support shown in the tutorial and the opening (point-move's faint zeros) is removed for the tricky questions; what remains is a live preview of the student's own move (the zeros their point would need), never the answer.
 
 ## 4. Why this bar holds (guessing)
 

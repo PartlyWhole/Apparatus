@@ -20,15 +20,13 @@
 .flip.on { opacity: 1; }
 
 /* the row of places: digits solid; empty places faint zeros (tutorial, opening) or small dots */
-.row { --w: 0.9em; position: relative; display: flex; font-size: clamp(1.7rem, 7.6vw, 2.8rem); line-height: 1; padding: 1.2em 0 0.45em; cursor: pointer; touch-action: manipulation; outline-offset: 6px; border-radius: 8px; }
+.row { --w: 0.9em; position: relative; display: flex; font-size: clamp(1.7rem, 7.6vw, 2.8rem); line-height: 1; padding: 1.2em 0 0.45em; cursor: pointer; touch-action: none; outline-offset: 6px; border-radius: 8px; }
 .row.answered { cursor: default; }
 .s { width: var(--w); text-align: center; position: relative; }
-.s.pad { color: transparent; }
-.s.pad::after { content: ""; position: absolute; left: 50%; bottom: 0.18em; width: 0.12em; height: 0.12em; margin-left: -0.06em; border-radius: 50%; background: var(--line); }
+.s.pad { color: transparent; }                                  /* empty places: invisible (faint zeros only in the tutorial and opening) */
 .row.faint .s.pad { color: var(--line); }
-.row.faint .s.pad::after { display: none; }
-.row .s.pad.fill { color: var(--ink); transition: color 0.2s; }
-.row .s.pad.fill::after { display: none; }
+.row .s.pad.prev { color: var(--muted); }                        /* zeros a previewed (uncommitted) point would need */
+.row .s.pad.fill { color: var(--ink); transition: color 0.2s; }  /* zeros the point has really passed */
 
 /* points sit in the gaps: --g = how many places are to their left */
 .pt { position: absolute; bottom: 0.47em; left: calc(var(--g) * var(--w)); width: 0.24em; height: 0.24em; margin-left: -0.12em; border-radius: 50%; background: var(--ink); transition: left 0.28s ease; pointer-events: none; }
@@ -73,6 +71,6 @@
 </style>
 <body>
 <script src="../engine/exercise.js?v=2"></script>
-<script src="point-move.js?v=4"></script>
+<script src="point-move.js?v=6"></script>
 <script>Apparatus.mount('point-move');</script>
 </body>
