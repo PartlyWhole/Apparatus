@@ -41,11 +41,6 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .top a:hover, .icon:hover { color: var(--accent); }
 .bar { flex: 1; height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; margin: 0 6px; }
 .bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width 0.5s ease; }
-.icon.armed { color: var(--bad); font-size: 0.85rem; }
-/* the beacon: a dot on ? after repeated misses */
-.icon.beacon::after { content: ""; position: absolute; top: 9px; right: 9px; width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
-  animation: pulse 1.6s ease-in-out infinite; }
-@keyframes pulse { 50% { transform: scale(1.6); opacity: 0.4; } }
 
 .card { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 44px; padding-bottom: 10vh; }
 
@@ -99,11 +94,13 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .done .go { border: 0; background: var(--accent); color: var(--on-accent); }
 .done .again { border: 2px solid var(--line); background: var(--surface); color: var(--ink); }
 
+.corner { position: fixed; right: 0; bottom: 0; width: 44px; height: 44px; display: grid; place-items: center; }
+.corner::after { content: ""; width: 5px; height: 5px; border-radius: 50%; background: var(--muted); opacity: 0.35; }
+.corner:hover::after, .corner:focus-visible::after { opacity: 1; }
 @media (max-width: 380px) { .opts button { font-size: 0.92rem; } }
 @media (prefers-reduced-motion: reduce) {
   .bar i, .n .d, .n .x { transition: none; }
   .n .ghost { animation: none; }
-  .icon.beacon::after { animation: none; }
 }
 </style>
 
@@ -112,7 +109,6 @@ button { font: inherit; color: inherit; cursor: pointer; }
     <a href="../index.html" aria-label="Apparatus">←</a>
     <div class="bar" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="100" id="barWrap"><i id="bar"></i></div>
     <button type="button" class="icon" id="help" aria-label="Key" aria-expanded="false" aria-controls="key">?</button>
-    <button type="button" class="icon" id="wipe" aria-label="Start over">↺</button>
     <div class="key" id="key" role="dialog" aria-label="Key" hidden></div>
   </div>
   <div class="card" id="card">
@@ -134,42 +130,51 @@ button { font: inherit; color: inherit; cursor: pointer; }
       </nav>
     </div>
   </div>
+  <a class="corner" href="../analytics.html#sci-form" aria-label="Analytics"></a>
 </div>
 
 <script>
 (function () {
   // ================= the numbers =================
-  // Each kind makes one random number. tier 2 kinds unlock after tier 1 is solid.
   const r = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
   const digits = n => Array.from({ length: n }, (_, i) => String(i ? r(0, 9) : r(1, 9))).join('');
-  const nz = s => s.replace(/0+$/, '') || '';                 // no trailing zeros after the point
+  const frac = n => digits(n).replace(/0+$/, '');            // no trailing zeros after the point
   const exp = (lo, hi, neg) => (neg ? -1 : 1) * r(lo, hi);
-  const frac = n => { const s = nz(digits(n)); return s; };
   // a number: { L: digits before the point, R: digits after (may be ''), e: exponent or null }
-  const KINDS = [
+  const KINDS = {
     // decimals
-    { id: 'dec-whole', a: 'dec', tier: 1, make: () => ({ L: digits(r(3, 7)) + '' , R: '', e: null }) },
-    { id: 'dec-point', a: 'dec', tier: 1, make: () => ({ L: digits(r(2, 3)), R: frac(r(1, 2)), e: null }) },
-    { id: 'dec-small', a: 'dec', tier: 2, make: () => ({ L: '0', R: '0'.repeat(r(1, 3)) + digits(r(1, 2)), e: null }) },
-    { id: 'dec-one',   a: 'dec', tier: 2, make: () => ({ L: String(r(1, 9)), R: frac(r(1, 3)) || '5', e: null }) },  // looks like the front of scientific
+    'dec-whole':  { a: 'dec', make: () => ({ L: digits(r(3, 7)), R: '', e: null }) },
+    'dec-point':  { a: 'dec', make: () => ({ L: digits(r(2, 3)), R: frac(r(1, 2)), e: null }) },
+    'dec-small':  { a: 'dec', make: () => ({ L: '0', R: '0'.repeat(r(1, 3)) + digits(r(1, 2)), e: null }) },
+    'dec-one':    { a: 'dec', make: () => ({ L: String(r(1, 9)), R: frac(r(1, 3)) || '5', e: null }) },      // looks like the front of scientific
     // scientific
-    { id: 'sci-big',   a: 'sci', tier: 1, make: () => ({ L: String(r(1, 9)), R: frac(r(1, 3)) || '2', e: exp(2, 9) }) },
-    { id: 'sci-small', a: 'sci', tier: 2, make: () => ({ L: String(r(1, 9)), R: frac(r(1, 3)) || '4', e: exp(2, 8, true) }) },
-    { id: 'sci-bare',  a: 'sci', tier: 2, make: () => ({ L: String(r(1, 9)), R: '', e: exp(3, 9, Math.random() < 0.4) }) },
-    // neither: × 10ⁿ, but too many digits before the point
-    { id: 'fake-big',  a: 'none', tier: 1, make: () => ({ L: digits(r(2, 3)), R: frac(r(1, 2)), e: exp(2, 8) }) },
-    { id: 'fake-small',a: 'none', tier: 2, make: () => ({ L: digits(r(2, 3)), R: Math.random() < 0.5 ? frac(r(1, 2)) : '', e: exp(2, 7, true) }) },
-    { id: 'fake-ten',  a: 'none', tier: 2, make: () => ({ L: '10', R: frac(r(1, 2)), e: exp(2, 8, Math.random() < 0.4) }) }  // 10.x looks almost right
-  ];
+    'sci-big':    { a: 'sci', make: () => ({ L: String(r(1, 9)), R: frac(r(1, 3)) || '2', e: exp(2, 9) }) },
+    'sci-small':  { a: 'sci', make: () => ({ L: String(r(1, 9)), R: frac(r(1, 3)) || '4', e: exp(2, 8, true) }) },
+    'sci-bare':   { a: 'sci', make: () => ({ L: String(r(1, 9)), R: '', e: exp(3, 9, Math.random() < 0.4) }) },
+    // neither: × 10ⁿ, but more than one digit before the point
+    'fake-big':   { a: 'none', make: () => ({ L: digits(r(2, 3)), R: frac(r(1, 2)), e: exp(2, 8) }) },
+    'fake-small': { a: 'none', make: () => ({ L: digits(r(2, 3)), R: Math.random() < 0.5 ? frac(r(1, 2)) : '', e: exp(2, 7, true) }) },
+    'fake-ten':   { a: 'none', make: () => ({ L: '10', R: frac(r(1, 2)), e: exp(2, 8, Math.random() < 0.4) }) }   // 10.x looks almost right
+  };
+  // Three ideas, one per answer. Hard kinds vouch for the easy ones; easy kinds are only for after a miss.
+  const IDEAS = {
+    dec:  { easy: ['dec-whole', 'dec-point'], hard: ['dec-one', 'dec-small'] },
+    sci:  { easy: ['sci-big'], hard: ['sci-small', 'sci-bare'] },
+    none: { easy: ['fake-big'], hard: ['fake-ten', 'fake-small'] }
+  };
   // the first three: one of each, the same digits, so only the form changes
   const OPENING = [
-    { kind: 'sci-big',  n: { L: '4', R: '56', e: 3 } },
-    { kind: 'fake-big', n: { L: '45', R: '6', e: 2 } },
+    { kind: 'sci-big',   n: { L: '4', R: '56', e: 3 } },
+    { kind: 'fake-big',  n: { L: '45', R: '6', e: 2 } },
     { kind: 'dec-whole', n: { L: '4560', R: '', e: null } }
   ];
+  // then the hard ones, never the same idea twice in a row
+  const PROBE = ['dec-one', 'fake-ten', 'sci-small', 'fake-small', 'dec-small', 'sci-bare'];
 
   const commas = s => s.length > 3 ? s.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : s;
   const supNum = e => (e < 0 ? '−' : '') + Math.abs(e);
+  const SUP = { '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹', '−': '⁻' };
+  const text = n => (n.e === null ? commas(n.L) : n.L) + (n.R ? '.' + n.R : '') + (n.e === null ? '' : ' × 10' + Array.from(supNum(n.e)).map(c => SUP[c]).join(''));
   function render(n, opts) {
     // decimals over 999 get commas; the digits before the point each get a box so they can be counted
     const L = n.e === null ? commas(n.L) : n.L;
@@ -188,99 +193,107 @@ button { font: inherit; color: inherit; cursor: pointer; }
     if (a === 'sci') return `Just one digit (${n.L}) before the point, then ${x}. That’s scientific notation.`;
     return `There are ${n.L.length} digits (${n.L}) before the point. Scientific notation has just one.`;
   }
-  const REASON = {
-    sci: 'one digit before the point, times a power of ten',
-    none: 'more than one digit before the point',
-    dec: 'no power of ten'
-  };
 
-  // ================= spaced repetition (a box per kind) =================
-  const GAP = [2, 3, 6, 10];       // after a right answer in box b, ask again in GAP[b] questions
-  const DONE = 2;                  // a kind is solid at box 2; finished when every kind is
-  const KEY = 'apparatus.sci-form.v1';
+  // ================= state (shared with ../analytics.html) =================
+  // run:  where this pass is — opening index, hard kinds still to probe, and per idea how many right answers are
+  //       still needed after a miss (a miss sets 2: one easier, then the kind that was missed)
+  // warm: a short check at the start of a later session (one hard kind per idea)
+  // log:  every answer, for the analytics page
+  const KEY = 'apparatus.sci-form.v2';
+  const WARM_AFTER = 8 * 3600e3;              // a "later session" is 8+ hours after the last finish
+  const newRun = () => ({ open: 0, probe: PROBE.slice(), need: { dec: 0, sci: 0, none: 0 }, missed: {}, answers: 0 });
   let S;
-  const fresh = () => ({ n: 0, open: 0, box: Object.fromEntries(KINDS.map(k => [k.id, { b: 0, due: 0, seen: 0 }])) });
   function load() {
     try { S = JSON.parse(localStorage.getItem(KEY)); } catch (e) { S = null; }
-    if (!S || !S.box) S = fresh();
-    KINDS.forEach(k => { if (!S.box[k.id]) S.box[k.id] = { b: 0, due: 0, seen: 0 }; });
+    if (!S || !S.run) S = { run: newRun(), warm: null, done: false, doneAt: null, checkedAt: null, log: [] };
   }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
-  const tier2 = () => KINDS.filter(k => k.tier === 1).every(k => S.box[k.id].b >= DONE);
-  const live = () => KINDS.filter(k => k.tier === 1 || tier2());
-  const finished = () => KINDS.every(k => S.box[k.id].b >= DONE);
+  const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = r(0, i); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const any = a => a[r(0, a.length - 1)];
 
-  let last = [], cur = null, missRun = 0;
+  let cur = null, lastIdea = null;
   function pick() {
-    if (S.open < OPENING.length) { const o = OPENING[S.open]; return { kind: KINDS.find(k => k.id === o.kind), n: o.n, opening: true }; }
-    const ks = live();
-    const lastKind = last[last.length - 1];
-    // not the same kind twice in a row, and not the same answer three times in a row
-    const ans = id => KINDS.find(k => k.id === id).a;
-    const same3 = last.length >= 2 && ans(last[last.length - 2]) === ans(lastKind) ? ans(lastKind) : null;
-    let pool = ks.filter(k => k.id !== lastKind && k.a !== same3);
-    if (!pool.length) pool = ks.filter(k => k.id !== lastKind);
-    // due first (oldest due), then the least-known; a little shuffle among ties
-    const due = pool.filter(k => S.box[k.id].due <= S.n && S.box[k.id].b < DONE + 2);
-    const by = (a, b) => (S.box[a.id].b - S.box[b.id].b) || (S.box[a.id].due - S.box[b.id].due) || (Math.random() - 0.5);
-    const k = (due.length ? due : pool).slice().sort(by)[0];
-    return { kind: k, n: k.make() };
+    const R = S.run;
+    if (R.open < OPENING.length) { const o = OPENING[R.open]; return { kind: o.kind, n: o.n, mode: 'open' }; }
+    // a missed idea first, unless it was just asked and something else can go between
+    const needy = Object.keys(R.need).filter(i => R.need[i] > 0);
+    const other = S.warm && S.warm.length ? S.warm[0] : R.probe[0];
+    let idea = needy.find(i => i !== lastIdea) || (needy.length && !other ? needy[0] : null);
+    if (idea) {
+      const kind = R.need[idea] >= 2 ? any(IDEAS[idea].easy) : R.missed[idea];
+      return { kind, n: KINDS[kind].make(), mode: 'fix' };
+    }
+    if (S.warm && S.warm.length) return { kind: S.warm[0], n: KINDS[S.warm[0]].make(), mode: 'warm' };
+    if (R.probe.length) return { kind: R.probe[0], n: KINDS[R.probe[0]].make(), mode: 'probe' };
+    if (needy.length) { const kind = R.need[needy[0]] >= 2 ? any(IDEAS[needy[0]].easy) : R.missed[needy[0]]; return { kind, n: KINDS[kind].make(), mode: 'fix' }; }
+    return null;
   }
-  function grade(right) {
-    const bx = S.box[cur.kind.id];
-    bx.seen++;
-    if (right) { bx.b = Math.min(bx.b + 1, GAP.length - 1); bx.due = S.n + GAP[bx.b]; }
-    else { bx.b = 0; bx.due = S.n + 2; }
-    if (cur.opening) S.open++;
-    S.n++;
-    last.push(cur.kind.id); if (last.length > 3) last.shift();
+  const remaining = () => { const R = S.run; return (OPENING.length - R.open) + R.probe.length + (S.warm ? S.warm.length : 0) + Object.values(R.need).reduce((a, b) => a + b, 0); };
+
+  function grade(chose, right, ms) {
+    const R = S.run, idea = KINDS[cur.kind].a;
+    S.log.push({ at: Date.now(), kind: cur.kind, idea, txt: text(cur.n), chose, right, ms, mode: cur.mode, key: keyUsed });
+    R.answers++;
+    if (cur.mode === 'open') R.open++;
+    if (cur.mode === 'probe') R.probe = R.probe.filter(k => k !== cur.kind);
+    if (cur.mode === 'warm') S.warm.shift();
+    if (right) { if (R.need[idea] > 0) R.need[idea]--; }
+    else { R.need[idea] = 2; R.missed[idea] = cur.kind; }
+    lastIdea = idea;
     save();
   }
   function progress() {
-    const ks = KINDS, got = ks.reduce((s, k) => s + Math.min(S.box[k.id].b, DONE), 0);
-    const pct = Math.round(100 * got / (ks.length * DONE));
+    const done = S.run.answers, left = remaining();
+    const pct = done + left ? Math.round(100 * done / (done + left)) : 100;
     $('bar').style.width = pct + '%'; $('barWrap').setAttribute('aria-valuenow', pct);
   }
 
   // ================= the page =================
   const $ = id => document.getElementById(id);
   const btns = Array.from(document.querySelectorAll('#opts button'));
-  let state = 'ask', tick = 0;          // ask → (right: wait → next) | (wrong: fix → next)
+  let state = 'ask', tick = 0, shownAt = 0, keyUsed = false;   // ask → (right: wait → next) | (wrong: fix → OK → next)
 
+  function finish() {
+    const now = Date.now();
+    if (!S.done) { S.done = true; S.doneAt = now; }
+    if (S.warm) {
+      // a clean check is final; a check with a miss runs again next session
+      const missed = S.log.slice(-S.run.answers).some(x => x.mode !== 'open' && !x.right);
+      S.warm = null; S.warmAt = now;
+      if (missed) S.checkMissed = true; else { S.checkedAt = now; S.checkMissed = false; }
+    }
+    save(); progress();
+    $('card').hidden = true; $('fin').hidden = false; $('again').focus();
+  }
   function next() {
     progress();
-    if (finished()) { $('card').hidden = true; $('fin').hidden = false; $('fin').querySelector('.go').focus(); return; }
     cur = pick();
+    if (!cur) return finish();
+    $('card').hidden = false; $('fin').hidden = true;
     $('q').innerHTML = render(cur.n);
     $('say').textContent = spoken(cur.n);
     btns.forEach(b => { b.disabled = false; b.className = ''; });
     $('why').textContent = ''; $('okBtn').hidden = true;
-    state = 'ask';
+    state = 'ask'; shownAt = performance.now(); keyUsed = !$('key').hidden;
   }
 
   function answer(a) {
     if (state !== 'ask') return;
-    const right = a === cur.kind.a;
-    grade(right);
+    const right = a === KINDS[cur.kind].a;
+    grade(a, right, Math.round(performance.now() - shownAt));
     if (right) {
-      missRun = 0;
       state = 'wait';
       btns.forEach(b => { b.disabled = true; if (b.dataset.a === a) b.className = 'ok'; });
       $('say').textContent = 'Correct.';
       const t = ++tick;
       setTimeout(() => { if (t === tick) next(); }, 900);
     } else {
-      missRun++;
       state = 'fix';
-      btns.forEach(b => {
-        if (b.dataset.a === a) { b.className = 'no'; b.disabled = true; }
-        else if (b.dataset.a === cur.kind.a) { b.className = 'want'; b.disabled = true; }
-        else b.disabled = true;
-      });
-      $('q').firstElementChild.classList.add(WHY[cur.kind.a]);   // light up what decides it
-      $('why').innerHTML = explain(cur.n, cur.kind.a);
+      const want = KINDS[cur.kind].a;
+      btns.forEach(b => { b.disabled = true; b.className = b.dataset.a === a ? 'no' : b.dataset.a === want ? 'want' : ''; });
+      $('q').firstElementChild.classList.add(WHY[want]);   // light up what decides it
+      $('why').innerHTML = explain(cur.n, want);
       $('okBtn').hidden = false;
-      if (missRun >= 2 && $('key').hidden) $('help').classList.add('beacon');
       $('okBtn').focus();
     }
   }
@@ -294,33 +307,32 @@ button { font: inherit; color: inherit; cursor: pointer; }
     if (a) { e.preventDefault(); answer(a); }
   });
 
-  // ---- the key: one example of each, with what decides it lit up ----
+  // ---- the key: one example of each, with what decides it lit up (opening it is noted in the log) ----
   $('key').innerHTML = [['dec', { L: '4560', R: '', e: null }], ['sci', { L: '4', R: '56', e: 3 }], ['none', { L: '45', R: '6', e: 2 }]]
     .map(([a, n]) => render(n, WHY[a]) + `<b>${NAME[a]}</b>`).join('');
   function toggleKey(on) {
     $('key').hidden = !on; $('help').setAttribute('aria-expanded', String(on));
-    if (on) $('help').classList.remove('beacon');
+    if (on && state === 'ask') keyUsed = true;
   }
   $('help').addEventListener('click', e => { e.stopPropagation(); toggleKey($('key').hidden); });
   document.addEventListener('click', e => { if (!$('key').hidden && !$('key').contains(e.target)) toggleKey(false); });
 
-  // ---- start over (asks once) ----
-  let armT;
-  $('wipe').addEventListener('click', () => {
-    const w = $('wipe');
-    if (!w.classList.contains('armed')) {
-      w.classList.add('armed'); w.textContent = 'Reset?';
-      armT = setTimeout(() => { w.classList.remove('armed'); w.textContent = '↺'; }, 3000);
-      return;
-    }
-    clearTimeout(armT); w.classList.remove('armed'); w.textContent = '↺';
-    restart();
-  });
-  function restart() { tick++; S = fresh(); last = []; missRun = 0; save(); $('fin').hidden = true; $('card').hidden = false; next(); }
-  $('again').addEventListener('click', restart);
+  $('again').addEventListener('click', () => { tick++; S.run = newRun(); S.warm = null; lastIdea = null; save(); next(); });
 
-  load();
-  next();
-  if (/[?&]debug\b/.test(location.search)) window.sf = { S: () => S, cur: () => cur, KINDS, render };
+  function start() {
+    tick++; load(); lastIdea = null;
+    // a later session after finishing: a quick warm-up, one hard kind per idea
+    const since = Math.max(S.doneAt || 0, S.warmAt || 0);
+    if (S.done && !S.checkedAt && !S.warm && remaining() === 0 && Date.now() - since > WARM_AFTER) {
+      S.warm = shuffle(Object.keys(IDEAS).map(i => any(IDEAS[i].hard)));
+      S.run.answers = 0; save();
+    }
+    if (S.done && remaining() === 0) { progress(); $('card').hidden = true; $('fin').hidden = false; return; }
+    next();
+  }
+  start();
+  // coming back from the analytics page (which can change the state)
+  window.addEventListener('pageshow', e => { if (e.persisted) start(); });
+  if (/[?&]debug\b/.test(location.search)) window.sf = { S: () => S, cur: () => cur, KINDS, render, start };
 })();
 </script>

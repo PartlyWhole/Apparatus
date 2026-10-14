@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Analytics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500;600;700&display=swap">
+<style>
+:root {
+  --bg: #EEF2F7; --surface: #FFFFFF; --ink: #13203A; --muted: #5F6F8A; --line: #D3DBE7;
+  --accent: #2648C9; --on-accent: #FFFFFF; --good: #17804F; --bad: #C2413A; --warn: #A15C00;
+  --f-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B1120; --surface: #131C2E; --ink: #E4EAF4; --muted: #95A4BF; --line: #26344F;
+    --accent: #8AA8FF; --on-accent: #0B1120; --good: #4CC38A; --bad: #FF8F85; --warn: #F2B35B; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B1120; --surface: #131C2E; --ink: #E4EAF4; --muted: #95A4BF; --line: #26344F;
+  --accent: #8AA8FF; --on-accent: #0B1120; --good: #4CC38A; --bad: #FF8F85; --warn: #F2B35B; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 var(--f-body); }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+main { max-width: 40rem; margin: 0 auto; padding: 20px 16px 56px; }
+.top { display: flex; align-items: center; gap: 6px; margin-bottom: 12px; }
+.top a { min-width: 44px; min-height: 44px; display: grid; place-items: center; color: var(--muted); text-decoration: none; font-size: 1.1rem; }
+.top a:hover { color: var(--accent); }
+h1 { font-size: 1.5rem; margin: 0; }
+section { margin-top: 28px; }
+h2 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 0 0 10px; }
+.status { font-size: 1.25rem; font-weight: 700; }
+.status.ok { color: var(--good); }
+.sub { color: var(--muted); margin-top: 2px; }
+.ideas { display: grid; gap: 8px; }
+.idea { display: grid; grid-template-columns: 6.5rem 1fr auto; gap: 12px; align-items: center; padding: 12px 14px; border-radius: 14px; background: var(--surface); box-shadow: 0 0 0 1px var(--line); }
+.idea b { font-weight: 700; }
+.dots { display: flex; flex-wrap: wrap; gap: 5px; }
+.dots i { width: 12px; height: 12px; border-radius: 50%; background: var(--good); }
+.dots i.no { background: var(--bad); }
+.dots i.warm { outline: 2px solid var(--accent); outline-offset: 1px; }
+.dots i.key { opacity: 0.45; }
+.idea .st { font-size: 0.9rem; color: var(--muted); text-align: right; white-space: nowrap; }
+.idea .st.ok { color: var(--good); font-weight: 700; }
+.idea .st.no { color: var(--bad); font-weight: 700; }
+.legend { margin-top: 8px; font-size: 0.85rem; color: var(--muted); display: flex; gap: 14px; flex-wrap: wrap; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 10px; height: 10px; border-radius: 50%; background: var(--good); display: inline-block; }
+.notes { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+.notes li { padding: 12px 14px; border-radius: 14px; background: var(--surface); box-shadow: 0 0 0 1px var(--line); }
+.notes li.ok { box-shadow: 0 0 0 1.5px var(--good); }
+.notes .n { font-family: var(--f-mono); font-weight: 700; }
+.notes p { margin: 4px 0 0; }
+.notes .do { color: var(--muted); }
+details { margin-top: 28px; }
+summary { cursor: pointer; color: var(--muted); font-size: 0.9rem; }
+table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.92rem; }
+td { padding: 6px 4px; border-bottom: 1px solid var(--line); }
+td.n { font-family: var(--f-mono); font-weight: 600; }
+td.no { color: var(--bad); }
+td.t { color: var(--muted); text-align: right; white-space: nowrap; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.actions button { min-height: 42px; padding: 0 16px; border-radius: 999px; border: 2px solid var(--line); background: var(--surface); font-weight: 700; font-size: 0.92rem; }
+.actions button:hover { border-color: var(--accent); }
+.actions button.armed { border-color: var(--bad); color: var(--bad); }
+.empty { color: var(--muted); }
+@media (max-width: 420px) { .idea { grid-template-columns: 5.2rem 1fr; } .idea .st { grid-column: 1 / -1; text-align: left; } }
+</style>
+
+<main>
+  <div class="top"><a id="back" href="counters/sci-form.html" aria-label="Back">←</a><h1 id="title">Scientific or Not</h1></div>
+
+  <section><div class="status" id="status"></div><div class="sub" id="sub"></div></section>
+  <section><h2>By answer</h2><div class="ideas" id="ideas"></div>
+    <div class="legend"><span><i></i>right</span><span><i style="background:var(--bad)"></i>wrong</span><span><i style="outline:2px solid var(--accent);outline-offset:1px"></i>next-session check</span><span><i style="opacity:.45"></i>key was open</span></div>
+  </section>
+  <section><h2>What to do</h2><ul class="notes" id="notes"></ul></section>
+  <section><h2>Adjust</h2><div class="actions" id="actions"></div></section>
+  <details><summary>Every answer</summary><table id="log"></table></details>
+</main>
+
+<script>
+(function () {
+  const KEY = 'apparatus.sci-form.v2';
+  const NAME = { dec: 'Decimal', sci: 'Scientific', none: 'Neither' };
+  const HARD = { dec: ['dec-one', 'dec-small'], sci: ['sci-small', 'sci-bare'], none: ['fake-ten', 'fake-small'] };
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const day = t => new Date(t).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  const secs = ms => (ms / 1000).toFixed(ms < 10000 ? 1 : 0) + 's';
+  const median = a => { if (!a.length) return null; const b = a.slice().sort((x, y) => x - y); return b[Math.floor(b.length / 2)]; };
+
+  if (document.referrer && /sci-form\.html/.test(document.referrer)) $('back').addEventListener('click', e => { e.preventDefault(); history.back(); });
+
+  let S;
+  const load = () => { try { S = JSON.parse(localStorage.getItem(KEY)); } catch (e) { S = null; } };
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+
+  // what a particular wrong answer usually means, and what to try — in plain words
+  function diagnose(want, chose, kind) {
+    if (want === 'none' && chose === 'sci') return ['Sees × 10ⁿ and stops looking. Doesn’t count the digits before the point.',
+      'Cover the × 10ⁿ. Ask them to count the digits before the point. Scientific notation needs exactly one.'];
+    if (want === 'none' && chose === 'dec') return ['Doesn’t treat × 10ⁿ as part of the number.',
+      'Point to the × 10ⁿ and ask: “Is this part of the number?” Then count the digits before the point.'];
+    if (want === 'dec' && chose === 'sci') return [kind === 'dec-one' ? 'Sees one digit before the point and calls it scientific, without checking for × 10ⁿ.' : 'Calls a plain number scientific.',
+      'Ask: “Where is the power of ten?” No × 10ⁿ means it’s just a decimal.'];
+    if (want === 'dec' && chose === 'none') return ['May think a decimal needs a point, or that small numbers like 0.004 are something else.',
+      'Any plain number — 4,560 or 0.004 — is a decimal. Only × 10ⁿ makes it something else.'];
+    if (want === 'sci' && chose === 'none') return [kind === 'sci-small' ? 'Unsure that a negative power (10⁻⁴) still counts.' : kind === 'sci-bare' ? 'Thinks the front number needs a point (7 × 10⁵ is fine).' : 'Not sure what makes scientific notation valid.',
+      'The only rules: one digit (not 0) before the point, times a power of ten. The power can be negative, and the point can be left off.'];
+    if (want === 'sci' && chose === 'dec') return ['Doesn’t treat × 10ⁿ as part of the number.',
+      'Point to the × 10ⁿ: a decimal never has one.'];
+    return ['', ''];
+  }
+
+  function render() {
+    load();
+    const log = (S && S.log) || [];
+    if (!S || !log.length) {
+      $('status').textContent = 'Not started'; $('sub').textContent = '';
+      $('ideas').innerHTML = ''; $('notes').innerHTML = '<li class="empty">Nothing yet.</li>'; $('log').innerHTML = '';
+      actions(); return;
+    }
+    const R = S.run, needy = Object.keys(R.need).filter(i => R.need[i] > 0);
+    const runLeft = (3 - R.open) + R.probe.length + needy.reduce((a, i) => a + R.need[i], 0) + (S.warm ? S.warm.length : 0);
+    const lastWarmMiss = !!S.checkMissed;
+
+    // ---- status ----
+    if (S.done && !runLeft) {
+      $('status').textContent = '✓ Passed'; $('status').className = 'status ok';
+      $('sub').textContent = `${day(S.doneAt)} · ` + (S.checkedAt ? `next-session check passed ${day(S.checkedAt)}`
+        : S.checkMissed ? `next-session check had a miss (${day(S.warmAt)}) · it runs again next session` : 'next-session check opens next time (8+ hours later)');
+    } else if (S.warm && S.warm.length || (S.done && runLeft)) {
+      $('status').textContent = S.warm && S.warm.length ? 'Next-session check in progress' : 'Extra practice in progress'; $('status').className = 'status';
+      $('sub').textContent = `Passed ${day(S.doneAt)} · ${runLeft} to go`;
+    } else {
+      $('status').textContent = 'In progress'; $('status').className = 'status';
+      $('sub').textContent = `${log.length} answered · about ${runLeft} to go`;
+    }
+
+    // ---- by answer ----
+    $('ideas').innerHTML = ['dec', 'sci', 'none'].map(i => {
+      const xs = log.filter(x => x.idea === i);
+      const dots = xs.slice(-24).map(x => `<i class="${x.right ? '' : 'no'}${x.mode === 'warm' ? ' warm' : ''}${x.key ? ' key' : ''}" title="${esc(x.txt)}${x.right ? '' : ' → ' + NAME[x.chose]}"></i>`).join('');
+      const med = median(xs.filter(x => x.right).map(x => x.ms));
+      const st = R.need[i] > 0 ? `<span class="st no">${R.need[i]} more</span>` : xs.length ? `<span class="st ok">✓${med ? ' · ' + secs(med) : ''}</span>` : '<span class="st">—</span>';
+      return `<div class="idea"><b>${NAME[i]}</b><div class="dots">${dots}</div>${st}</div>`;
+    }).join('');
+
+    // ---- what to do ----
+    const notes = [];
+    const misses = log.filter(x => !x.right);
+    const groups = {};
+    misses.forEach(x => { const k = x.idea + '>' + x.chose; (groups[k] = groups[k] || []).push(x); });
+    Object.values(groups).sort((a, b) => b.length - a.length).forEach(g => {
+      const x = g[g.length - 1], [what, todo] = diagnose(x.idea, x.chose, x.kind);
+      const fixed = log.filter(y => y.idea === x.idea && y.at > x.at).slice(-2);
+      const since = fixed.length >= 2 && fixed.every(y => y.right);
+      notes.push(`<li${since ? ' class="ok"' : ''}><span class="n">${esc(x.txt)}</span> → called it <b>${NAME[x.chose]}</b>${g.length > 1 ? ` (${g.length}×)` : ''}${since ? ' · since fixed' : ''}
+        <p>${what}</p><p class="do">${todo}</p></li>`);
+    });
+    const recent = log.slice(-12), wrongRate = recent.filter(x => !x.right).length / recent.length;
+    if (recent.length >= 8 && wrongRate >= 0.4) notes.unshift('<li><b>Many misses in a row.</b><p>This may be guessing. Stop and ask “why?” after each answer, or go through the ? key together.</p></li>');
+    const keyed = log.filter(x => x.key).length;
+    if (keyed >= 2) notes.push(`<li><b>Answered ${keyed} with the key open.</b><p class="do">Those answers don’t show what they remember. Try a few with the key closed.</p></li>`);
+    const med = median(log.filter(x => x.right).map(x => x.ms));
+    if (S.done && med > 8000) notes.push(`<li><b>Right, but slow (typical ${secs(med)}).</b><p class="do">Fine to move on. Speed comes from later practice.</p></li>`);
+    if (S.done && !runLeft && lastWarmMiss) notes.unshift('<li><b>Missed something on the next-session check.</b><p class="do">It was practiced right away and will be checked again next session. See below for what was missed.</p></li>');
+    else if (S.done && !runLeft) notes.unshift(`<li class="ok"><b>Ready for the next step.</b>${S.checkedAt ? '' : '<p class="do">A 3-question check opens automatically next session.</p>'}</li>`);
+    else if (!misses.length) notes.push('<li class="empty">No misses yet.</li>');
+    $('notes').innerHTML = notes.join('');
+
+    // ---- every answer ----
+    $('log').innerHTML = log.slice().reverse().map(x =>
+      `<tr><td class="n">${esc(x.txt)}</td><td class="${x.right ? '' : 'no'}">${x.right ? '✓ ' + NAME[x.chose] : '✗ ' + NAME[x.chose] + ' (' + NAME[x.idea] + ')'}</td><td class="t">${secs(x.ms)}${x.mode === 'warm' ? ' · check' : ''}${x.key ? ' · key' : ''}</td><td class="t">${day(x.at)}</td></tr>`).join('');
+    actions();
+  }
+
+  // ---- adjustments ----
+  function actions() {
+    const a = $('actions'); a.innerHTML = '';
+    const add = (label, fn, confirm) => {
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = label;
+      b.addEventListener('click', () => {
+        if (confirm && !b.classList.contains('armed')) { b.classList.add('armed'); b.textContent = label + '?'; setTimeout(() => { b.classList.remove('armed'); b.textContent = label; }, 3000); return; }
+        fn(); save(); render();
+      });
+      a.appendChild(b);
+    };
+    if (!S || !S.run) { add('Start over', () => { S = null; try { localStorage.removeItem(KEY); } catch (e) {} }, true); return; }
+    ['dec', 'sci', 'none'].forEach(i => add('More ' + NAME[i], () => {
+      // two more on this idea: an easier one, then a hard one
+      S.run.need[i] = 2; S.run.missed[i] = S.run.missed[i] || HARD[i][Math.floor(Math.random() * 2)];
+    }));
+    if (!S.done) add('Mark passed', () => { S.done = true; S.doneAt = Date.now(); S.run.open = 3; S.run.probe = []; S.run.need = { dec: 0, sci: 0, none: 0 }; S.warm = null; }, true);
+    add('Start over', () => { S = null; try { localStorage.removeItem(KEY); } catch (e) {} }, true);
+  }
+
+  render();
+  window.addEventListener('pageshow', e => { if (e.persisted) render(); });
+})();
+</script>
