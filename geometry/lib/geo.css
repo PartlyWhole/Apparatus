@@ -90,3 +90,11 @@
 .gq .say.bad { color: var(--ink); }
 .gq .q.final { min-height: 1.2em; }
 .gq .q.final .ok { color: var(--good); }
+
+/* a point answer (x, y) — midpoint */
+.gq .mpq { gap: 0.2em; }
+.gq .mp { width: 4.6ch; padding: 6px 4px; border-radius: 10px; border: 2px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; text-align: center; }
+.gq .mp:focus { outline: none; border-color: var(--accent); }
+.gq .mp.bad { border-color: var(--bad); animation: gshake 0.3s ease; }
+.gq .mp.ok { border-color: var(--good); color: var(--good); }
+.gq .mp.no { border-color: var(--bad); color: var(--bad); }

@@ -1,6 +1,6 @@
 # Geometry: Lines on the Coordinate Plane (Module 4) — plan
 
-Status: G1–G5 live (geometry/rise-run, two-points, equation-slope, relation, other-slope); G6–G13 designed · Source: Ch. 4 Test A (Module 4, Form A), 20 questions · Section: Geometry in the library
+Status: G1–G8 live (geometry/rise-run, two-points, equation-slope, relation, other-slope, find-b, write-line, midpoint); G9–G13 designed · Source: Ch. 4 Test A (Module 4, Form A), 20 questions · Section: Geometry in the library
 
 ## The thinking behind the test
 
@@ -60,6 +60,8 @@ Each follows the house pattern: tutorial only where the idea is new (G1, G4's tu
 ## Decided (2026-10-14)
 - Fractions: stacked boxes; a minus typed in either box; empty bottom = 1; "undefined" is a chip.
 - An equal but unsimplified answer (2/4) gets a "Simplify." nudge and isn't graded.
+- G7 is a step chain (m → ∥/⟂ m → b): a wrong step says why, then fresh boxes in place; first tries are graded. The next-session check asks for y = [m]x + [b] at once.
+- G8 answers are (x, y) boxes that take decimals (6.5).
 - Built in `geometry/` with its own libraries (`geometry/lib/`: grid, frac, lines, geo.css, page) and its own analytics page (`geometry/analytics.html`), so it doesn't touch the science set.
 
 ## Open questions (remaining)

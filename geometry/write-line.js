@@ -6,12 +6,14 @@
   const F = Frac, L = Lines, { r, any } = L;
   const nz = (a, b) => { let v = 0; while (v === 0) v = r(a, b); return v; };
   const show = f => f.undef ? 'undefined' : f.d === 1 ? L.neg(f.n) : [2, 4, 5, 10].includes(f.d) ? L.neg(String(f.n / f.d)) : F.text(f);
+  const sl = f => F.text(f);
   const pt = p => `(${show(p[0])}, ${show(p[1])})`;
   const plain = h => h.replace(/<span class="fr"><span>(\d+)<\/span><span>(\d+)<\/span><\/span>/g, '$1/$2').replace(/<[^>]+>/g, '');
 
   // a given line: { form: 'si', m, b } | { form: 'std', A, B, C } | { form: 'h', c } | { form: 'v', c }
   const gSlope = g => g.form === 'si' ? g.m : g.form === 'std' ? F.of(-g.A.n * g.B.d, g.A.d * g.B.n) : g.form === 'h' ? F.of(0) : F.UNDEF;
   const gHTML = g => g.form === 'si' ? L.si(g.m, g.b) : g.form === 'std' ? L.std(g.A, g.B, g.C) : g.form === 'h' ? `y = ${show(g.c)}` : `x = ${show(g.c)}`;
+  const hvItem = it => it.g.form === 'h' || it.g.form === 'v';
   const newSlope = it => it.rel === 'par' ? gSlope(it.g) : F.perp(gSlope(it.g));
   const B = it => F.sub(it.p[1], F.mul(newSlope(it), it.p[0]));
   // the answer, written: y = mx + b, y = c or x = c
@@ -33,17 +35,17 @@
     return `${plain(L.term(g.B, 'y', true))} = ${plain([L.term(negA, 'x', true), L.constant(g.C, false)].filter(Boolean).join(' '))} → ${plain(L.si(m, bC))}`;
   }
   const say = {
-    given: it => { const g = it.g, m = gSlope(g); return g.form === 'std' ? `Solve for y: ${stdWork(g)}. Slope ${show(m)}.` : g.form === 'h' ? `y = ${show(g.c)} is flat: slope 0.` : g.form === 'v' ? `x = ${show(g.c)} is vertical: slope undefined.` : `The slope is the number with x: ${show(m)}.`; },
-    slope: it => { const m = gSlope(it.g), n = newSlope(it); return it.rel === 'par' ? `Parallel lines have the same slope: ${show(n)}.` : m.undef || m.n === 0 ? `Perpendicular to a ${m.undef ? 'vertical' : 'flat'} line is ${m.undef ? 'flat' : 'vertical'}: ${show(n)}.` : `Flip and change the sign: perpendicular to ${show(m)} is ${show(n)}.`; },
-    b: it => { const n = newSlope(it), x = it.p[0], mx = F.mul(n, x); return `b = y − m·x = ${show(it.p[1])} − ${n.n < 0 ? `(${show(n)})` : show(n)}·${x.n < 0 ? `(${show(x)})` : show(x)} = ${show(B(it))}.`; },
+    given: it => { const g = it.g, m = gSlope(g); return g.form === 'std' ? `Solve for y: ${stdWork(g)}. Slope ${sl(m)}.` : g.form === 'h' ? `y = ${show(g.c)} is flat: slope 0.` : g.form === 'v' ? `x = ${show(g.c)} is vertical: slope undefined.` : `The slope is the number with x: ${sl(m)}.`; },
+    slope: it => { const m = gSlope(it.g), n = newSlope(it); return it.rel === 'par' ? `Parallel lines have the same slope: ${sl(n)}.` : m.undef || m.n === 0 ? `Perpendicular to a ${m.undef ? 'vertical' : 'flat'} line is ${m.undef ? 'flat' : 'vertical'}: ${sl(n)}.` : `Flip and change the sign: perpendicular to ${sl(m)} is ${sl(n)}.`; },
+    b: it => { const n = newSlope(it), x = it.p[0], mx = F.mul(n, x); return `b = y − m·x = ${show(it.p[1])} − ${n.n < 0 ? `(${sl(n)})` : sl(n)}·${x.n < 0 ? `(${show(x)})` : show(x)} = ${show(B(it))}.`; },
     hv: it => { const n = newSlope(it); return n.undef ? `A vertical line through ${pt(it.p)}: every point has x = ${show(it.p[0])}.` : `A flat line through ${pt(it.p)}: every point has y = ${show(it.p[1])}.`; }
   };
 
   // the steps: [label HTML, the box, the right value, error type]
   function steps(it) {
     const n = newSlope(it), out = [
-      [`slope of ${gHTML(it.g)}`, 'given', gSlope(it.g), 'given'],
-      [`${it.rel === 'par' ? '∥' : '⟂'} slope`, 'slope', n, 'slope']
+      ['m =', 'given', gSlope(it.g), 'given'],
+      [`${it.rel === 'par' ? '∥' : '⟂'} m =`, 'slope', n, 'slope']
     ];
     if (n.undef) out.push(['x =', 'x', it.p[0], 'hv']);
     else if (n.n === 0) out.push(['y =', 'y', it.p[1], 'hv']);
@@ -59,7 +61,7 @@
     const list = el.querySelector('.wl'), sayEl = el.querySelector('.say'), n = newSlope(it);
     const flatOrUp = n.undef || n.n === 0;
     // each row: [label before, [[box name, right value, error type, undef chip]], label after]
-    const all = !direct ? steps(it).map(([lab, name, want, type]) => [lab, [[name, want, type, type === 'given' || type === 'slope']], ''])
+    const all = !direct ? steps(it).map(([lab, name, want, type]) => [lab, [[name, want, type, (type === 'given' || type === 'slope') && hvItem(it)]], ''])
       : flatOrUp ? [[steps(it)[2][0], [[steps(it)[2][1], steps(it)[2][2], 'hv', false]], '']]
       : [['y =', [['m', n, 'slope', false], ['b', B(it), 'b', false]], '']];
     let i = 0;

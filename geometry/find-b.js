@@ -58,7 +58,7 @@
     ask(el, it, submit, ctx) {
       el.innerHTML = `<div class="gq">${onGrid(it) ? '<div class="gridbox"></div>' : ''}<div class="q">${L.term(it.m, 'x', true) ? `y = ${L.term(it.m, 'x', true)} + ` : 'y = '}${F.box('b')}</div>
         <div class="q small">through ${pt(it.p)}</div><p class="say" aria-live="polite"></p><button type="button" class="go">Check</button><div class="work" aria-live="polite"></div></div>`;
-      if (onGrid(it)) { const g = G.make(el.querySelector('.gridbox')); g.line([0, B(it).n], [it.p[0].n, it.p[1].n], 'ln faint'); g.dot([it.p[0].n, it.p[1].n], 'pt', pt(it.p)); if (ctx.mode === 'open') picture(el.querySelector('.gridbox'), it, true); }
+      if (onGrid(it)) { const g = G.make(el.querySelector('.gridbox')); g.dot([it.p[0].n, it.p[1].n], 'pt', pt(it.p)); }
       el._f = F.wire(el, { want: () => B(it), onSubmit: v => submit(v.b) });
     },
     correct: it => F.text(B(it)),
@@ -71,17 +71,16 @@
       return 'other';
     },
     feedback(it, w, a, kind, err) {
-      const wk = work(it);
-      if (err === 'sign') return ['work', `Take m·x away from y (don’t add it): ${wk}.`];
-      if (err === 'mx') return ['work', `Multiply the slope by x first: ${wk}.`];
-      if (err === 'xy') return ['work', `Use the point’s y, take away m times its x: ${wk}.`];
-      return ['work', `${wk}.`];
+      if (err === 'sign') return ['work', 'Take m·x away from y; don’t add it.'];
+      if (err === 'mx') return ['work', 'Multiply the slope by x first.'];
+      if (err === 'xy') return ['work', 'Use the point’s y, minus m times its x.'];
+      return ['work', 'Work out m·x first, then take it from y.'];
     },
     reveal(el, it, a, o) {
       el._f && el._f.mark('b', o.right);
       if (o.right) return;
       el.querySelector('.work').textContent = work(it);
-      if (onGrid(it)) picture(el.querySelector('.gridbox'), it, true);
+      if (onGrid(it)) { const gb = el.querySelector('.gridbox'); gb.innerHTML = ''; picture(gb, it, true); }
     },
     errors: { sign: 'added m·x instead of subtracting', mx: 'forgot to multiply by x', xy: 'mixed up x and y', other: 'arithmetic' },
     diagnose(err) {
