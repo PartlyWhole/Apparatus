@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Analytics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="../engine/exercise.css?v=4">
+<body class="analytics">
+<main id="main"></main>
+<script src="../engine/exercise.js?v=13"></script>
+<script>
+// geometry/analytics.html#<exercise id> — like the main analytics page, for the geometry exercises (definitions in this folder)
+(function () {
+  const id = (location.hash.slice(1) || '').replace(/[^a-z0-9-]/gi, '');
+  const main = document.getElementById('main');
+  if (!id) { main.innerHTML = '<p class="empty">No exercise.</p>'; return; }
+  const FILE = { 'geo-rise': 'rise-run', 'geo-two-points': 'two-points', 'geo-equation': 'equation-slope', 'geo-relation': 'relation', 'geo-other-slope': 'other-slope' };
+  const LIBS = ['lib/frac.js?v=1', 'lib/lines.js?v=1', 'lib/grid.js?v=1', `${FILE[id] || id}.js?v=1`];
+  const load = i => {
+    if (i === LIBS.length) return Apparatus.defs[id] ? Apparatus.analytics(Apparatus.defs[id], main, `${FILE[id] || id}.html`) : (main.innerHTML = '<p class="empty">No exercise.</p>');
+    const l = document.createElement('script'); l.src = LIBS[i]; l.onload = () => load(i + 1); l.onerror = () => { main.innerHTML = '<p class="empty">No exercise.</p>'; }; document.body.appendChild(l);
+  };
+  load(0);
+})();
+</script>
+</body>
