@@ -13,6 +13,10 @@ The exercises in order, what each needs first, and which later exercises review 
 | 7 | **Break Down** (`prefix-down`): 1 m = ? km | live | 6 | 8, 9 |
 | 8 | **Between Prefixes** (`prefix-between`): 1 cm = ? µm, as 10ⁿ and as a number | live | 6, 7 | 9 |
 | 9 | **Conversion Fractions** (`prefix-fraction`): ? m / ? cm, no line | live | 6–8 | unit chains |
+| 10 | **Unit Facts** (`unit-facts`): the table, multiple choice then written | live | — | 11–13 |
+| 11 | **Two-Step Conversions** (`unit-chain`): fraction chains, step by step | live | 9, 10 | 12, 13 |
+| 12 | **Rates** (`unit-rates`): mi/hr → m/s, two units at once | live | 11 | 13 |
+| 13 | **Mixed Conversions** (`unit-mixed`): facts, chains, rates on their own | live | 10–12 | |
 
 ## Candidates (from the older progressions and the user's earlier requests, not yet designed for the new set)
 

@@ -14,6 +14,15 @@ What a particular wrong answer usually means, and what a tutor can do in 30 seco
 | Calls 6.2 × 10⁻⁴ "neither" | Thinks negative powers don't count | The power can be negative | expected |
 | Calls 7 × 10⁵ "neither" | Thinks the front number needs a point | The point can be left off | expected |
 
+## Prefixes and units
+
+| Pattern | Likely wrong rule | Tutor move | Status |
+|---|---|---|---|
+| 1 g = 10,000 µg (or 1 kg = 10,000 g) | "Each prefix is one step": misses the empty spots between m and µ, k and M | Count every spot on the line, empty ones too | expected |
+| 1 m = 1,000 km | Big number for the smaller-to-bigger direction | "Is a meter bigger or smaller than a kilometer?" | expected |
+| 1 hr / 24 day | Puts the fact's numbers on the wrong units | Read the fraction as an equation: 24 hr = 1 day | expected |
+| day on top of the fraction when 2 day is on top | Doesn't see that cancelling needs opposite sides | Point to where the unit is now; cancel = other side | expected |
+
 ## Powers of ten (for upcoming exercises)
 
 | Pattern | Likely wrong rule | Tutor move | Status |
