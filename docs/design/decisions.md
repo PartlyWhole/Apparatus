@@ -2,6 +2,7 @@
 
 Newest first. One line per decision: date — what — why (and who asked). When a decision is reversed, add a new line; don't delete the old one. The other docs describe only the current state.
 
+- 2026-10-14 — Miss penalty default raised to 4 (options 1–5): students should be getting most right. (user)
 - 2026-10-14 — Exponent sign is a + / − toggle beside a digits-only field (typing "-" flips the toggle); it never edits the number. Shared helper `Places.signToggle`. (user correction)
 - 2026-10-14 — Factor Out: after the opening the power is hidden while moving; once the point is right the student writes the power (× 10^[ ]), so they must count, not just click the right spot. (user)
 - 2026-10-14 — Places rows: a previewed number is one color (new zeros look like the digits, so 0.00045 reads as one number); the original trailing zeros that end up after the point are ghosted (4.5 + ghosted 00), not hidden. Light zeros remain only for a wrong pick's zeros and in pictures. Same in Moving the Point. (user, refining "trailing zeros should disappear")

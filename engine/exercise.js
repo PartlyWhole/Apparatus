@@ -27,8 +27,9 @@
   //   tricky: tricky questions per idea                   speed: seconds; slower right answers don't count yet (0 = off)
   //   check:  a short check next session                  key:   show the ? key
   //   tutorial: run the tutorial on the first visit (only if the exercise has one)
-  //   fix is the miss penalty: right answers needed on that idea after a miss, and how far the bar drops (default 3, to discourage guessing)
-  const RULE_DEFAULTS = { intro: true, tricky: 2, fix: 3, speed: 0, check: true, key: true, tutorial: true };
+  //   fix is the miss penalty: right answers needed on that idea after a miss, and how far the bar drops
+  //   (default 4: strong, so students aim to get nearly everything right and guessing doesn't pay)
+  const RULE_DEFAULTS = { intro: true, tricky: 2, fix: 4, speed: 0, check: true, key: true, tutorial: true };
   A.RULE_DEFAULTS = RULE_DEFAULTS;
   A.loadSettings = def => Object.assign({}, RULE_DEFAULTS, def.defaults || {}, read(setKey(def)) || {});
   A.saveSettings = (def, s) => write(setKey(def), s);
@@ -451,7 +452,7 @@
       const RULES = [
         def.opening && ['intro', 'Opening examples', [[true, 'On'], [false, 'Off']], 'The contrast examples at the start.'],
         T > 1 && ['tricky', 'Tricky questions', Array.from({ length: T }, (_, k) => [k + 1, String(k + 1)]), 'Per idea. These are what count as passing.'],
-        ['fix', 'Miss penalty', [[1, '1'], [2, '2'], [3, '3'], [4, '4']], 'After a miss: this many more right answers on that idea, and the progress bar drops as much. Higher discourages guessing.'],
+        ['fix', 'Miss penalty', [[1, '1'], [2, '2'], [3, '3'], [4, '4'], [5, '5']], 'After a miss: this many more right answers on that idea, and the progress bar drops as much. Higher discourages guessing.'],
         ['speed', 'Speed', [[0, 'Off'], [10, '10 s'], [6, '6 s']], 'A slower right answer doesn’t count yet and comes back later.'],
         ['check', 'Next-session check', [[true, 'On'], [false, 'Off']], 'A few quick questions the next time the page is opened.'],
         (def.key || def.keyHTML) && ['key', '? key', [[true, 'Shown'], [false, 'Hidden']], 'Examples to look back at.'],

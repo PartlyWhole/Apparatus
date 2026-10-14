@@ -17,7 +17,7 @@
 |---|---|---|---|
 | Opening examples | On / Off | On | the contrast set at the start (only if the exercise has one) |
 | Tricky questions | 1 … max per idea | 2 | the probes that count as passing |
-| Miss penalty | 1 / 2 / 3 / 4 | 3 | after a miss: this many more right answers on that idea (only penalty questions count), and the bar drops as much |
+| Miss penalty | 1–5 | 4 | after a miss: this many more right answers on that idea (only penalty questions count), and the bar drops as much |
 | Speed | Off / 10 s / 6 s | Off | a slower right answer doesn't count yet and comes back |
 | Next-session check | On / Off | On | the short check 8+ hours after passing |
 | ? key | Shown / Hidden | Shown | only if the exercise has a key |
