@@ -29,12 +29,12 @@
     kinds: {
       'grid-up':   mk('grid', () => gridPair(any([1, 2, 3]), any([1, 2, 3]))),
       'grid-down': mk('grid', () => gridPair(any([1, 2, 3]), -any([1, 2, 3]))),
-      'big':       mk('numbers', () => { const a = [r(5, 15), r(-25, -5)], dx = any([2, 3, 4]), m = any([2, 3, 4, -2, -3]); return { a, b: [a[0] + dx, a[1] + m * dx] }; }),
-      'negs':      mk('numbers', () => { const a = [-r(2, 6), r(5, 20)], dx = any([3, 4, 5]), dy = any([-1, 1, -2, 3]) * any([1, 2]); return { a, b: [a[0] + dx, a[1] + dy] }; }),
+      'big':       mk('numbers', () => { const a = [r(1, 6), r(-5, -2)], dx = any([1, 2]), m = any([2, 3, -2, -1]); return { a, b: [a[0] + dx, a[1] + m * dx] }; }),
+      'negs':      mk('numbers', () => { const a = [-r(1, 5), -r(1, 6)], dx = any([2, 3, 4]), dy = any([-1, 1, -2, 2, 3]); return { a, b: [a[0] + dx, a[1] + dy] }; }),
       'flat':      mk('special', () => { const a = [r(-8, -1), r(-9, 9)]; return { a, b: [r(1, 9), a[1]] }; }),
       'vertical':  mk('special', () => { const a = [r(-9, 9), r(-9, -1)]; return { a, b: [a[0], r(1, 9)] }; })
     },
-    opening: [{ kind: 'grid-up', item: { a: [-2, -1], b: [2, 2] } }, { kind: 'negs', item: { a: [-3, 19], b: [1, 18] } }],
+    opening: [{ kind: 'grid-up', item: { a: [-2, -1], b: [2, 2] } }, { kind: 'negs', item: { a: [-3, -5], b: [1, -2] } }],
     nextOnRight: true,
     text: it => `A${pt(it.a)} and B${pt(it.b)}`,
     speak: it => `The points ${pt(it.a)} and ${pt(it.b)}. What is the slope?`,
@@ -72,7 +72,7 @@
         order: ['Subtracts the points in a different order on top and bottom, which flips the sign.', 'Label the points 1 and 2 first; take “2 minus 1” on top and on the bottom.'],
         swap: ['Puts the change in x on top.', 'Slope is rise over run: the y’s on top.'],
         zero: ['Mixes up same-y (0) and same-x (undefined).', 'Same y: no rise, slope 0. Same x: no run, can’t divide by 0.'],
-        other: ['Slips with negatives when subtracting (−9 − (−21)).', 'Rewrite “minus a negative” as plus before working it out.']
+        other: ['Slips with negatives when subtracting (−2 − (−5)).', 'Rewrite “minus a negative” as plus before working it out.']
       })[err] || ['', ''];
     },
     keyHTML: `<div class="gk"><div>slope = <span class="frs"><span class="fr"><span>y₂ − y₁</span><span>x₂ − x₁</span></span></span></div><div>same order, top and bottom</div></div>`

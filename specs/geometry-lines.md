@@ -62,6 +62,7 @@ Each follows the house pattern: tutorial only where the idea is new (G1, G4's tu
 - An equal but unsimplified answer (2/4) gets a "Simplify." nudge and isn't graded.
 - G7 is a step chain (m → ∥/⟂ m → b): a wrong step says why, then fresh boxes in place; first tries are graded. The next-session check asks for y = [m]x + [b] at once.
 - G8 answers are (x, y) boxes that take decimals (6.5).
+- Numbers stay small enough to do in your head (mostly single digits): the exercises teach the process, not arithmetic. The test's own numbers (14x − 18y = 72, (22, −8.5)) are not reused; the same traps come with small numbers.
 - Built in `geometry/` with its own libraries (`geometry/lib/`: grid, frac, lines, geo.css, page) and its own analytics page (`geometry/analytics.html`), so it doesn't touch the science set.
 
 ## Open questions (remaining)

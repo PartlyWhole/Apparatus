@@ -43,15 +43,15 @@
     kinds: {
       'grid':     mk('grid', () => gridItem(F.of(any([1, 2, 3])), false)),
       'grid-neg': mk('grid', () => gridItem(F.of(any([1, 2, -1, -2])), true)),
-      'neg-m':    mk('signs', () => ({ m: F.of(-any([2, 3, 4])), p: [F.of(r(2, 6)), F.of(nz(-9, 9))] })),
-      'neg-both': mk('signs', () => ({ m: F.of(-any([1, 2, 3])), p: [F.of(-r(2, 6)), F.of(nz(-12, 12))] })),
-      'big':      mk('signs', () => ({ m: F.of(nz(-5, 5)), p: [F.of(r(-12, 15)), F.of(r(-25, 25))] })),
-      'frac-m':   mk('frac', () => { const m = F.of(any([1, -1, 2, -3]), any([2, 3, 4, 5])); return { m, p: [F.of(m.d * nz(-3, 3)), F.of(nz(-9, 9))] }; }),
-      'decimal':  mk('frac', () => { const m = F.of(any([3, -3, 1]), 4); return { m, p: [F.of(4 * r(2, 6) + 2), F.fromDec(nz(-9, 9) + 0.5)] }; })
+      'neg-m':    mk('signs', () => ({ m: F.of(-any([2, 3])), p: [F.of(r(1, 3)), F.of(nz(-6, 6))] })),
+      'neg-both': mk('signs', () => ({ m: F.of(-any([1, 2, 3])), p: [F.of(-r(1, 3)), F.of(nz(-6, 6))] })),
+      'big':      mk('signs', () => ({ m: F.of(nz(-3, 3)), p: [F.of(nz(-3, 3)), F.of(nz(-6, 6))] })),
+      'frac-m':   mk('frac', () => { const m = F.of(any([1, -1, 2, -2]), any([3, 4, 3])); return { m, p: [F.of(m.d * any([1, -1, 2])), F.of(nz(-6, 6))] }; }),
+      'decimal':  mk('frac', () => { const m = F.of(any([1, -1]), 2), x = any([1, 3, -1, -3, 5]); return { m, p: [F.of(x), F.add(F.of(nz(-4, 4)), F.mul(m, F.of(x)))] }; })
     },
     opening: [
       { kind: 'grid', item: { m: F.of(1, 2), p: [F.of(4), F.of(3)] } },
-      { kind: 'neg-both', item: { m: F.of(-1, 4), p: [F.of(-4), F.of(-9)] } }
+      { kind: 'neg-both', item: { m: F.of(-1, 4), p: [F.of(-4), F.of(-3)] } }
     ],
     nextOnRight: true,
     text: it => `slope ${F.text(it.m)} through ${pt(it.p)}`,

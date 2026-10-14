@@ -9,8 +9,8 @@
   const siItem = (form, pool) => { const s = any(pool); return { form, m: F.of(...s), b: F.of(nz(-9, 9)) }; };
   // standard form with whole A, B: pick m = −A/B nicely, C a multiple of B
   function stdItem(easy) {
-    const B = easy ? any([1, -1]) : any([2, -2, 3, -3, 4, -4, 6, -8, -18]), A = nz(-9, 9) * (easy ? 1 : any([1, 2]));
-    return { form: 'std', A: F.of(A), B: F.of(B), C: F.of(B * nz(-6, 6)) };
+    const B = easy ? any([1, -1]) : any([2, -2, 3, -3, 4, -4]), A = nz(-6, 6);
+    return { form: 'std', A: F.of(A), B: F.of(B), C: F.of(B * nz(-4, 4)) };
   }
   const slope = it => it.form === 'std' ? (it.B.n === 0 ? F.UNDEF : F.of(-it.A.n * it.B.d, it.A.d * it.B.n)) : it.form === 'h' ? F.of(0) : it.form === 'v' ? F.UNDEF : it.m;
   const eqHTML = it => it.form === 'si' ? L.si(it.m, it.b) : it.form === 'rev' ? L.siRev(it.m, it.b) : it.form === 'std' ? L.std(it.A, it.B, it.C)
@@ -44,12 +44,12 @@
       'std-easy': mk('std', () => stdItem(true)),
       'std':      mk('std', () => stdItem(false)),
       'std-frac': mk('std', () => ({ form: 'std', A: F.of(nz(-6, 6)), B: F.of(any([1, -1]), any([2, 3])), C: F.of(nz(-9, 9)) })),
-      'h':        mk('special', () => ({ form: 'h', c: nz(-20, 20) })),
-      'v':        mk('special', () => ({ form: 'v', c: nz(-20, 20) }))
+      'h':        mk('special', () => ({ form: 'h', c: nz(-9, 9) })),
+      'v':        mk('special', () => ({ form: 'v', c: nz(-9, 9) }))
     },
     opening: [
       { kind: 'rev', item: { form: 'rev', m: F.of(-3), b: F.of(4) } },
-      { kind: 'std', item: { form: 'std', A: F.of(14), B: F.of(-18), C: F.of(72) } }
+      { kind: 'std', item: { form: 'std', A: F.of(2), B: F.of(-4), C: F.of(8) } }
     ],
     nextOnRight: true,
     text: it => plain(eqHTML(it)),
@@ -85,7 +85,7 @@
     diagnose(err) {
       return ({
         b: ['Takes the constant (where it crosses the y-axis) instead of the number with x.', 'Circle the x term first: the slope is the number in front of x, once y is alone.'],
-        sign: ['Loses the sign when moving the x term to the other side.', 'Write the step out: 14x − 18y = 72 → −18y = −14x + 72.'],
+        sign: ['Loses the sign when moving the x term to the other side.', 'Write the step out: 2x − 4y = 8 → −4y = −2x + 8.'],
         recip: ['Divides the wrong way (B/A instead of −A/B).', 'Get y alone: divide everything by the number in front of y.'],
         zero: ['Mixes up y = c (flat, 0) and x = c (vertical, undefined).', 'y = 16: every point has y 16, a flat line. x = 5: every point has x 5, a vertical line.'],
         other: ['Slips while solving for y.', 'Solve for y one step at a time, writing each step.']

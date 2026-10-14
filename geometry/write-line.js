@@ -22,11 +22,11 @@
   // items
   const SL = [[2], [3], [-2], [1, 2], [-1, 3], [1, 5], [3, 4], [-2, 3]];
   function si() { return { form: 'si', m: F.of(...any(SL)), b: F.of(nz(-9, 9)) }; }
-  function std() { const Bc = any([2, -2, 4, -4, -8, 3]), A = nz(-6, 6); return { form: 'std', A: F.of(A), B: F.of(Bc), C: F.of(Bc * nz(-8, 8)) }; }
+  function std() { const Bc = any([2, -2, 4, -4, 3]), A = nz(-4, 4); return { form: 'std', A: F.of(A), B: F.of(Bc), C: F.of(Bc * nz(-3, 3)) }; }
   // a point that makes b a whole number for the new slope
-  function point(m) { const x = m.undef || m.n === 0 ? nz(-9, 9) : m.d * nz(-4, 4); return [F.of(x), F.of(nz(-12, 12))]; }
+  function point(m) { const x = m.undef || m.n === 0 ? nz(-6, 6) : m.d * nz(-2, 2); return [F.of(x), F.of(nz(-6, 6))]; }
   function item(rel, gfun) { const g = gfun(), it = { rel, g }; it.p = point(newSlope(it)); return it; }
-  const hv = () => { const rel = any(['par', 'perp']), g = any([{ form: 'h', c: F.of(nz(-20, 20)) }, { form: 'v', c: F.of(nz(-9, 9)) }]); return { rel, g, p: [F.of(nz(-9, 9)), F.of(nz(-50, 50))] }; };
+  const hv = () => { const rel = any(['par', 'perp']), g = any([{ form: 'h', c: F.of(nz(-6, 6)) }, { form: 'v', c: F.of(nz(-6, 6)) }]); return { rel, g, p: [F.of(nz(-6, 6)), F.of(nz(-9, 9))] }; };
   const mk = (idea, f) => ({ idea, make: f });
 
   // what a wrong step means, in one sentence
@@ -98,10 +98,10 @@
       'perp-si': mk('perp', () => item('perp', si)), 'perp-std': mk('perp', () => item('perp', std)),
       hv: mk('hv', hv)
     },
-    // from the test: ⟂ to y = 1/5 x − 4 through (1, −2); ∥ to 6x − 8y = 56 through (22, −8.5)
+    // small numbers on purpose: the process, not the arithmetic
     opening: [
       { kind: 'perp-si', item: { rel: 'perp', g: { form: 'si', m: F.of(1, 5), b: F.of(-4) }, p: [F.of(1), F.of(-2)] } },
-      { kind: 'par-std', item: { rel: 'par', g: { form: 'std', A: F.of(6), B: F.of(-8), C: F.of(56) }, p: [F.of(22), F.fromDec(-8.5)] } }
+      { kind: 'par-std', item: { rel: 'par', g: { form: 'std', A: F.of(2), B: F.of(-4), C: F.of(8) }, p: [F.of(4), F.of(1)] } }
     ],
     nextOnRight: true,
     text: it => `${it.rel === 'par' ? '∥' : '⟂'} to ${plain(gHTML(it.g))} through ${pt(it.p)}`,

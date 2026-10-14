@@ -24,8 +24,8 @@
   const work = (it, c) => `(${s(it.a[c])} + ${paren(it.b[c])}) ÷ 2 = ${s(it.a[c] + it.b[c])} ÷ 2 = ${s(mid(it)[c])}`;
   const PLACES = [['the gate', 'the bench'], ['the school', 'the library'], ['the dock', 'the lighthouse']];
   function words() {
-    const [p, q] = any(PLACES), a = [nz(-9, 9), nz(-9, 9)];
-    let b; do { b = [nz(-9, 12), nz(-9, 12)]; } while ((a[0] + b[0]) % 2 === 0 && (a[1] + b[1]) % 2 === 0 || b[0] === a[0] || b[1] === a[1]);
+    const [p, q] = any(PLACES), a = [nz(-6, 6), nz(-6, 6)];
+    let b; do { b = [nz(-6, 8), nz(-6, 8)]; } while ((a[0] + b[0]) % 2 === 0 && (a[1] + b[1]) % 2 === 0 || b[0] === a[0] || b[1] === a[1]);
     return { a, b, words: [p, q] };
   }
   function picture(host, it, showMid) {
@@ -49,12 +49,12 @@
       'grid':     mk('grid', () => gridPair(true, false)),
       'grid-neg': mk('grid', () => gridPair(true, true)),
       'half':     mk('half', () => gridPair(false, false)),
-      'big':      mk('half', () => { const a = [r(-15, -2), r(5, 20)]; return { a, b: [a[0] + 2 * r(4, 12) + any([0, 1]), a[1] - r(9, 30)] }; }),
+      'big':      mk('half', () => { const a = [r(-6, -1), r(2, 8)]; return { a, b: [a[0] + r(3, 9), a[1] - r(3, 9)] }; }),
       'words':    mk('words', words)
     },
     opening: [
       { kind: 'grid', item: { a: [-4, 1], b: [2, 5] } },
-      { kind: 'big', item: { a: [1, 4], b: [12, -7] } }
+      { kind: 'big', item: { a: [1, 4], b: [6, -3] } }
     ],
     nextOnRight: true,
     text: it => it.words ? `halfway from ${it.words[0]} ${pt(it.a)} to ${it.words[1]} ${pt(it.b)}` : `midpoint of A${pt(it.a)} and B${pt(it.b)}`,

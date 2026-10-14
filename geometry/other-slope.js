@@ -5,7 +5,7 @@
   const F = Frac, G = Grid, L = Lines, { r, any } = L;
   const nz = (a, b) => { let v = 0; while (v === 0) v = r(a, b); return v; };
   // an item: { m, b?, from: 'slope' | 'line' }
-  const mk = (idea, pool, from) => ({ idea, make: () => ({ m: pool === 'zero' ? F.of(0) : pool === 'undef' ? F.UNDEF : F.of(...any(pool)), b: F.of(nz(-12, 12)), from }) });
+  const mk = (idea, pool, from) => ({ idea, make: () => ({ m: pool === 'zero' ? F.of(0) : pool === 'undef' ? F.UNDEF : F.of(...any(pool)), b: F.of(nz(-6, 6)), from }) });
   const WHOLE = [[2], [3], [4], [5]], NEGW = [[-2], [-3], [-4]], FR = [[1, 2], [2, 3], [2, 5], [3, 4]], NEGF = [[-1, 4], [-2, 3], [-1, 2], [-3, 5]];
   const given = it => it.from === 'line' ? (it.m.undef ? `x = ${L.neg(it.b.n)}` : L.si(it.m, it.b)) : `slope ${F.html(it.m)}`;
   const plain = h => h.replace(/<span class="fr"><span>(\d+)<\/span><span>(\d+)<\/span><\/span>/g, '$1/$2').replace(/<[^>]+>/g, '');
