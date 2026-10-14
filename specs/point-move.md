@@ -2,7 +2,7 @@
 
 Status: live · Skill map position: after Scientific or Not (`sci-form`); before factoring out powers of ten · Code: `exercises/point-move.js`, `exercises/point-move.html`
 
-Decided with the user (2026-10-14): tap to answer; the point moves (not the digits); faint zeros fade to dots after the tutorial and opening; ÷ 10⁻ⁿ and 10⁰ included as a late twist, taught by the operator "flip".
+Decided with the user (2026-10-14): tutor rule **Dividing**, off by default — off means only × 10ⁿ, × 10⁻ⁿ and × 10⁰ (7 questions; the opening is 3.52 × 10², 3.52 × 10⁻²; the tutorial moves left with × 10⁻¹; no "flip" and no division wording), on adds the ÷ ideas (11 questions). Hops are drawn under the digits. A right answer waits for Next. Tap to answer; the point moves (not the digits); faint zeros fade to dots after the tutorial and opening; ÷ 10⁻ⁿ and 10⁰ included as a late twist, taught by the operator "flip".
 
 ## What the student learns
 Multiplying or dividing by a power of ten moves the decimal point: × 10ⁿ moves it n places right, ÷ 10ⁿ moves it n places left, and × 10⁻ⁿ is the same as ÷ 10ⁿ (left). Empty places become zeros; a whole number's point is at its end.

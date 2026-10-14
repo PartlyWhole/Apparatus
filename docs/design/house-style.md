@@ -15,7 +15,7 @@ What the student sees and does. These rules come from the user; when they change
 | Moment | What happens |
 |---|---|
 | Question appears | Item + answer buttons. Keys 1–n (and letters if set) also answer. |
-| **Right** | The picked button turns green with ✓. No explanation, no cue. Moves on by itself after ~0.9 s. |
+| **Right** | The picked button turns green with ✓ (or, in tap mode, the answer lands and its result shows). No explanation, no cue. Moves on by itself after ~0.9 s, unless the exercise has `nextOnRight` (point-move): then the result stays until the student clicks **Next**. |
 | **Right but too slow** (only if the tutor turned speed on) | The button shows ⏱ in grey instead of ✓. Doesn't count yet; the item comes back later. Never treated as a miss. |
 | **Wrong** | The picked button turns red; the right one turns green. **One cue** appears on the item and **one sentence** explains why the *picked* answer is wrong (see `feedback.md`). The student clicks **OK** (or Enter) to continue. Answer buttons are locked until then. |
 | Progress bar | Grows smoothly on a right answer. **On a miss it takes a hit:** drops at once, the lost piece stays red briefly then drains away, and the bar thickens for a moment. Elegant, no flourish. |

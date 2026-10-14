@@ -31,7 +31,10 @@
   A.RULE_DEFAULTS = RULE_DEFAULTS;
   A.loadSettings = def => Object.assign({}, RULE_DEFAULTS, def.defaults || {}, read(setKey(def)) || {});
   A.saveSettings = (def, s) => write(setKey(def), s);
-  const WARM_AFTER = 8 * 3600e3;        // "next session" = 8+ hours after the last finish
+  const WARM_AFTER = 8 * 3600e3;
+  // an exercise may have its own rules (def.rules) that change its content: def.configure(SET) returns overrides
+  // (e.g. fewer ideas, a different opening) for the current settings
+  A.configured = (base, SET) => base.configure ? Object.assign(Object.create(base), base.configure(SET) || {}) : base;        // "next session" = 8+ hours after the last finish
 
   const ideaIds = def => Object.keys(def.ideas);
   const answerOf = (def, kind, item) => def.answer ? def.answer(item, kind) : def.kinds[kind].idea;
@@ -58,16 +61,20 @@
     R.probe = R.probe.filter(k => allowed.includes(k));
     if (!SET.intro && R.open < nOpen) R.open = nOpen;
     ideaIds(def).forEach(i => { R.need[i] = Math.min(R.need[i] || 0, SET.fix); });
+    Object.keys(R.need).forEach(i => { if (!def.ideas[i]) delete R.need[i]; });          // ideas switched off by a rule
+    const live = new Set(ideaIds(def).flatMap(i => def.ideas[i].easy.concat(def.ideas[i].hard)));
+    if (S.warm) S.warm = S.warm.filter(k => live.has(k));
     if (!SET.check && S.warm) S.warm = null;
     return S;
   }
-  const remaining = (def, S) => { const R = S.run; return ((def.opening || []).length - R.open) + R.probe.length + (S.warm ? S.warm.length : 0) + Object.values(R.need).reduce((a, b) => a + b, 0); };
+  const remaining = (def, S) => { const R = S.run; return Math.max(0, (def.opening || []).length - R.open) + R.probe.length + (S.warm ? S.warm.length : 0) + Object.values(R.need).reduce((a, b) => a + b, 0); };
 
   // =====================================================================
   // The exercise page
   // =====================================================================
   A.mount = function (id, opts) {
-    const def = A.defs[id], root = (opts && opts.root) || '../';
+    const base = A.defs[id], root = (opts && opts.root) || '../';
+    let def = base;                                  // re-made from the settings at each start (def.configure)
     document.title = def.title;
     document.body.innerHTML = `
 <div class="page">
@@ -197,8 +204,12 @@
         if (TAP) def.reveal($('q'), cur.item, a, { right: true, slow });
         else btns.forEach(b => { b.disabled = true; if (b.dataset.a === a) b.className = slow ? 'ok slow' : 'ok'; });
         $('say').textContent = slow ? 'Correct, but slow. It will come back.' : 'Correct.';
-        const t = ++tick;
-        setTimeout(() => { if (t === tick) next(); }, (TAP && def.revealMs) || 900);
+        if (def.nextOnRight) {                      // this exercise lets the result sit until the student clicks Next
+          state = 'fix'; $('okBtn').textContent = 'Next'; $('okBtn').hidden = false; $('okBtn').focus();
+        } else {
+          const t = ++tick;
+          setTimeout(() => { if (t === tick) next(); }, (TAP && def.revealMs) || 900);
+        }
       } else {                                      // wrong: one cue + one sentence on why THIS pick is wrong, then OK
         state = 'fix';
         const [cue, say] = def.feedback(cur.item, want, a, cur.kind, err);
@@ -208,7 +219,7 @@
           $('q').innerHTML = def.render(cur.item, cue);
         }
         $('why').innerHTML = say;
-        $('okBtn').hidden = false; $('okBtn').focus();
+        $('okBtn').textContent = 'OK'; $('okBtn').hidden = false; $('okBtn').focus();
       }
     }
 
@@ -224,9 +235,12 @@
     });
 
     // ---- the ? key (optional; opening it during a question is noted in the log) ----
-    $('key').innerHTML = (def.keyHTML || (def.key ? def.key.map(k => def.render(k.item, k.cue) + `<b>${k.label}</b>`).join('') : ''))
-      + (def.tutorial ? '<button type="button" class="replay" id="replay">Replay tutorial</button>' : '');
-    if (def.tutorial) $('replay').addEventListener('click', () => { toggleKey(false); runTutorial(); });
+    function buildKey() {
+      $('key').innerHTML = (def.keyHTML || (def.key ? def.key.map(k => def.render(k.item, k.cue) + `<b>${k.label}</b>`).join('') : ''))
+        + (def.tutorial ? '<button type="button" class="replay" id="replay">Replay tutorial</button>' : '');
+      if (def.tutorial) $('replay').addEventListener('click', () => { toggleKey(false); runTutorial(); });
+    }
+    function configure() { SET = A.loadSettings(base); def = A.configured(base, SET); buildKey(); }
     function toggleKey(on) {
       $('key').hidden = !on; $('help').setAttribute('aria-expanded', String(on));
       if (on && state === 'ask') keyUsed = true;
@@ -235,7 +249,7 @@
     document.addEventListener('click', e => { if (!$('key').hidden && !$('key').contains(e.target)) toggleKey(false); });
 
     // a fresh pass; the answer log (analytics) and "tutorial seen" are kept
-    function restart() { tick++; SET = A.loadSettings(def); S.run = newRun(def, SET); S.warm = null; lastIdea = null; shown = null; save(); next(); }
+    function restart() { tick++; configure(); S.run = newRun(def, SET); S.warm = null; lastIdea = null; shown = null; save(); next(); }
     $('again').addEventListener('click', restart);
     // ↺ asks once ("Reset?") before it acts
     let armT;
@@ -276,7 +290,7 @@
     $('skip').addEventListener('click', () => endTutorial(true));
 
     function start() {
-      tick++; SET = A.loadSettings(def); S = loadState(def, SET); lastIdea = null; shown = null;
+      tick++; configure(); S = loadState(def, SET); lastIdea = null; shown = null;
       $('help').hidden = !((def.key || def.keyHTML) && SET.key) && !def.tutorial; if ($('help').hidden) toggleKey(false);
       if (def.tutorial && SET.tutorial && !S.tut) { progress(); return runTutorial(); }
       // a later session after finishing: a quick check, one tricky kind per idea
@@ -290,13 +304,14 @@
     }
     start();
     window.addEventListener('pageshow', e => { if (e.persisted) start(); });   // back from analytics
-    if (/[?&]debug\b/.test(location.search)) window.ex = { S: () => S, cur: () => cur, def, start, SET: () => SET, respond, state: () => state };
+    if (/[?&]debug\b/.test(location.search)) window.ex = { S: () => S, cur: () => cur, get def() { return def; }, start, SET: () => SET, respond, state: () => state };
   };
 
   // =====================================================================
   // The analytics page (analytics.html#<id>)
   // =====================================================================
-  A.analytics = function (def, el, back) {
+  A.analytics = function (base, el, back) {
+    let def = base;                                  // re-made from the settings at each render (def.configure)
     const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
     const day = t => new Date(t).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
     const secs = ms => (ms / 1000).toFixed(ms < 10000 ? 1 : 0) + 's';
@@ -304,8 +319,9 @@
     const TAP = typeof def.ask === 'function', choices = def.choices || [];
     // what a pick is called: a button label, or (tap mode) the error type's label
     const NAME = Object.assign(Object.fromEntries(choices.map(c => [c.id, c.label])), def.errors || {});
-    const IDEA = i => def.ideas[i].name || NAME[i] || i;
-    const order = choices.map(c => c.id).filter(i => def.ideas[i]).concat(ideaIds(def).filter(i => !choices.some(c => c.id === i)));
+    const IDEA = i => ((def.ideas[i] || base.ideas[i] || {}).name) || NAME[i] || i;
+    let order = [];
+    const ordered = () => choices.map(c => c.id).filter(i => def.ideas[i]).concat(ideaIds(def).filter(i => !choices.some(c => c.id === i)));
     let S, SET;
 
     el.innerHTML = `
@@ -322,14 +338,18 @@
     const save = () => { if (S) write(stateKey(def), S); };
 
     function render() {
-      SET = A.loadSettings(def); S = read(stateKey(def));
+      SET = A.loadSettings(base); def = A.configured(base, SET); order = ordered(); S = read(stateKey(def));
+      // ideas a rule has switched off still show if they have answers
+      ((S && S.log) || []).forEach(x => { if (!order.includes(x.idea) && base.ideas[x.idea]) order.push(x.idea); });
       const log = (S && S.log) || [];
       if (!S || !log.length) {
         $('status').textContent = 'Not started'; $('status').className = 'status'; $('sub').textContent = '';
         $('ideas').innerHTML = ''; $('notes').innerHTML = '<li class="empty">Nothing yet.</li>'; $('log').innerHTML = '';
         actions(); rules(); return;
       }
-      const R = S.run, needy = ideaIds(def).filter(i => R.need[i] > 0), left = remaining(def, S);
+      const R = S.run, needy = ideaIds(def).filter(i => R.need[i] > 0);
+      Object.keys(R.need).forEach(i => { if (!def.ideas[i]) delete R.need[i]; });     // ideas switched off by a rule
+      const left = remaining(def, S);
 
       // ---- status ----
       if (S.done && !left) {
@@ -351,7 +371,7 @@
         const xs = log.filter(x => x.idea === i);
         const dots = xs.slice(-24).map(x => `<i class="${x.right ? (x.slow ? 'slow' : '') : 'no'}${x.mode === 'warm' ? ' warm' : ''}${x.key ? ' key' : ''}" title="${esc(x.txt)}${x.right ? '' : ' → ' + esc(NAME[x.chose])}"></i>`).join('');
         const med = median(xs.filter(x => x.right).map(x => x.ms));
-        const st = R.need[i] > 0 ? `<span class="st no">${R.need[i]} more</span>` : xs.length ? `<span class="st ok">✓${med ? ' · ' + secs(med) : ''}</span>` : '<span class="st">—</span>';
+        const st = !def.ideas[i] ? '<span class="st">off</span>' : R.need[i] > 0 ? `<span class="st no">${R.need[i]} more</span>` : xs.length ? `<span class="st ok">✓${med ? ' · ' + secs(med) : ''}</span>` : '<span class="st">—</span>';
         return `<div class="idea"><b>${esc(IDEA(i))}</b><div class="dots">${dots}</div>${st}</div>`;
       }).join('');
 
@@ -397,7 +417,7 @@
         a.appendChild(b);
       };
       if (S && S.run) {
-        order.forEach(i => add('More ' + IDEA(i), () => { S.run.need[i] = SET.fix; S.run.missed[i] = S.run.missed[i] || any(def.ideas[i].hard); }));
+        order.filter(i => def.ideas[i]).forEach(i => add('More ' + IDEA(i), () => { S.run.need[i] = SET.fix; S.run.missed[i] = S.run.missed[i] || any(def.ideas[i].hard); }));
         if (def.tutorial && S.tut) add('Show tutorial again', () => { S.tut = null; });
         if (!S.done) add('Mark passed', () => {
           S.done = true; S.doneAt = Date.now(); S.run.open = (def.opening || []).length; S.run.probe = [];
@@ -418,7 +438,7 @@
         ['check', 'Next-session check', [[true, 'On'], [false, 'Off']], 'A few quick questions the next time the page is opened.'],
         (def.key || def.keyHTML) && ['key', '? key', [[true, 'Shown'], [false, 'Hidden']], 'Examples to look back at.'],
         def.tutorial && ['tutorial', 'Tutorial', [[true, 'On'], [false, 'Off']], 'Runs once on the first visit. It can be replayed from the ? key.']
-      ].filter(Boolean);
+      ].concat(base.rules || []).filter(Boolean);           // the exercise's own rules: [key, label, [[value, text]…], help]
       const qs = (SET.intro && def.opening ? def.opening.length : 0) + probeList(def, SET.tricky).length;
       const same = RULES.every(([k]) => SET[k] === D[k]);
       $('rules').innerHTML = RULES.map(([k, label, opts, help]) =>

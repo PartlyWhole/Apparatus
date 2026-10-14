@@ -5,6 +5,8 @@
   const PAD = 4;                                  // empty places on each side of the digits
   const HOP_MS = 380;
   const reduced = () => window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // tutor rule "Dividing" (off by default): with it off there are no ÷ questions, and nothing talks about division
+  let DIV = false;
 
   // ---------- items ----------
   // { d: the digits, p: where the point is (digits to its left), op: '×' | '÷', e: exponent }
@@ -101,7 +103,23 @@
       'n-past':   { idea: 'neg',   make: () => ({ d: dig(2), p: 1, op: '×', e: -r(2, 3) }) },
       'n-whole':  { idea: 'neg',   make: () => ({ d: dig(2) + '00', p: 4, op: '×', e: -r(1, 2) }) },
       't-divneg': { idea: 'twist', make: () => ({ d: dig(2), p: 1, op: '÷', e: -r(1, 3) }) },
-      't-zero':   { idea: 'twist', make: () => ({ d: dig(r(2, 3)), p: 1, op: any(['×', '÷']), e: 0 }) }
+      't-zero':   { idea: 'twist', make: () => ({ d: dig(r(2, 3)), p: 1, op: DIV ? any(['×', '÷']) : '×', e: 0 }) }
+    },
+
+    defaults: { div: false },
+    rules: [['div', 'Dividing', [[false, 'Off'], [true, 'On']], 'Include ÷ 10ⁿ and ÷ 10⁻ⁿ questions.']],
+    // with dividing off: × 10ⁿ, × 10⁻ⁿ, and × 10⁰ as the twist; the opening drops its ÷ example
+    configure(S) {
+      DIV = !!S.div;
+      if (DIV) return {};
+      return {
+        ideas: {
+          right: this.ideas.right,
+          neg:   this.ideas.neg,
+          twist: { name: '× 10⁰', easy: ['t-zero'], hard: ['t-zero'], late: true }
+        },
+        opening: [this.opening[0], this.opening[2]]
+      };
     },
     // the same number three ways: ÷ 10² and × 10⁻² land in the same place
     opening: [
@@ -152,10 +170,12 @@
       const m = Math.abs(move(it)), d = Math.abs(g - start(it)), places = n => `${n} place${n === 1 ? '' : 's'}`;
       if (err === 'zero') return ['hops', `10<sup>0</sup> is 1, so the point doesn’t move.`];
       if (err === 'dir') return ['hops', it.op === '×' ? `${opHTML(it)} makes it bigger, so the point moves right.` : `${opHTML(it)} makes it smaller, so the point moves left.`];
-      if (err === 'sign') return ['hops', it.op === '×' ? `10<sup>−${-it.e}</sup> means ÷ 10<sup>${-it.e}</sup>, so the point moves left.` : `Dividing by 10<sup>−${-it.e}</sup> is × 10<sup>${-it.e}</sup>, so the point moves right.`];
+      if (err === 'sign') return ['hops', it.op === '÷' ? `Dividing by 10<sup>−${-it.e}</sup> is × 10<sup>${-it.e}</sup>, so the point moves right.`
+        : DIV ? `10<sup>−${-it.e}</sup> means ÷ 10<sup>${-it.e}</sup>, so the point moves left.` : `10<sup>−${-it.e}</sup> is a negative power, so the point moves left.`];
       return ['hops', d === 0 ? `${opHTML(it)} moves the point ${places(m)}.` : `${opHTML(it)} moves the point ${places(m)}, not ${d}.`];
     },
     revealMs: 1100,
+    nextOnRight: true,                  // the landed point and its result stay until Next
     reveal(el, it, g, o) {
       const row = el.querySelector('.row'), T = target(it), res = el.querySelector('.res');
       row.classList.add('answered'); row.removeAttribute('tabindex');
@@ -165,7 +185,7 @@
         return;
       }
       if (g !== start(it)) addPoint(row, 'pick no', g);
-      if (it.e <= 0) { const f = el.querySelector('.flip'); f.innerHTML = `${opHTML(it)} = ${flipHTML(it)}`; f.classList.add('on'); }
+      if (it.e === 0 || (it.e < 0 && DIV)) { const f = el.querySelector('.flip'); f.innerHTML = `${opHTML(it)} = ${flipHTML(it)}`; f.classList.add('on'); }
       const run = addPoint(row, 'run', start(it));
       const finish = () => { res.textContent = '= ' + valueAt(it, T); res.className = 'res'; };
       if (T === start(it)) { run.classList.add('stay'); finish(); }
@@ -177,8 +197,8 @@
       if (err === 'dir') return ['Hasn’t linked bigger/smaller to right/left.', 'Before tapping, ask: “Will the answer be bigger or smaller?”'];
       if (err === 'sign') return kind === 't-divneg'
         ? ['Treats ÷ 10⁻ⁿ like ÷ 10ⁿ.', 'Dividing by 10⁻² is the same as × 10². Ask: bigger or smaller?']
-        : ['Reads the exponent’s number and ignores the minus sign.', 'Cover the number: “10⁻² means ÷ 100. Bigger or smaller?”'];
-      if (err === 'zero') return ['Thinks 10⁰ is 10 (or 0).', '10⁰ = 1, and multiplying or dividing by 1 changes nothing.'];
+        : ['Reads the exponent’s number and ignores the minus sign.', DIV ? 'Cover the number: “10⁻² means ÷ 100. Bigger or smaller?”' : 'Point to the minus sign: a negative power moves the point left. Bigger or smaller?'];
+      if (err === 'zero') return ['Thinks 10⁰ is 10 (or 0).', DIV ? '10⁰ = 1, and multiplying or dividing by 1 changes nothing.' : '10⁰ = 1, and multiplying by 1 changes nothing.'];
       return /whole/.test(kind)
         ? ['Started from the wrong place, or counted digits instead of hops.', 'Find the point first (in 45 it’s after the 5), then count hops with a finger.']
         : ['Counts zeros or digits instead of hops.', 'Count the hops aloud with a finger, one per place.'];
@@ -186,12 +206,12 @@
 
     // ---- the ? key: the three moves, drawn ----
     get keyHTML() {
-      const ex = [{ d: '352', p: 1, op: '×', e: 2 }, { d: '352', p: 1, op: '÷', e: 2 }, { d: '352', p: 1, op: '×', e: -2 }];
+      const ex = [{ d: '352', p: 1, op: '×', e: 2 }].concat(DIV ? [{ d: '352', p: 1, op: '÷', e: 2 }] : [], [{ d: '352', p: 1, op: '×', e: -2 }]);
       return `<div class="pmkey">${ex.map(it => {
         const T = target(it), lo = Math.min(start(it), T);
         const arcs = Array.from({ length: Math.abs(move(it)) }, (_, k) => `<span class="arc" style="--g:${lo + k}"></span>`).join('');
         const row = rowHTML(it, false, T).replace('</div>', `${arcs}<span class="pt run" style="--g:${T}"></span></div>`).replace('class="pt start"', 'class="pt start dim"');
-        return `<div class="kx">${opHTML(it)}${it.e < 0 ? ` <small>= ${flipHTML(it)}</small>` : ''}</div>${row}`;
+        return `<div class="kx">${opHTML(it)}${it.e < 0 && DIV ? ` <small>= ${flipHTML(it)}</small>` : ''}</div>${row}`;
       }).join('')}</div>`;
     },
 
@@ -224,16 +244,16 @@
           if (++n === 3) { api.caption('× 10: the point moves one place right.'); s2(); }
         }));
       }
-      function s2() {                          // ÷ 10, four times: 3,520 → 0.352
+      function s2() {                          // ÷ 10 (or × 10⁻¹ with dividing off), four times: 3,520 → 0.352
         const holder = stage.querySelector('.tbtns');
-        holder.innerHTML = '<button type="button" class="tb pulse">÷ 10</button>';
+        holder.innerHTML = `<button type="button" class="tb pulse">${DIV ? '÷ 10' : '× 10<sup>−1</sup>'}</button>`;
         const b = holder.firstChild; let n = 0;
         b.addEventListener('click', () => {
           if (!api.alive()) return;
           if (n === 0) api.step(1, N);
           press(-1, () => {
             b.classList.remove('pulse');
-            if (++n === 4) { api.caption('÷ 10: one place left.'); s3(); }
+            if (++n === 4) { api.caption(DIV ? '÷ 10: one place left.' : '× 10<sup>−1</sup>: one place left.'); s3(); }
           });
         });
       }
@@ -247,7 +267,7 @@
           press(3, () => { api.caption('× 10<sup>3</sup>: three hops right.'); s4(); });
         }, { once: true });
       }
-      function s4() {                          // × 10⁻²: flips to ÷ 10², two hops left
+      function s4() {                          // × 10⁻²: (with dividing on, flips to ÷ 10²) two hops left
         const holder = stage.querySelector('.tbtns');
         holder.innerHTML = '<button type="button" class="tb pulse">× 10<sup>−2</sup></button>';
         holder.firstChild.addEventListener('click', () => {
@@ -256,9 +276,8 @@
           const b = setup(base(), '× 10<sup>−2</sup>'); b.classList.remove('pulse'); b.disabled = true; g = start(it);
           setTimeout(() => {
             if (!api.alive()) return;
-            b.classList.add('flipping');
-            setTimeout(() => { b.innerHTML = '÷ 10<sup>2</sup>'; }, 180);
-            setTimeout(() => press(-2, () => { api.caption('A negative power moves it left.'); s5btn(); }), 700);
+            if (DIV) { b.classList.add('flipping'); setTimeout(() => { b.innerHTML = '÷ 10<sup>2</sup>'; }, 180); }
+            setTimeout(() => press(-2, () => { api.caption('A negative power moves it left.'); s5btn(); }), DIV ? 700 : 150);
           }, 250);
         }, { once: true });
       }

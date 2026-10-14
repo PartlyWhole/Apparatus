@@ -30,7 +30,7 @@ When the student taps or drags instead of picking a button, list **error types**
 | count | right way (or no move), wrong number of places | × 10³ moves the point 3 places, not 2. |
 | zero | 10⁰, but moved | 10⁰ is 1, so the point doesn't move. |
 
-The cue for every error is the same: the correct hops animate (numbered arcs) and the tapped spot is marked red; for negative and zero powers the operator's "flip" (× 10⁻² = ÷ 10²) appears under the question.
+The cue for every error is the same: the correct hops animate (numbered arcs under the digits, the point dipping along them) and the tapped spot is marked red; for negative and zero powers the operator's "flip" (× 10⁻² = ÷ 10²) appears under the question.
 
 ## Cues
 

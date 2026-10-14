@@ -2,6 +2,9 @@
 
 Newest first. One line per decision: date — what — why (and who asked). When a decision is reversed, add a new line; don't delete the old one. The other docs describe only the current state.
 
+- 2026-10-14 — Moving the Point: tutor rule "Dividing" (default off) — no ÷ questions, tutorial and wording without division; engine gained exercise-specific rules (`rules` + `configure`). (user)
+- 2026-10-14 — Moving the Point: hops drawn under the digits (the point dips along them). (user)
+- 2026-10-14 — Moving the Point: a right answer stays until Next (engine option `nextOnRight`), so the result can be seen. (user)
 - 2026-10-14 — Moving the Point: once the point is moved (preview) or committed, the original point fades to ~10%. (user)
 - 2026-10-14 — Moving the Point: no placeholder zeros anywhere (not even in the tutorial or opening); a zero shows only where the point's position adds one. Replaces "faint zeros, then fade". (user)
 - 2026-10-14 — ↺ reset back on the exercise page, next to ?, asking once ("Reset?"); keeps the log and tutorial status. Reverses "no reset on the student page". (user)
