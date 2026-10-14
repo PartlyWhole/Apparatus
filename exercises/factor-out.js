@@ -25,6 +25,30 @@
     if (e !== before && e !== 0) { pw.classList.remove('tick'); void pw.offsetWidth; pw.classList.add('tick'); }
   }
 
+  // after the point is placed: the power shows as × 10^[ ] at the end of the row; the student writes it (± for the minus)
+  function askPower(el, row, it, g, done) {
+    const pw = row.querySelector('.pw');
+    P.setPower(row, it.d, g, '?');
+    pw.classList.add('askx');
+    pw.innerHTML = `<span>× 10<sup><input class="px" inputmode="numeric" autocomplete="off" aria-label="Power of ten"></sup></span>`;
+    const ctl = document.createElement('div');
+    ctl.className = 'pctl';
+    ctl.innerHTML = '<button type="button" class="pm" aria-label="Make it negative">±</button><button type="button" class="go">Check</button>';
+    row.after(ctl);
+    const x = pw.querySelector('input');
+    const check = () => {
+      const v = P.parseInt10(x.value);
+      if (v == null) { x.classList.remove('bad'); void x.offsetWidth; x.classList.add('bad'); x.focus(); return; }
+      x.disabled = true; ctl.querySelectorAll('button').forEach(b => { b.disabled = true; });
+      done(v);
+    };
+    ctl.querySelector('.pm').addEventListener('click', () => { x.value = /^[-−]/.test(x.value) ? x.value.slice(1) : '−' + x.value; x.focus(); });
+    ctl.querySelector('.go').addEventListener('click', check);
+    x.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); check(); } });
+    x.addEventListener('input', () => x.classList.remove('bad'));
+    setTimeout(() => x.focus({ preventScroll: true }), 30);
+  }
+
   const D = Apparatus.define({
     id: 'factor-out',
     title: 'Factor Out',
@@ -50,35 +74,56 @@
     ],
     nextOnRight: true,
 
-    text: it => `${P.numStr(it.d, it.p)} = ? × 10?`,
+    text: it => `${P.numStr(it.d, it.p)} = ? × 10?`,   // the log's pick is { g: where the point went, x: the power written }
     speak: it => `${P.numStr(it.d, it.p)}. Move the point to write it in scientific notation.`,
 
-    ask(el, it, submit) {
-      const row = draw(el, it);
-      livePower(row, it, null);
-      P.bind(row, it.d, S0(it), g => { P.paint(row, it.d, g, S0(it)); livePower(row, it, g); }, submit);
+    // the opening shows the power live; after that it's hidden: place the point, then write the power that came out
+    ask(el, it, submit, ctx) {
+      const row = draw(el, it), live = ctx.mode === 'open';
+      if (live) livePower(row, it, null);
+      P.bind(row, it.d, S0(it), g => { P.paint(row, it.d, g, S0(it)); if (live) livePower(row, it, g); }, g => {
+        if (live || g !== T()) return submit({ g });
+        P.paint(row, it.d, g, S0(it), true); P.addPoint(row, 'pick ok', g);
+        askPower(el, row, it, g, x => submit({ g, x }));
+      });
     },
     correct: () => T(),
-    classify: (it, g) => g < T() ? 'zero' : 'many',
-    feedback(it, want, g, kind, err) {
+    isRight: (it, a) => a.g === T() && (a.x === undefined || a.x === it.p - 1),
+    classify(it, a) {
+      if (a.g < T()) return 'zero';
+      if (a.g > T()) return 'many';
+      const n = it.p - 1;
+      return n !== 0 && a.x !== 0 && Math.sign(a.x) !== Math.sign(n) ? 'sign' : 'count';
+    },
+    feedback(it, want, a, kind, err) {
+      const n = it.p - 1, k = Math.abs(n), num = P.numStr(it.d, it.p);
       if (err === 'zero') return ['hops', `Now there’s a 0 before the point. Scientific notation needs one digit from 1 to 9 there.`];
-      const int = P.valueAt(it.d, g).split('.')[0].replace(/,/g, '');
-      return ['hops', `There are ${int.length} digits (${int}) before the point. Scientific notation has just one.`];
+      if (err === 'many') {
+        const int = P.valueAt(it.d, a.g).split('.')[0].replace(/,/g, '');
+        return ['hops', `There are ${int.length} digits (${int}) before the point. Scientific notation has just one.`];
+      }
+      if (err === 'sign') return ['hops', n > 0 ? `${num} got smaller (${P.fmt(it.d, 1)}), so the power is positive: ${P.powHTML(n)}.` : `${num} got bigger (${P.fmt(it.d, 1)}), so the power is negative: ${P.powHTML(n)}.`];
+      return ['hops', n === 0 ? `The point didn’t move, so it’s ${P.powHTML(0)}.` : `The point hopped ${k} place${k === 1 ? '' : 's'}: ${P.powHTML(n)}.`];
     },
     revealMs: 1400,
-    reveal(el, it, g, o) {
-      const row = el.querySelector('.prow'), res = el.querySelector('.res');
+    reveal(el, it, a, o) {
+      const g = a.g, row = el.querySelector('.prow'), res = el.querySelector('.res');
+      el.querySelectorAll('.pctl').forEach(c => c.remove());
       if (o.right) {
         P.paint(row, it.d, g, S0(it), true); livePower(row, it, g);
-        P.addPoint(row, 'pick ok', g);
+        if (!row.querySelector('.pt.pick')) P.addPoint(row, 'pick ok', g);
         res.innerHTML = `= ${sci(it)}`; res.className = 'res ok';
         return;
       }
-      // the picked point keeps its light zeros; the right move replays: hops, with a 10 going into the power each time
-      P.paint(row, it.d, S0(it), S0(it), true); P.setFills(row, it.d, g, 'prev');
-      if (g !== S0(it)) P.addPoint(row, 'pick no', g);
+      // a wrong place keeps its light zeros (a wrong power keeps the right place); then the right move replays:
+      // hops, with a 10 going into the power each time, the power counting
+      row.querySelectorAll('.pt.pick').forEach(p => p.remove());
+      P.paint(row, it.d, S0(it), S0(it), true);
+      if (g !== T()) { P.setFills(row, it.d, g, 'prev'); if (g !== S0(it)) P.addPoint(row, 'pick no', g); }
       livePower(row, it, S0(it));
       const run = P.addPoint(row, 'run', S0(it));
+      const end = () => { res.innerHTML = `= ${sci(it)}`; res.className = 'res'; };
+      if (T() === S0(it)) { livePower(row, it, T()); end(); return; }
       setTimeout(() => P.hop(row, run, S0(it), T(), {
         onStep: (at, from) => {
           row.querySelectorAll('.s.fill').forEach(s => s.classList.remove('fill'));
@@ -86,13 +131,15 @@
           P.token(row, Math.min(at, from) + 0.5, Math.max(PAD + it.d.length, at) + 1, at < from ? '10' : '10⁻¹');
           livePower(row, it, at);
         }
-      }, () => { res.innerHTML = `= ${sci(it)}`; res.className = 'res'; }), 300);
+      }, end), 300);
     },
 
-    errors: { many: 'more than one digit before the point', zero: '0 before the point' },
+    errors: { many: 'more than one digit before the point', zero: '0 before the point', sign: 'power with the wrong sign', count: 'power: wrong number of hops' },
     diagnose(err) {
       if (err === 'zero') return ['Moves the point past the first digit.', 'The point goes right after the first digit that isn’t 0.'];
-      return ['Stops too early: more than one digit is left before the point.', 'Count the digits before the point: scientific notation has exactly one.'];
+      if (err === 'many') return ['Stops too early: more than one digit is left before the point.', 'Count the digits before the point: scientific notation has exactly one.'];
+      if (err === 'sign') return ['Places the point right, but gets the sign of the power backwards.', 'Ask: did the number get smaller or bigger? Smaller (4,500 → 4.5) means a positive power.'];
+      return ['Places the point right, but doesn’t count the hops.', 'Before writing the power, count the hops aloud: one per place.'];
     },
 
     get keyHTML() {

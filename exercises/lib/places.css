@@ -62,3 +62,15 @@
   .prow .pt, .prow .pw { transition: none; } .prow .pt.hop, .prow .pw.tick, .prow .arc, .pq .res { animation: none; }
 }
 .prow .pt.run.stay { box-shadow: 0 0 0 0.12em var(--good-bg); }
+
+/* writing the power after placing the point (Factor Out): × 10^[ ] at the end of the row, ± and Check below */
+.prow .pw.askx { pointer-events: auto; color: var(--ink); }
+.prow .pw .px { width: 2.4ch; font: inherit; font-family: var(--f-mono); font-weight: 700; font-size: 1.5em; text-align: center; color: var(--ink);
+  background: var(--surface); border: 2px solid var(--accent); border-radius: 8px; padding: 0.05em 0.1em; }
+.prow .pw .px:focus { outline: none; }
+.prow .pw .px.bad { border-color: var(--bad); animation: shake 0.3s ease; }
+.prow .pw .px:disabled { border-color: var(--line); }
+@keyframes shake { 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
+.pctl { display: flex; gap: 10px; justify-content: center; }
+.pctl .pm { min-width: 44px; min-height: 44px; border-radius: 12px; border: 2px solid var(--line); background: var(--surface); color: var(--muted); font-weight: 700; font-size: 1.1rem; }
+.pctl .go { min-height: 44px; padding: 0 26px; border-radius: 999px; border: 0; background: var(--accent); color: var(--on-accent); font-weight: 700; font-family: var(--f-body); }

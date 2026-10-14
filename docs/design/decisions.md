@@ -2,6 +2,7 @@
 
 Newest first. One line per decision: date — what — why (and who asked). When a decision is reversed, add a new line; don't delete the old one. The other docs describe only the current state.
 
+- 2026-10-14 — Factor Out: after the opening the power is hidden while moving; once the point is right the student writes the power (× 10^[ ]), so they must count, not just click the right spot. (user)
 - 2026-10-14 — Places rows: a previewed number is one color (new zeros look like the digits, so 0.00045 reads as one number); the original trailing zeros that end up after the point are ghosted (4.5 + ghosted 00), not hidden. Light zeros remain only for a wrong pick's zeros and in pictures. Same in Moving the Point. (user, refining "trailing zeros should disappear")
 - 2026-10-14 — Factor Out / Factor In / Conversions: move the point with an equals sign kept and the power of ten counting hops (each hop moves one 10 between number and power); Factor In shows the live power only in the tutorial and opening. Conversions: 4 multiple-choice options (answer, one place off same way, both mirrored the wrong way), then written answers (decimal field; number + exponent fields). Two intro pages + one mixed page; no fake-notation twist. (user)
 - 2026-10-14 — Finish screen: "More practice" (a fresh round of tricky questions) replaces "Again"; ↺ restarts from the beginning. (user)
