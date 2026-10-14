@@ -79,8 +79,11 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .opts button:disabled { cursor: default; opacity: 0.4; }
 .opts button.ok { opacity: 1; border-color: var(--good); color: var(--good); background: var(--good-bg); }
 .opts button.no { opacity: 1; border-color: var(--bad); color: var(--bad); }
-.opts button.want { opacity: 1; border-color: var(--good); color: var(--good); animation: want 1.2s ease-in-out infinite; }
-@keyframes want { 50% { box-shadow: 0 0 0 6px var(--good-bg); } }
+.opts button.ok::before { content: "✓ "; }
+.opts button.want { opacity: 1; border-color: var(--good); color: var(--good); }
+.fix { display: flex; flex-direction: column; align-items: center; gap: 18px; min-height: 110px; margin-top: -18px; }
+.fix p { margin: 0; max-width: 26rem; text-align: center; font-size: 1.12rem; line-height: 1.45; }
+.fix .ok-btn { min-height: 46px; min-width: 120px; padding: 0 28px; border-radius: 999px; border: 0; background: var(--accent); color: var(--on-accent); font-weight: 700; }
 
 /* ---- the key (re-findable reference) ---- */
 .key { position: absolute; top: 52px; right: 0; z-index: 10; margin: 0; padding: 18px 20px; border-radius: 16px; background: var(--surface);
@@ -100,7 +103,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 @media (prefers-reduced-motion: reduce) {
   .bar i, .n .d, .n .x { transition: none; }
   .n .ghost { animation: none; }
-  .icon.beacon::after, .opts button.want { animation: none; }
+  .icon.beacon::after { animation: none; }
 }
 </style>
 
@@ -119,6 +122,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
       <button type="button" data-a="sci">Scientific</button>
       <button type="button" data-a="none">Neither</button>
     </div>
+    <div class="fix"><p id="why" aria-live="polite"></p><button type="button" class="ok-btn" id="okBtn" hidden>OK</button></div>
     <p class="sr" id="say" aria-live="polite"></p>
   </div>
   <div class="card" id="fin" hidden>
@@ -126,7 +130,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
       <div class="mark" aria-hidden="true">✓</div>
       <nav>
         <button type="button" class="again" id="again">Again</button>
-        <a class="go" href="progression.html?skill=sci-point">Next →</a>
+        <a class="go" href="../index.html">Done</a>
       </nav>
     </div>
   </div>
@@ -177,6 +181,13 @@ button { font: inherit; color: inherit; cursor: pointer; }
   const spoken = n => `${n.L}${n.R ? ' point ' + n.R : ''}${n.e === null ? '' : ' times 10 to the ' + (n.e < 0 ? 'minus ' : '') + Math.abs(n.e)}`;
   const WHY = { sci: 'why-sci', none: 'why-fake', dec: 'why-dec' };
   const NAME = { sci: 'Scientific', none: 'Neither', dec: 'Decimal' };
+  // what to say after a miss: plain words, about this number
+  function explain(n, a) {
+    const x = `× 10<sup>${n.e === null ? 'n' : supNum(n.e)}</sup>`;
+    if (a === 'dec') return `There’s no ${x}. It’s just a decimal.`;
+    if (a === 'sci') return `Just one digit (${n.L}) before the point, then ${x}. That’s scientific notation.`;
+    return `There are ${n.L.length} digits (${n.L}) before the point. Scientific notation has just one.`;
+  }
   const REASON = {
     sci: 'one digit before the point, times a power of ten',
     none: 'more than one digit before the point',
@@ -243,24 +254,19 @@ button { font: inherit; color: inherit; cursor: pointer; }
     $('q').innerHTML = render(cur.n);
     $('say').textContent = spoken(cur.n);
     btns.forEach(b => { b.disabled = false; b.className = ''; });
+    $('why').textContent = ''; $('okBtn').hidden = true;
     state = 'ask';
   }
 
   function answer(a) {
-    if (state === 'fix') {                          // after a miss: only the right one continues
-      if (a === cur.kind.a) { next(); }
-      return;
-    }
     if (state !== 'ask') return;
     const right = a === cur.kind.a;
-    const n = $('q').firstElementChild;
-    n.classList.add(WHY[cur.kind.a]);               // light up what decides it, right or wrong
     grade(right);
     if (right) {
       missRun = 0;
       state = 'wait';
       btns.forEach(b => { b.disabled = true; if (b.dataset.a === a) b.className = 'ok'; });
-      $('say').textContent = 'Yes. ' + REASON[a] + '.';
+      $('say').textContent = 'Correct.';
       const t = ++tick;
       setTimeout(() => { if (t === tick) next(); }, 900);
     } else {
@@ -268,16 +274,19 @@ button { font: inherit; color: inherit; cursor: pointer; }
       state = 'fix';
       btns.forEach(b => {
         if (b.dataset.a === a) { b.className = 'no'; b.disabled = true; }
-        else if (b.dataset.a === cur.kind.a) { b.className = 'want'; }
+        else if (b.dataset.a === cur.kind.a) { b.className = 'want'; b.disabled = true; }
         else b.disabled = true;
       });
-      $('say').textContent = `${NAME[cur.kind.a]}: ${REASON[cur.kind.a]}.`;
+      $('q').firstElementChild.classList.add(WHY[cur.kind.a]);   // light up what decides it
+      $('why').innerHTML = explain(cur.n, cur.kind.a);
+      $('okBtn').hidden = false;
       if (missRun >= 2 && $('key').hidden) $('help').classList.add('beacon');
-      btns.find(b => b.dataset.a === cur.kind.a).focus();
+      $('okBtn').focus();
     }
   }
 
   btns.forEach(b => b.addEventListener('click', () => answer(b.dataset.a)));
+  $('okBtn').addEventListener('click', () => { if (state === 'fix') next(); });
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && !$('key').hidden) { toggleKey(false); $('help').focus(); return; }
     if (e.metaKey || e.ctrlKey || e.altKey || !$('fin').hidden) return;
