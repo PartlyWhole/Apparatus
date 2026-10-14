@@ -81,3 +81,12 @@
 .tb:disabled { opacity: 0.5; cursor: default; }
 .gq .q.two { gap: 1.4em; }
 .gq .sym { font-family: var(--f-body); font-size: 1.4em; font-weight: 700; color: var(--muted); }
+
+/* small text lines and the step-by-step rows (write-line) */
+.gq .q.small { font-size: clamp(0.95rem, 4vw, 1.15rem); color: var(--muted); }
+.gq .wl { display: flex; flex-direction: column; gap: 12px; align-items: center; }
+.gq .q.step .lab { color: var(--muted); font-size: 0.8em; }
+.gq .q.step .go { font-size: 1rem; min-height: 40px; padding: 0 18px; }
+.gq .say.bad { color: var(--ink); }
+.gq .q.final { min-height: 1.2em; }
+.gq .q.final .ok { color: var(--good); }

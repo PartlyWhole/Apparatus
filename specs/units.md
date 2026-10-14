@@ -22,7 +22,7 @@ Step-by-step, one slot active at a time (it pulses), unit chips below to tap:
 1. **Units:** the unit to get rid of goes where it cancels (day on the bottom, since 2 day has it on top); then the unit it turns into on top. Caption: "Put day where it cancels." / "What does day turn into?"
 2. **Numbers:** fill both numbers so top and bottom are equal (any equal pair: 24 hr / 1 day). Caption: "Make top and bottom equal."
 3. **Cancel:** matching units on top and bottom strike through.
-4. **Answer:** multiply what's left: "= [ ] min".
+4. **Result (no hand calculation):** everything combines into one fraction — every number on its side, the units left over in their places (2 × 24 × 60 min / 1 × 1) — and its value is shown (= 2,880 min). Setting up the chain is the skill; then Next.
 Scaffolding fades: in the opening the units are given (numbers only); then the captions guide each step; the next-session check and later questions have no captions. A wrong step shakes, turns red, and gets one sentence ("day is on top in 2 day, so put it on the bottom to cancel."); the student fixes it and goes on. Any first-try mistake makes the question a miss (penalty) — it's the step-level mistakes the tutor sees in analytics.
 Problems: day→min, hr→s, yr→hr, day→s, mi→yd, yd→in, ft→cm (via in), km→cm, m³→mL; and back: s→hr, min→day, hr→yr, cm→km, mL→m³, yd→mi, in→yd (start amounts 1–5, or worked back from a 1–5 answer).
 
@@ -42,7 +42,7 @@ Facts (written), two-step chains and rates, no captions. 9 questions.
 | unit | That doesn't connect day to min. Day turns into hr first. |
 | number | 24 hr = 1 day: top and bottom must be equal. |
 | flip | 1 day is bigger than 1 hr: it's 24 hr on top, 1 day on the bottom. |
-| answer | 2 × 24 × 60 = 2,880. |
+| (no answer step: the result is computed and shown) | |
 
 ## Interpretations to confirm
 - Unit names: s, min, hr, day, yr; ft, yd, mi, in, cm; cm³, mL, L, m³, gal.

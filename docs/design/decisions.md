@@ -2,6 +2,7 @@
 
 Newest first. One line per decision: date — what — why (and who asked). When a decision is reversed, add a new line; don't delete the old one. The other docs describe only the current state.
 
+- 2026-10-14 — Chains: no hand calculation. After cancelling, everything combines into one fraction with the units left in place, and its value is shown before Next. (user: "Setting up the equation is enough")
 - 2026-10-14 — Prefix Names: also the reverse, name → symbol (deca = da), written and case-sensitive. (user)
 - 2026-10-14 — Prefix Names (`prefix-names`): each prefix symbol → its name (multiple choice) and its power of ten (written); every prefix gated. (user)
 - 2026-10-14 — Build Up / Break Down: every prefix (d, c, da, h too, not just k, m, M, µ) counts toward passing; 10 questions. (user)

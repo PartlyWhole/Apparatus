@@ -60,3 +60,9 @@
 .chain.solved { font-size: clamp(0.85rem, 3.6vw, 1.05rem); opacity: 0.6; }
 .chain.solved b { font-weight: 700; }
 .another { margin: 2px 0 0; color: var(--muted); font-size: 0.95rem; }
+
+/* the result: one fraction combining every number, the units left over in place, then its value */
+.chain .cans { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: center; }
+.chain .cq { color: var(--muted); }
+.chain .comb { animation: fadein 0.35s ease; }
+.chain .cres { white-space: nowrap; color: var(--good); animation: fadein 0.35s ease 0.25s both; }

@@ -12,6 +12,13 @@
   const neg = a => a.undef ? a : of(-a.n, a.d);
   const recip = a => a.undef ? of(0) : a.n === 0 ? UNDEF : of(a.d, a.n);
   const perp = a => a.undef ? of(0) : a.n === 0 ? UNDEF : of(-a.d, a.n);
+  // arithmetic on finite fractions
+  const add = (a, b) => of(a.n * b.d + b.n * a.d, a.d * b.d);
+  const sub = (a, b) => add(a, of(-b.n, b.d));
+  const mul = (a, b) => of(a.n * b.n, a.d * b.d);
+  const div = (a, b) => of(a.n * b.d, a.d * b.n);
+  // a decimal or whole number as a fraction: −8.5 → −17/2
+  const fromDec = x => { const s = String(x), k = (s.split('.')[1] || '').length, p = Math.pow(10, k); return of(Math.round(x * p), p); };
   const num = a => a.undef ? NaN : a.n / a.d;
   // as text: −1/4, 3, 0, undefined; as HTML: a stacked fraction
   const text = a => a.undef ? 'undefined' : a.d === 1 ? String(a.n).replace('-', '−') : `${a.n < 0 ? '−' : ''}${Math.abs(a.n)}/${a.d}`;
@@ -24,7 +31,7 @@
   const box = (name, o = {}) => `<span class="sf" data-n="${name}"><input class="sf-t" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="${name}: top"><span class="sf-bar"></span><input class="sf-b" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="${name}: bottom">${o.undef ? `<button type="button" class="sf-u" aria-pressed="false">undefined</button>` : ''}</span>`;
   function wire(host, o) {
     const boxes = Array.from(host.querySelectorAll('.sf'));
-    const go = host.querySelector('.go'), say = host.querySelector('.say');
+    const go = host.querySelector('.go'), say = o.say || host.querySelector('.say');
     boxes.forEach(b => {
       const u = b.querySelector('.sf-u');
       if (u) u.addEventListener('click', () => { const on = u.getAttribute('aria-pressed') !== 'true'; u.setAttribute('aria-pressed', String(on)); b.classList.toggle('is-undef', on); if (!on) b.querySelector('.sf-t').focus(); });
@@ -58,5 +65,5 @@
     return { mark: (name, ok) => { const b = host.querySelector(`.sf[data-n="${name}"]`); b && b.classList.add(ok ? 'ok' : 'no'); } };
   }
 
-  window.Frac = { gcd, of, UNDEF, eq, neg, recip, perp, num, text, html, readNum, box, wire };
+  window.Frac = { gcd, of, UNDEF, eq, neg, recip, perp, add, sub, mul, div, fromDec, num, text, html, readNum, box, wire };
 })();

@@ -68,7 +68,7 @@
     const level = o.level, errs = [], free = o.free, sd = free ? [] : sides(pr);
     const steps = free ? [] : pr.steps.map((st, i) => Object.assign({}, st, { side: sd[i], frac: fraction(st, sd[i]) }));
     el.innerHTML = `<div class="chain-q">${o.above || ''}<div class="chain">${givenHTML(pr)}${steps.map((_, i) => `<span class="op">×</span>${fracHTML(i)}`).join('')}
-        <span class="op eqop">=</span><span class="cans"><input class="ca" inputmode="decimal" autocomplete="off" aria-label="Answer" disabled> <span class="tu">${unitsOf(pr)}</span></span></div>
+        <span class="op eqop">=</span><span class="cans"><span class="cq">?</span> <span class="tu">${unitsOf(pr)}</span></span></div>
       <p class="csay" aria-live="polite"></p><div class="chips" aria-label="Units"></div><button type="button" class="go" hidden>Check</button></div>`;
     const $ = s => el.querySelector(s), $$ = s => Array.from(el.querySelectorAll(s));
     // the guidance line under the chain (a mistake shows in red there)
@@ -161,7 +161,7 @@
         const tv = parseFloat(t.value.replace(/,/g, '')), bv = parseFloat(b.value.replace(/,/g, ''));
         if (!(tv > 0)) return shake(t); if (!(bv > 0)) return shake(b);
         if (U.equal(tv, f.tu, bv, f.bu)) {
-          [t, b].forEach(x => { x.disabled = true; x.classList.remove('wrong'); x.classList.add('set'); });
+          [t, b].forEach(x => { x.disabled = true; x.classList.remove('wrong'); x.classList.add('set'); fit(x); });
           go.hidden = true; go.onclick = null; [t, b].forEach(x => { x.onkeydown = null; });
           if (free) return st.to === pr.target.num ? cancel() : placeFrom(i + 1);
           return i + 1 < steps.length ? placeFrom(i + 1) : cancel();
@@ -174,7 +174,7 @@
       [t, b].forEach(x => { x.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); check(); } }; x.oninput = () => x.classList.remove('wrong'); });
     }
     // number fields grow with what's typed (3,600; 1,000,000)
-    const fit = x => { x.style.width = Math.max(x.classList.contains('ca') ? 6.5 : 4.6, x.value.length + 1.6) + 'ch'; };
+    function fit(x) { x.style.width = Math.max(4.6, x.value.length + 1.6) + 'ch'; }
     el.addEventListener('input', e => { if (e.target.matches('.cn, .ca')) fit(e.target); });
     const shake = n => { n.classList.remove('shake'); void n.offsetWidth; n.classList.add('shake'); n.focus(); };
     // ---- 4. cancel: matching units strike through, one pair at a time ----
@@ -196,25 +196,18 @@
       })();
     }
     // ---- 5. the answer ----
+    // ---- 5. the result: no hand calculation — everything combined into one fraction (numbers top and bottom, the units
+    //         left over in their places), then its value; the student moves on with Next ----
     function result() {
-      const want = free ? valueOf(pr.qty, steps) : answer(pr), a = $('.ca');
       cur = { key: 'answer' };
-      a.disabled = false; live(a); go.hidden = false; a.focus({ preventScroll: true });
-      guide('Multiply what’s left.');
-      const check = () => {
-        const v = parseFloat(a.value.replace(/,/g, ''));
-        if (!(v >= 0)) return shake(a);
-        if (Math.abs(v - want) <= 0.01 * Math.abs(want)) {
-          a.disabled = true; a.classList.add('set', 'right'); a.classList.remove('wrong'); go.hidden = true; live([]);
-          say('', false);
-          return o.onDone(errs.map(e => ({ type: e.type, text: e.text })));
-        }
-        const parts = [U.fmtN(pr.qty)].concat(steps.map(st => { const f = st.frac; return f.bn === 1 ? `× ${U.fmtN(f.tn)}` : f.tn === 1 ? `÷ ${U.fmtN(f.bn)}` : `× ${U.fmtN(f.tn)} ÷ ${U.fmtN(f.bn)}`; }));
-        miss('answer', `${parts.join(' ')} = ${nice(want)}`, a);
-      };
-      go.onclick = check;
-      a.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); check(); } };
-      a.oninput = () => a.classList.remove('wrong');
+      live([]); say('', false);
+      const want = free ? valueOf(pr.qty, steps) : answer(pr);
+      const tops = [U.fmtN(pr.qty)].concat(steps.map(st => U.fmtN(st.frac.tn)));
+      const bots = (pr.den ? ['1'] : []).concat(steps.map(st => U.fmtN(st.frac.bn)));
+      const T = pr.target;
+      $('.cans').innerHTML = `<span class="cf comb"><span class="ct">${tops.join(' × ')} <u>${T.num}</u></span><span class="cbar"></span>
+        <span class="cb">${bots.join(' × ')}${T.den ? ` <u>${T.den}</u>` : ''}</span></span><span class="op">=</span><span class="cres"><b>${nice(want)}</b> ${unitsOf(pr)}</span>`;
+      setTimeout(() => o.onDone(errs.map(e => ({ type: e.type, text: e.text }))), P.reduced() ? 100 : 700);
     }
     placeFrom(0);
   }
