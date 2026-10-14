@@ -20,9 +20,9 @@
     say.textContent = o.prompt || 'Tap two points on the line.';
     const stop = g.onTap(q => {
       if (!onLine(it, q)) { say.textContent = 'On the line, where it crosses grid corners.'; return; }
-      if (!a) { a = q; g.dot(q, 'pt pick'); return; }
+      if (!a) { a = q; g.dot(q, 'pt pick', `A(${G.sgn(q[0])}, ${G.sgn(q[1])})`, [it.run, it.rise]); return; }
       if (q[0] === a[0] && q[1] === a[1]) return;
-      stop(); g.dot(q, 'pt pick'); say.textContent = '';
+      stop(); g.dot(q, 'pt pick', `B(${G.sgn(q[0])}, ${G.sgn(q[1])})`, [it.run, it.rise]); say.textContent = '';
       g.triangle(a, q, { labels: !!o.labels, words: o.words });
       done(a, q);
     });

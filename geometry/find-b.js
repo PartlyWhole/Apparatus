@@ -26,7 +26,8 @@
   };
   function picture(host, it, labels) {
     const g = G.make(host), b = [0, B(it).n], p = [it.p[0].n, it.p[1].n];
-    g.line(b, p); g.dot(p, 'pt', pt(it.p)); g.dot(b, 'pt ok', `(0, ${L.neg(b[1])})`);
+    const d = [p[0] - b[0], p[1] - b[1]];
+    g.line(b, p); g.dot(p, 'pt', 'P' + pt(it.p), d); g.dot(b, 'pt ok', `b = ${L.neg(b[1])}`, d);
     g.triangle(b, p, { labels, words: false });
     return g;
   }
@@ -57,8 +58,8 @@
     speak: it => `A line with slope ${F.text(it.m)} goes through ${pt(it.p)}. What is b?`,
     ask(el, it, submit, ctx) {
       el.innerHTML = `<div class="gq">${onGrid(it) ? '<div class="gridbox"></div>' : ''}<div class="q">${L.term(it.m, 'x', true) ? `y = ${L.term(it.m, 'x', true)} + ` : 'y = '}${F.box('b')}</div>
-        <div class="q small">through ${pt(it.p)}</div><p class="say" aria-live="polite"></p><button type="button" class="go">Check</button><div class="work" aria-live="polite"></div></div>`;
-      if (onGrid(it)) { const g = G.make(el.querySelector('.gridbox')); g.dot([it.p[0].n, it.p[1].n], 'pt', pt(it.p)); }
+        <div class="q small">through P${pt(it.p)}</div><p class="say" aria-live="polite"></p><button type="button" class="go">Check</button><div class="work" aria-live="polite"></div></div>`;
+      if (onGrid(it)) { const g = G.make(el.querySelector('.gridbox')); g.dot([it.p[0].n, it.p[1].n], 'pt', 'P' + pt(it.p), [it.m.d, it.m.n]); }
       el._f = F.wire(el, { want: () => B(it), onSubmit: v => submit(v.b) });
     },
     correct: it => F.text(B(it)),

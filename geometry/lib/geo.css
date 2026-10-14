@@ -100,3 +100,6 @@
 .gq .mp.bad { border-color: var(--bad); animation: gshake 0.3s ease; }
 .gq .mp.ok { border-color: var(--good); color: var(--good); }
 .gq .mp.no { border-color: var(--bad); color: var(--bad); }
+.grid .pl { fill: var(--muted); }
+.grid .pl.end { text-anchor: end; }
+.grid .pl .pn { fill: var(--ink); font-size: 11px; }

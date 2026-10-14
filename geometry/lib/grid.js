@@ -40,9 +40,18 @@
       clear() { layer.innerHTML = ''; top.innerHTML = ''; },
       line(p, q, cls = 'ln') { const [a, b] = clip(p, q); return el('line', { x1: X(a[0]), y1: Y(a[1]), x2: X(b[0]), y2: Y(b[1]), class: cls }, layer); },
       seg(p, q, cls = 'sg') { return el('line', { x1: X(p[0]), y1: Y(p[1]), x2: X(q[0]), y2: Y(q[1]), class: cls }, layer); },
-      dot(p, cls = 'pt', label) {
+      dot(p, cls = 'pt', label, dir) {
         const d = el('circle', { cx: X(p[0]), cy: Y(p[1]), r: 4.5, class: cls }, top);
-        if (label) el('text', { x: X(p[0]) + 7, y: Y(p[1]) - 7, class: 'pl' }, top).textContent = label;
+        if (label) {
+          // "A(2, 3)": the letter bold, the coordinates beside it. dir (the line's direction) puts the label on the side
+          // the line doesn't cross: up-left for a rising line, up-right otherwise; flipped near the right edge.
+          const rising = dir && Math.sign(dir[0]) * Math.sign(dir[1]) > 0;
+          let left = rising; if (p[0] >= max - 2) left = true; if (p[0] <= min + 2 && !rising) left = false;
+          const below = p[1] >= max - 0.5;
+          const t = el('text', { x: X(p[0]) + (left ? -7 : 7), y: Y(p[1]) + (below ? 15 : -7), class: 'pl' + (left ? ' end' : '') }, top);
+          const m = /^([A-Z])(\(.*\))?$/.exec(label);
+          if (m) { el('tspan', { class: 'pn' }, t).textContent = m[1]; if (m[2]) el('tspan', {}, t).textContent = m[2]; } else t.textContent = label;
+        }
         return d;
       },
       // the slope triangle from p to q: run (across) first, then rise (up/down); labels show signed run and rise

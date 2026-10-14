@@ -7,6 +7,7 @@
   const slope = it => F.of(it.b[1] - it.a[1], it.b[0] - it.a[0]);
   const onGrid = it => [it.a, it.b].every(p => Math.abs(p[0]) <= 6 && Math.abs(p[1]) <= 6);
   const pt = p => `(${G.sgn(p[0])}, ${G.sgn(p[1])})`;
+  const dir = it => [it.b[0] - it.a[0], it.b[1] - it.a[1]];
   const paren = n => n < 0 ? `(${G.sgn(n)})` : String(n);
   // the work: (y₂ − y₁) / (x₂ − x₁) = Δy / Δx = slope
   function work(it) {
@@ -35,12 +36,12 @@
     },
     opening: [{ kind: 'grid-up', item: { a: [-2, -1], b: [2, 2] } }, { kind: 'negs', item: { a: [-3, 19], b: [1, 18] } }],
     nextOnRight: true,
-    text: it => `${pt(it.a)} and ${pt(it.b)}`,
+    text: it => `A${pt(it.a)} and B${pt(it.b)}`,
     speak: it => `The points ${pt(it.a)} and ${pt(it.b)}. What is the slope?`,
     ask(el, it, submit) {
-      el.innerHTML = `<div class="gq">${onGrid(it) ? '<div class="gridbox"></div>' : ''}<div class="q">${pt(it.a)} &nbsp;and&nbsp; ${pt(it.b)}</div>
+      el.innerHTML = `<div class="gq">${onGrid(it) ? '<div class="gridbox"></div>' : ''}<div class="q two"><span>A${pt(it.a)}</span><span>B${pt(it.b)}</span></div>
         <div class="q">slope = ${F.box('slope', { undef: true })}</div><p class="say" aria-live="polite"></p><button type="button" class="go">Check</button><div class="work" aria-live="polite"></div></div>`;
-      if (onGrid(it)) { const g = G.make(el.querySelector('.gridbox')); g.line(it.a, it.b, 'ln faint'); g.dot(it.a); g.dot(it.b); el._g = g; }
+      if (onGrid(it)) { const g = G.make(el.querySelector('.gridbox')); g.line(it.a, it.b, 'ln faint'); g.dot(it.a, 'pt', 'A' + pt(it.a), dir(it)); g.dot(it.b, 'pt', 'B' + pt(it.b), dir(it)); el._g = g; }
       el._f = F.wire(el, { want: () => slope(it), onSubmit: v => submit(v.slope) });
     },
     correct: it => F.text(slope(it)),

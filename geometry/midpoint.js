@@ -31,8 +31,9 @@
   function picture(host, it, showMid) {
     const g = G.make(host), m = mid(it);
     g.seg(it.a, it.b);
-    g.dot(it.a, 'pt', pt(it.a)); g.dot(it.b, 'pt', pt(it.b));
-    if (showMid) { g.triangle(it.a, it.b, { labels: false, cls: 'ghost' }); g.triangle(it.a, m, { labels: true }); g.dot(m, 'pt ok', pt(m)); }
+    const d = [it.b[0] - it.a[0], it.b[1] - it.a[1]];
+    g.dot(it.a, 'pt', 'A' + pt(it.a), d); g.dot(it.b, 'pt', 'B' + pt(it.b), d);
+    if (showMid) { g.triangle(it.a, it.b, { labels: false, cls: 'ghost' }); g.triangle(it.a, m, { labels: true }); g.dot(m, 'pt ok', 'M' + pt(m), d); }
     return g;
   }
 
@@ -56,15 +57,15 @@
       { kind: 'big', item: { a: [1, 4], b: [12, -7] } }
     ],
     nextOnRight: true,
-    text: it => it.words ? `halfway from ${it.words[0]} ${pt(it.a)} to ${it.words[1]} ${pt(it.b)}` : `midpoint of ${pt(it.a)} and ${pt(it.b)}`,
+    text: it => it.words ? `halfway from ${it.words[0]} ${pt(it.a)} to ${it.words[1]} ${pt(it.b)}` : `midpoint of A${pt(it.a)} and B${pt(it.b)}`,
     speak: it => it.words ? `${it.words[0]} is at ${pt(it.a)} and ${it.words[1]} is at ${pt(it.b)}. What point is halfway?` : `What is the midpoint of ${pt(it.a)} and ${pt(it.b)}?`,
     ask(el, it, submit) {
       const box = c => `<input class="mp" data-c="${c}" inputmode="decimal" autocomplete="off" spellcheck="false" aria-label="${c ? 'y' : 'x'}">`;
       const head = it.words
         ? `<div class="q small">${it.words[0]} ${pt(it.a)}</div><div class="q small">${it.words[1]} ${pt(it.b)}</div><div class="q small">halfway?</div>`
-        : `<div class="q">${pt(it.a)} <span class="sym">·</span> ${pt(it.b)}</div>`;
+        : `<div class="q two"><span>A${pt(it.a)}</span><span>B${pt(it.b)}</span></div>`;
       el.innerHTML = `<div class="gq">${!it.words && onGrid(it) ? '<div class="gridbox"></div>' : ''}${head}
-        <div class="q mpq">(${box(0)}, ${box(1)})</div><p class="say" aria-live="polite"></p><button type="button" class="go">Check</button><div class="work" aria-live="polite"></div></div>`;
+        <div class="q mpq">M(${box(0)}, ${box(1)})</div><p class="say" aria-live="polite"></p><button type="button" class="go">Check</button><div class="work" aria-live="polite"></div></div>`;
       if (el.querySelector('.gridbox')) picture(el.querySelector('.gridbox'), it, false);
       const ins = Array.from(el.querySelectorAll('.mp')), go = el.querySelector('.go');
       const check = () => {

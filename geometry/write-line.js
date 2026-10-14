@@ -56,7 +56,7 @@
   // In the next-session check (warm) it's the answer at once: y = [m]x + [b] (or y = [ ] / x = [ ]).
   function mount(el, it, direct, done) {
     const errs = [];
-    el.innerHTML = `<div class="gq"><div class="q">${it.rel === 'par' ? '∥' : '⟂'} to ${gHTML(it.g)}</div><div class="q small">through ${pt(it.p)}</div>
+    el.innerHTML = `<div class="gq"><div class="q">${it.rel === 'par' ? '∥' : '⟂'} to ${gHTML(it.g)}</div><div class="q small">through P${pt(it.p)}</div>
       <div class="wl"></div><p class="say" aria-live="polite"></p><div class="q final"></div></div>`;
     const list = el.querySelector('.wl'), sayEl = el.querySelector('.say'), n = newSlope(it);
     const flatOrUp = n.undef || n.n === 0;
