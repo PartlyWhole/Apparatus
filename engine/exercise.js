@@ -27,7 +27,8 @@
   //   tricky: tricky questions per idea                   speed: seconds; slower right answers don't count yet (0 = off)
   //   check:  a short check next session                  key:   show the ? key
   //   tutorial: run the tutorial on the first visit (only if the exercise has one)
-  const RULE_DEFAULTS = { intro: true, tricky: 2, fix: 2, speed: 0, check: true, key: true, tutorial: true };
+  //   fix is the miss penalty: right answers needed on that idea after a miss, and how far the bar drops (default 3, to discourage guessing)
+  const RULE_DEFAULTS = { intro: true, tricky: 2, fix: 3, speed: 0, check: true, key: true, tutorial: true };
   A.RULE_DEFAULTS = RULE_DEFAULTS;
   A.loadSettings = def => Object.assign({}, RULE_DEFAULTS, def.defaults || {}, read(setKey(def)) || {});
   A.saveSettings = (def, s) => write(setKey(def), s);
@@ -142,9 +143,9 @@
       }
       if (cur.mode === 'probe') R.probe = R.probe.filter(k => k !== cur.kind);
       if (cur.mode === 'warm') S.warm.shift();
-      // progress = right answers against what's left; a miss also costs one, so the bar always drops
-      R.credit = Math.max(0, (R.credit || 0) + (right ? 1 : -1));
-      if (right) { if (R.need[idea] > 0) R.need[idea]--; }
+      // progress = right answers against what's left; a miss costs as much as the penalty, so the bar visibly drops
+      R.credit = Math.max(0, (R.credit || 0) + (right ? 1 : -SET.fix));
+      if (right) { if (cur.mode === 'fix' && R.need[idea] > 0) R.need[idea]--; }   // only the penalty questions pay it off
       else { R.need[idea] = SET.fix; R.missed[idea] = cur.kind; }
       save(); return false;
     }
@@ -433,7 +434,7 @@
       const RULES = [
         def.opening && ['intro', 'Opening examples', [[true, 'On'], [false, 'Off']], 'The contrast examples at the start.'],
         T > 1 && ['tricky', 'Tricky questions', Array.from({ length: T }, (_, k) => [k + 1, String(k + 1)]), 'Per idea. These are what count as passing.'],
-        ['fix', 'After a miss', [[1, '1'], [2, '2'], [3, '3']], 'Right answers needed on that idea before it counts as fixed.'],
+        ['fix', 'Miss penalty', [[1, '1'], [2, '2'], [3, '3'], [4, '4']], 'After a miss: this many more right answers on that idea, and the progress bar drops as much. Higher discourages guessing.'],
         ['speed', 'Speed', [[0, 'Off'], [10, '10 s'], [6, '6 s']], 'A slower right answer doesn’t count yet and comes back later.'],
         ['check', 'Next-session check', [[true, 'On'], [false, 'Off']], 'A few quick questions the next time the page is opened.'],
         (def.key || def.keyHTML) && ['key', '? key', [[true, 'Shown'], [false, 'Hidden']], 'Examples to look back at.'],

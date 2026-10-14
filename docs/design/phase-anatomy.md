@@ -24,7 +24,7 @@ Design tricky kinds by asking: *what wrong rule would still get the easy ones ri
 0. **Tutorial** (optional; for genuinely new ideas): an interactive walk-through on the first visit, before the exercise. See section 3a.
 1. **Opening contrast set** (optional, on by default): one item per idea, as similar as possible, so only the deciding feature differs (4.56 × 10³ / 45.6 × 10² / 4,560). This is the "safe introduction".
 2. **Tricky probes:** each idea's tricky kinds, interleaved so the same idea never comes twice in a row. A right answer on a tricky kind vouches for that idea's easy kinds.
-3. **After a miss on an idea:** that idea needs `fix` more right answers (default 2): first an easy kind, then the kind that was missed (with new numbers). Other ideas are interleaved in between when available.
+3. **After a miss on an idea (the miss penalty):** that idea needs `fix` more right answers (default **3**, to discourage guessing): easy kinds first, the kind that was missed last (with new numbers). Only these penalty questions pay it off; another miss on the idea starts the count again. The progress bar drops by the penalty. Other ideas are interleaved in between when available.
 4. **Passed** when the opening and every tricky probe are done, and no idea still needs fixing.
 5. **Next-session check:** the first time the page is opened 8+ hours after passing, one quick question per idea (a tricky kind). Clean → final. A miss → practiced right away, and the check runs again next session.
 
@@ -45,12 +45,12 @@ Use one only when the idea is new to the student (a tutorial adds nothing for co
 
 ## 4. Why this bar holds (guessing)
 
-With k choices a guess is right 1/k of the time. To pass, a guesser must get the opening and every tricky probe right, and two in a row after any miss. For 3 choices and 9 questions that's (1/3)⁹ ≈ 0.005%. A student with a half-rule ("× 10ⁿ means scientific") fails the tricky kinds that target that rule. If you add an idea or change the probe count, redo this arithmetic in the spec.
+With k choices a guess is right 1/k of the time. To pass, a guesser must get the opening and every tricky probe right, and pay the miss penalty (3 right answers in a row on that idea) after any miss. For 3 choices and 9 questions that's (1/3)⁹ ≈ 0.005%. A student with a half-rule ("× 10ⁿ means scientific") fails the tricky kinds that target that rule. If you add an idea or change the probe count, redo this arithmetic in the spec.
 
 ## 5. Tutor rules
 
-A tutor can change: opening on/off, tricky questions per idea, right answers needed after a miss (1–3), a speed limit (off / 10 s / 6 s), the next-session check, and the ? key (`analytics.md`). Defaults are in `engine/exercise.js` (`RULE_DEFAULTS`); an exercise may override them in its definition.
+A tutor can change: opening on/off, tricky questions per idea, the miss penalty (1–4), a speed limit (off / 10 s / 6 s), the next-session check, and the ? key (`analytics.md`). Defaults are in `engine/exercise.js` (`RULE_DEFAULTS`); an exercise may override them in its definition.
 
 ## 6. What's a default, not a finding
 
-The *structure* (per-idea evidence, tricky probes, interleaving, a delayed check) is well supported (`evidence.md`). The *numbers* (2 tricky per idea, 2 after a miss, 8 hours, 3-question check) are reasonable choices to tune from real students' analytics.
+The *structure* (per-idea evidence, tricky probes, interleaving, a delayed check) is well supported (`evidence.md`). The *numbers* (2 tricky per idea, a miss penalty of 3, 8 hours, one check question per idea) are reasonable choices to tune from real students' analytics.

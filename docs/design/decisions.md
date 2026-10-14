@@ -2,6 +2,7 @@
 
 Newest first. One line per decision: date — what — why (and who asked). When a decision is reversed, add a new line; don't delete the old one. The other docs describe only the current state.
 
+- 2026-10-14 — Bigger penalty for wrong answers, to discourage guessing: "Miss penalty" rule (1–4, default 3, was "After a miss", default 2). Only penalty questions pay it off; the bar drops by the penalty. (user: "wrong answers to have more penalty… allow tutor to adjust")
 - 2026-10-14 — Moving the Point: tutor rule "Dividing" (default off) — no ÷ questions, tutorial and wording without division; engine gained exercise-specific rules (`rules` + `configure`). (user)
 - 2026-10-14 — Moving the Point: hops drawn under the digits (the point dips along them). (user)
 - 2026-10-14 — Moving the Point: a right answer stays until Next (engine option `nextOnRight`), so the result can be seen. (user)
