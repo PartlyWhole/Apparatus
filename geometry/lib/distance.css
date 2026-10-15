@@ -9,10 +9,12 @@
 .gq .dscale { font-family: var(--f-mono); }
 
 /* d = √((x₂ − x₁)² + (y₂ − y₁)²) with slots */
-.gq.dist .dfm { display: flex; align-items: flex-end; justify-content: center; flex-wrap: nowrap; font-size: clamp(0.95rem, 4.2vw, 1.3rem); }
+.gq.dist .dfm { display: flex; align-items: center; justify-content: center; flex-wrap: nowrap; font-size: clamp(0.95rem, 4.2vw, 1.3rem); }
 .gq.dist .dfm .dfl { margin-right: 0.25em; align-self: center; }
-.gq.dist .dsign { font-size: 1.9em; line-height: 1; font-weight: 400; margin-right: -0.06em; }
-.gq.dist .dover { display: inline-flex; align-items: center; gap: 0.12em; border-top: 2.5px solid var(--ink); padding: 6px 2px 0 4px; }
+.gq.dist .drad { display: inline-flex; align-items: stretch; }   /* the sign as tall as what's inside, meeting the bar */
+.gq.dist .dsign { width: 0.75em; flex: none; overflow: visible; }
+.gq.dist .dsign path { fill: none; stroke: var(--ink); stroke-width: 2.5px; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.gq.dist .dover { display: inline-flex; align-items: center; gap: 0.12em; border-top: 2.5px solid var(--ink); padding: 4px 2px 2px 4px; }
 .gq.dist .dover sup { font-size: 0.7em; align-self: flex-start; }
 .gq.dist .dpa { color: var(--muted); font-weight: 400; font-size: 1.15em; }
 .gq.dist .dop { margin: 0 0.1em; }

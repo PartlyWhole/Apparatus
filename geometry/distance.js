@@ -148,6 +148,8 @@
   const setD = (el, text) => Promise.resolve(el._sq).then(() => { const t = el.querySelector('.glegend .m-dl'); if (t) t.textContent = 'd ' + text; });
 
   // ---- custom rows (Steps tap steps) ----
+  // d = √( inner ), the sign stretching to meet its bar
+  const radHTML = inner => `<div class="dfm"><span class="dfl">d&nbsp;=</span><span class="drad"><svg class="dsign" viewBox="0 0 10 40" preserveAspectRatio="none" aria-hidden="true"><path d="M0 26 L3 23 L6.5 40 L10 0.8"/></svg><span class="dover">${inner}</span></span></div>`;
   const sayOf = el => el.querySelector('.dsteps .say');
   // run and rise, either sign
   function legsRow(el, it) {
@@ -174,7 +176,7 @@
       const slot = k => `<span class="dslot" data-s="${k}" role="button" tabindex="0"><span class="dn">${k[0]}${SUB[k[1]]}</span></span>`;
       const pair = c => `<span class="dpa">(</span>${slot(c + '2')}<span class="dop">−</span>${slot(c + '1')}<span class="dpa">)</span><sup>2</sup>`;
       row.innerHTML = `<div class="st-chips dpts"><span class="dpt"><b>A</b>(${chip('ax')},&nbsp;${chip('ay')})</span><span class="dpt"><b>B</b>(${chip('bx')},&nbsp;${chip('by')})</span></div>
-        <div class="dfm"><span class="dfl">d&nbsp;=</span><span class="dsign">√</span><span class="dover">${pair('x')}<span class="dop">+</span>${pair('y')}</span></div>
+        ${radHTML(`${pair('x')}<span class="dop">+</span>${pair('y')}`)}
         <button type="button" class="go" disabled>Check</button>`;
       const go = row.querySelector('.go'), slots = Array.from(row.querySelectorAll('.dslot')), chips = Array.from(row.querySelectorAll('.dchip'));
       const d = Drag.wire({
@@ -193,6 +195,38 @@
         const k = placed[bad[0].dataset.s];
         res({ ok: false, err: 'mix', sentence: `${s(val(k))} is ${k[0].toUpperCase()}’s ${k[1]}, so it goes with the ${k[1]}’s.` });
       });
+    });
+  }
+
+  // after the drag, one thing at a time: the subtractions, √([Δx]² + [Δy]²), then the squares, √([Δx²] + [Δy²])
+  // (in the order the student placed the numbers, so their own subtraction is what's checked)
+  function diffRow(el, it, order) {
+    const val = k => it[k[0]][k[1] === 'x' ? 0 : 1];
+    return (g, row) => new Promise(res => {
+      const o = order(), [x2, x1, y2, y1] = ['x2', 'x1', 'y2', 'y1'].map(k => val(o[k])), dx = x2 - x1, dy = y2 - y1;
+      row.classList.add('drag');
+      row.innerHTML = `${radHTML(`${F.box('dx')}<sup>2</sup><span class="dop">+</span>${F.box('dy')}<sup>2</sup>`)} ${GO}`;
+      const f = F.wire(row, { say: sayOf(el), onSubmit: v => {
+        const a = F.num(v.dx.v), b = F.num(v.dy.v), okA = a === dx, okB = b === dy;
+        f.mark('dx', okA); f.mark('dy', okB);
+        if (okA && okB) return res({ ok: true, value: [dx, dy] });
+        res({ ok: false, err: 'diff', sentence: !okA ? `${s(x2)} − ${paren(x1)} = ${s(dx)}.` : `${s(y2)} − ${paren(y1)} = ${s(dy)}.` });
+      } });
+    });
+  }
+  function squaresRow(el, it, diffs) {
+    return (g, row) => new Promise(res => {
+      const [dx, dy] = diffs();
+      row.classList.add('drag');
+      row.innerHTML = `${radHTML(`${F.box('sx')}<span class="dop">+</span>${F.box('sy')}`)} ${GO}`;
+      const f = F.wire(row, { say: sayOf(el), onSubmit: v => {
+        const a = F.num(v.sx.v), b = F.num(v.sy.v), okA = a === dx * dx, okB = b === dy * dy;
+        f.mark('sx', okA); f.mark('sy', okB);
+        if (okA && okB) return res({ ok: true });
+        const [d, got] = !okA ? [dx, a] : [dy, b];
+        res(got === -d * d ? { ok: false, err: 'negsq', sentence: `${paren(d)}² is +${d * d}: a square is never negative.` }
+          : { ok: false, err: 'sqr', sentence: `${paren(d)}² = ${paren(d)} × ${paren(d)} = ${d * d}.` });
+      } });
     });
   }
 
@@ -218,7 +252,15 @@
       } };
       return lvl === 2 ? [legs, d2, dq] : lvl === 1 ? [d2, dq] : [dq];
     }
-    if (it.t === 'num') return lvl === 2 ? [{ tap: dragRow(el, it) }, d2, dq] : lvl === 1 ? [d2, dq] : [dq];
+    if (it.t === 'num') {
+      let placed = null, diffs = null;
+      const walk = [
+        { tap: dragRow(el, it), onRight: v => { placed = v; } },
+        { text: 'Subtract.', tap: diffRow(el, it, () => placed), onRight: v => { diffs = v; } },
+        { text: 'Square.', tap: squaresRow(el, it, () => diffs) }
+      ];
+      return lvl === 2 ? [...walk, d2, dq] : lvl === 1 ? [d2, dq] : [dq];
+    }
     if (it.t === 'map') {
       const m = miles(it), whole = near(m * 10, Math.round(m * 10));
       return [dq, {
@@ -331,7 +373,7 @@
     },
     errors: {
       add: 'added the legs (√(a² + b²) = a + b)', nosq: 'added the legs without squaring', negsq: 'squared a negative to a negative',
-      noroot: 'stopped at d² (no root)', simp: 'simplified the root wrong', mix: 'put an x with the y’s (formula)', count: 'miscounted a leg',
+      noroot: 'stopped at d² (no root)', diff: 'subtracted wrong (in the formula)', sqr: 'squared wrong', simp: 'simplified the root wrong', mix: 'put an x with the y’s (formula)', count: 'miscounted a leg',
       noscale: 'left the map distance in squares', trunc: 'cut off instead of rounding', walk: 'walked along the legs',
       half: 'took the height as half the side', sum: 'added instead of subtracting (backwards)', side: 'took the height as the slanted side', other: 'arithmetic'
     },
@@ -343,6 +385,8 @@
         noroot: ['Stops at d² and gives it as the length.', 'The squares give d²; one more step: d = √(d²). Ask “is this the area or the side?”'],
         simp: ['Takes the wrong square out of the root.', 'Square the answer back (a² × b) and compare it with d²; take out the biggest square that divides it.'],
         mix: ['Puts a y-number with the x’s in the formula (or an x with the y’s).', 'Say “x” or “y” at each number before placing it; the x’s are subtracted together, the y’s together.'],
+        diff: ['Slips subtracting the coordinates, often with a negative.', 'Rewrite “minus a negative” as plus before working it out: 5 − (−1) = 5 + 1.'],
+        sqr: ['Slips squaring a number.', 'A square is the number times itself: 6² = 6 × 6, not 6 × 2.'],
         count: ['Miscounts a leg: across from A to B, or up/down.', 'Count the squares along the bottom, then up the side; or subtract the x’s, then the y’s.'],
         noscale: ['Gives the map distance in squares, not miles.', 'Every square is a fixed distance: multiply by the scale at the end.'],
         trunc: ['Cuts the decimal off instead of rounding.', 'Look at the next digit: 5 or more rounds up.'],
