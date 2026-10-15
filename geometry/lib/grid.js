@@ -12,14 +12,20 @@
     const min = o.min ?? -6, max = o.max ?? 6, U = 20, size = (max - min) * U;
     const X = x => (x - min) * U, Y = y => (max - y) * U;
     host.innerHTML = '';
+    // label layout: every label tries a few spots and takes the one that overlaps least (other labels, dots, lines,
+    // the grid's edge); a tick number under a label is hidden. Text sizes are estimated (the svg may not be on screen).
+    const ticks = [], segs = [], dots = [], labels = [];
+    const axes = [[X(min), Y(0), X(max), Y(0)], [X(0), Y(min), X(0), Y(max)]];
     const svg = el('svg', { viewBox: `-14 -14 ${size + 28} ${size + 28}`, class: 'grid', role: 'img', 'aria-label': 'Coordinate grid' }, host);
     const base = el('g', { class: 'g-base' }, svg);
     for (let v = min; v <= max; v++) {
       el('line', { x1: X(v), y1: 0, x2: X(v), y2: size, class: v === 0 ? 'axis' : 'gl' }, base);
       el('line', { x1: 0, y1: Y(v), x2: size, y2: Y(v), class: v === 0 ? 'axis' : 'gl' }, base);
       if (v !== 0 && v % 2 === 0) {
-        el('text', { x: X(v), y: Y(0) + 13, class: 'gn' }, base).textContent = sgn(v);
-        el('text', { x: X(0) - 5, y: Y(v) + 3.5, class: 'gn gy' }, base).textContent = sgn(v);
+        const w = sgn(v).length * 5.6;
+        ticks.push({ e: el('text', { x: X(v), y: Y(0) + 13, class: 'gn' }, base), r: [X(v) - w / 2, Y(0) + 5, w, 10] });
+        ticks.push({ e: el('text', { x: X(0) - 5, y: Y(v) + 3.5, class: 'gn gy' }, base), r: [X(0) - 5 - w, Y(v) - 5, w, 10] });
+        ticks[ticks.length - 2].e.textContent = ticks[ticks.length - 1].e.textContent = sgn(v);
       }
     }
     const layer = el('g', { class: 'g-draw' }, svg);
@@ -35,35 +41,73 @@
       pts.sort((a, b) => a[0] - b[0]);
       return [pts[0], pts[pts.length - 1]];
     };
+    const rectOf = (L, c) => [(c[2] === 's' ? c[0] : c[2] === 'e' ? c[0] - L.w : c[0] - L.w / 2) - 2, c[1] - L.h * 0.8 - 2, L.w + 4, L.h + 4];
+    const hit = (a, b) => a[0] < b[0] + b[2] && b[0] < a[0] + a[2] && a[1] < b[1] + b[3] && b[1] < a[1] + a[3];
+    const crosses = (r, sg) => { for (let k = 0; k <= 24; k++) { const x = sg[0] + (sg[2] - sg[0]) * k / 24, y = sg[1] + (sg[3] - sg[1]) * k / 24; if (x > r[0] && x < r[0] + r[2] && y > r[1] && y < r[1] + r[3]) return true; } return false; };
+    function layout() {
+      const done = [];
+      // a label whose triangle was removed (the turned copy) drops out
+      for (let i = labels.length - 1; i >= 0; i--) if (labels[i].t.ownerSVGElement !== svg) labels.splice(i, 1);
+      labels.slice().sort((a, b) => a.pri - b.pri).forEach(L => {
+        let best = null, bc = Infinity;
+        L.at.forEach((c, i) => {
+          const r = rectOf(L, c);
+          let cost = i * 0.5;
+          done.forEach(d => { if (hit(r, d)) cost += 100; });
+          dots.forEach(d => { if (hit(r, [d[0] - 5, d[1] - 5, 10, 10])) cost += 60; });
+          segs.forEach(sg => { if (crosses(r, sg)) cost += 25; });
+          axes.forEach(sg => { if (crosses(r, sg)) cost += 40; });
+          if (r[0] < -12 || r[1] < -12 || r[0] + r[2] > size + 12 || r[1] + r[3] > size + 12) cost += 80;
+          ticks.forEach(tk => { if (hit(r, tk.r)) cost += 2; });
+          if (cost < bc) { bc = cost; best = c; }
+        });
+        L.t.setAttribute('x', best[0]); L.t.setAttribute('y', best[1]);
+        L.t.style.textAnchor = best[2] === 's' ? 'start' : best[2] === 'e' ? 'end' : 'middle';
+        done.push(rectOf(L, best));
+      });
+      ticks.forEach(tk => { tk.e.style.visibility = done.some(r => hit(r, tk.r)) ? 'hidden' : ''; });
+    }
     const g = {
       min, max, svg, X, Y,
-      clear() { layer.innerHTML = ''; top.innerHTML = ''; },
-      line(p, q, cls = 'ln') { const [a, b] = clip(p, q); return el('line', { x1: X(a[0]), y1: Y(a[1]), x2: X(b[0]), y2: Y(b[1]), class: cls }, layer); },
-      seg(p, q, cls = 'sg') { return el('line', { x1: X(p[0]), y1: Y(p[1]), x2: X(q[0]), y2: Y(q[1]), class: cls }, layer); },
-      dot(p, cls = 'pt', label, dir) {
+      clear() { layer.innerHTML = ''; top.innerHTML = ''; segs.length = dots.length = labels.length = 0; layout(); },
+      line(p, q, cls = 'ln') { const [a, b] = clip(p, q); segs.push([X(a[0]), Y(a[1]), X(b[0]), Y(b[1])]); layout(); return el('line', { x1: X(a[0]), y1: Y(a[1]), x2: X(b[0]), y2: Y(b[1]), class: cls }, layer); },
+      seg(p, q, cls = 'sg') { segs.push([X(p[0]), Y(p[1]), X(q[0]), Y(q[1])]); layout(); return el('line', { x1: X(p[0]), y1: Y(p[1]), x2: X(q[0]), y2: Y(q[1]), class: cls }, layer); },
+      dot(p, cls = 'pt', label) {
         const d = el('circle', { cx: X(p[0]), cy: Y(p[1]), r: 4.5, class: cls }, top);
+        dots.push([X(p[0]), Y(p[1])]);
         if (label) {
-          // "A(2, 3)": the letter bold, the coordinates beside it. dir (the line's direction) puts the label on the side
-          // the line doesn't cross: up-left for a rising line, up-right otherwise; flipped near the right edge.
-          const rising = dir && Math.sign(dir[0]) * Math.sign(dir[1]) > 0;
-          let left = rising; if (p[0] >= max - 2) left = true; if (p[0] <= min + 2 && !rising) left = false;
-          const below = p[1] >= max - 0.5;
-          const t = el('text', { x: X(p[0]) + (left ? -7 : 7), y: Y(p[1]) + (below ? 15 : -7), class: 'pl' + (left ? ' end' : '') }, top);
+          // "A(2, 3)": the letter bold, the coordinates beside it
+          const t = el('text', { class: 'pl' }, top);
           const m = /^([A-Z])(\(.*\))?$/.exec(label);
           if (m) { el('tspan', { class: 'pn' }, t).textContent = m[1]; if (m[2]) el('tspan', {}, t).textContent = m[2]; } else t.textContent = label;
+          const w = label.length * 5.9 + 2, cx = X(p[0]), cy = Y(p[1]);
+          // NE, NW, SE, SW, E, W, N, S
+          labels.push({ t, pri: 1, w, h: 11, at: [[cx + 7, cy - 7, 's'], [cx - 7, cy - 7, 'e'], [cx + 7, cy + 15, 's'], [cx - 7, cy + 15, 'e'],
+            [cx + 9, cy + 4, 's'], [cx - 9, cy + 4, 'e'], [cx, cy - 10, 'm'], [cx, cy + 19, 'm']] });
         }
+        layout();
         return d;
       },
       // the slope triangle from p to q: run (across) first, then rise (up/down); labels show signed run and rise
       triangle(p, q, o2 = {}) {
         const grp = el('g', { class: 'tri' + (o2.cls ? ' ' + o2.cls : '') }, layer);
         const c = [q[0], p[1]], run = q[0] - p[0], rise = q[1] - p[1];
-        if (run) el('line', { x1: X(p[0]), y1: Y(p[1]), x2: X(c[0]), y2: Y(c[1]), class: 'run' }, grp);
-        if (rise) el('line', { x1: X(c[0]), y1: Y(c[1]), x2: X(q[0]), y2: Y(q[1]), class: 'rise' }, grp);
+        if (run) { el('line', { x1: X(p[0]), y1: Y(p[1]), x2: X(c[0]), y2: Y(c[1]), class: 'run' }, grp); segs.push([X(p[0]), Y(p[1]), X(c[0]), Y(c[1])]); }
+        if (rise) { el('line', { x1: X(c[0]), y1: Y(c[1]), x2: X(q[0]), y2: Y(q[1]), class: 'rise' }, grp); segs.push([X(c[0]), Y(c[1]), X(q[0]), Y(q[1])]); }
         if (o2.labels !== false) {
-          if (run) el('text', { x: (X(p[0]) + X(c[0])) / 2, y: Y(p[1]) + (rise > 0 ? 14 : -7), class: 'tl run-l' }, grp).textContent = (o2.words ? 'run ' : '') + sgn(run);
-          if (rise) el('text', { x: X(c[0]) + (run >= 0 ? 7 : -7), y: (Y(c[1]) + Y(q[1])) / 2 + 4, class: 'tl rise-l' + (run >= 0 ? '' : ' end') }, grp).textContent = (o2.words ? 'rise ' : '') + sgn(rise);
+          // run: under or over its leg (outside the triangle first), sliding along it; rise: beside its leg
+          if (run) {
+            const s1 = (o2.words ? 'run ' : '') + sgn(run), t = el('text', { class: 'tl run-l' }, grp); t.textContent = s1;
+            const mx = (X(p[0]) + X(c[0])) / 2, y0 = Y(p[1]), out = rise > 0 ? 15 : -6, inn = rise > 0 ? -6 : 15, sl = Math.abs(X(c[0]) - X(p[0])) / 4;
+            labels.push({ t, pri: 0, w: s1.length * 7, h: 12, at: [[mx, y0 + out, 'm'], [mx, y0 + inn, 'm'], [mx - sl, y0 + out, 'm'], [mx + sl, y0 + out, 'm'], [mx - sl, y0 + inn, 'm'], [mx + sl, y0 + inn, 'm']] });
+          }
+          if (rise) {
+            const s2 = (o2.words ? 'rise ' : '') + sgn(rise), t = el('text', { class: 'tl rise-l' }, grp); t.textContent = s2;
+            const x0 = X(c[0]), my = (Y(c[1]) + Y(q[1])) / 2 + 4, sl = Math.abs(Y(q[1]) - Y(c[1])) / 4, o = run >= 0 ? [7, 's', -7, 'e'] : [-7, 'e', 7, 's'];
+            labels.push({ t, pri: 0, w: s2.length * 7, h: 12, at: [[x0 + o[0], my, o[1]], [x0 + o[2], my, o[3]], [x0 + o[0], my - sl, o[1]], [x0 + o[0], my + sl, o[1]], [x0 + o[2], my - sl, o[3]], [x0 + o[2], my + sl, o[3]]] });
+          }
         }
+        layout();
         return grp;
       },
       // turn a group 90° counterclockwise about point p (animated): run and rise swap, one changes sign
