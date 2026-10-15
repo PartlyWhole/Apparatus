@@ -181,3 +181,12 @@
 .key .gk .dchip { min-height: 34px; cursor: default; }
 .gq .qrise { color: var(--good); }
 .gq .qrun { color: var(--accent); }
+
+/* Write the Line: plain-question steps, drag rows */
+.wline .wl-text { color: var(--muted); font-family: var(--f-body); font-weight: 400; font-size: clamp(1rem, 4.4vw, 1.15rem); }
+.wline .wl-text b { color: var(--ink); font-family: var(--f-mono); font-weight: 700; white-space: nowrap; }
+.wline .q.step.drag { flex-direction: column; gap: 10px; }
+.wline .wl-chips { display: flex; gap: 10px; justify-content: center; }
+.wline .wl-eq { display: flex; align-items: center; gap: 0.3em; flex-wrap: wrap; justify-content: center; }
+.wline .wl-eq .dslot { min-height: 46px; min-width: 2.8em; padding: 0 8px; display: inline-flex; border-radius: 12px; }
+.wline .wl-eq .dslot .dn { color: var(--muted); }

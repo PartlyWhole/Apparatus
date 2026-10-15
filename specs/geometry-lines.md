@@ -75,6 +75,7 @@ Each follows the house pattern: tutorial only where the idea is new (G1, G4's tu
 - **G8 Midpoint** starts with a scaffold: drag A's and B's numbers into ((x₁ + x₂)/2, (y₁ + y₂)/2), then type M; after Check, the x's meet halfway on the x-axis and the y's on the y-axis, and the guides meet at M. Later items drop the formula. New idea "Into the formula", new error mix.
 - **G2a Name the Coordinates**: the name slots start in order x₁ y₁ x₂ y₂ and slide into a scramble; tutor rule "Scramble animation" (On by default) turns it off for that page.
 - Shared drag-to-slot library: `geometry/lib/drag.js`.
+- **G7 Write the Line** asks in plain steps, giving information as it's needed: "What is the slope of 2x − 4y = 8?" → "What slope is parallel to it?" → "The parallel line goes through P(4, 1)." → drag the slope into y = [ ]x + b (for ⟂ the given slope is a decoy chip) → drag P's numbers into [y] = ½·[x] + b → b = [ ] → the line. Fades by item.lvl: 2 = all of it (opening), 1 = steps then y = ½x + [b] typed, 0 = the whole line at once (later items, next-session check). New error: sub (x/y swapped substituting).
 
 ## Open questions (remaining)
 4. Q16 Part A (graph the perpendicular bisector): tapping two points to draw the line is the planned interaction. OK?
