@@ -1,0 +1,33 @@
+/* Distance (G10) — run/rise labels in their colors, the drag-into-the-formula row, the map's "□ = 2 mi", Decimal help,
+   the missed-step dot. Builds on geo.css, grid-extra.css, root.css, steps.css. */
+.gq.dist .dk { font-family: var(--f-body); font-size: 0.8em; }
+.gq.dist .dk.run { color: var(--accent); }
+.gq.dist .dk.rise { color: var(--good); margin-left: 0.5em; }
+
+/* one map square */
+.dsq { display: inline-block; width: 0.85em; height: 0.85em; border: 2px solid var(--muted); border-radius: 2px; vertical-align: -0.08em; }
+.gq .dscale { font-family: var(--f-mono); }
+
+/* d = √((x₂ − x₁)² + (y₂ − y₁)²) with slots */
+.gq.dist .dfm { display: flex; align-items: flex-end; justify-content: center; flex-wrap: nowrap; font-size: clamp(0.95rem, 4.2vw, 1.3rem); }
+.gq.dist .dfm .dfl { margin-right: 0.25em; align-self: center; }
+.gq.dist .dsign { font-size: 1.9em; line-height: 1; font-weight: 400; margin-right: -0.06em; }
+.gq.dist .dover { display: inline-flex; align-items: center; gap: 0.12em; border-top: 2.5px solid var(--ink); padding: 6px 2px 0 4px; }
+.gq.dist .dover sup { font-size: 0.7em; align-self: flex-start; }
+.gq.dist .dpa { color: var(--muted); font-weight: 400; font-size: 1.15em; }
+.gq.dist .dop { margin: 0 0.1em; }
+.gq.dist .dfm .dslot { min-height: 42px; min-width: 2.3em; padding: 0 3px; border-radius: 10px; font-size: inherit; display: inline-flex; align-items: center; justify-content: center; }
+.gq.dist .dfm .dslot .dn { font-size: 0.8em; }
+.gq.dist .st-chips.dpts { gap: 0.8em; }
+.gq.dist .st-chips .dchip { min-width: 2.6ch; }
+
+/* Decimal help: ≈ → 3√2 ≈ 4.243 */
+.gq.dist .dhelp { min-width: 44px; min-height: 40px; border-radius: 12px; border: 2px solid var(--accent); background: var(--surface); color: var(--accent); font: 700 1.2rem var(--f-mono); }
+.gq.dist .dhv { font-family: var(--f-mono); font-weight: 700; color: var(--ink); }
+
+/* the cue after a miss: a red dot by the step that went wrong first */
+.gq.dist .q.step.dmiss::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: var(--bad); flex: none; }
+
+.gq.dist .dtut { display: flex; justify-content: center; min-height: 3em; }
+.gq.dist .dtut .q .go { font-size: 1rem; min-height: 40px; padding: 0 18px; }
+

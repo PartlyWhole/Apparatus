@@ -1,0 +1,37 @@
+/* Classify the Quadrilateral (G12) — tappable sides, the vertices as text (lvl 0), the name buttons, the ? key. On geo.css + grid-extra.css + steps.css. */
+.gq.quad .quad-n { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
+.gq.quad .quad-n .q.small, .gq.quad .quad-p { margin: 0; }
+.gq.quad .quad-p:empty { display: none; }
+.gq.quad .quad-s { width: 100%; }
+/* lvl 0: A(−2, −1)  B(0, 0) … like the test */
+.gq.quad .quad-v { gap: 0.3em 1em; font-size: clamp(1.05rem, 4.6vw, 1.35rem); }
+.gq.quad .quad-v span { white-space: nowrap; }
+.gq.quad .quad-v b { color: var(--accent); }
+
+/* the sides take the taps: wide invisible strokes; what's drawn on top lets taps through */
+.grid .q-hit { stroke: transparent; stroke-width: 18; stroke-linecap: round; pointer-events: none; }
+.grid.q-taps .q-hit { pointer-events: stroke; cursor: pointer; }
+.grid.q-taps .q-hit:hover, .grid.q-taps .q-hit:focus-visible { stroke: color-mix(in srgb, var(--accent) 18%, transparent); outline: none; }
+.gq.quad .grid .tri, .gq.quad .grid .pt, .gq.quad .grid .pl, .gq.quad .grid .rmark { pointer-events: none; }
+
+/* the ? key: the three tests drawn small, then the tree */
+.quad-k .kt { display: grid; gap: 6px; }
+.quad-k .kr { display: grid; grid-template-columns: 1.4em auto 1fr; align-items: center; gap: 8px; text-align: left; }
+.quad-k .kr > b, .quad-k .tree i { font-family: var(--f-mono); font-style: normal; }
+.quad-k .kr > b { font-size: 1.3em; color: var(--muted); text-align: center; }
+.quad-k svg { overflow: visible; }
+.quad-k .k-run, .quad-k .k-rise, .quad-k .k-hyp { fill: none; stroke-width: 2.4; stroke-linecap: round; }
+.quad-k .k-run { stroke: var(--accent); }
+.quad-k .k-rise { stroke: var(--good); }
+.quad-k .k-hyp { stroke: var(--ink); }
+.quad-k text { fill: var(--ink); font: 700 11px var(--f-mono); }
+.quad-k .tree { margin-top: 6px; text-align: left; line-height: 1.6; }
+.quad-k .tree .in { padding-left: 1.4em; }
+.quad-k .tree b { color: var(--ink); }
+
+/* the side triangles in the legend sit side by side (AB beside DC, AD beside BC), not one per line */
+.gq.quad .glegend .lg-tri + .lg-br { display: none; }
+.gq.quad .glegend { gap: 4px 0; }
+.gq.quad .glegend .lg-pt { margin: 0 8px; }
+.gq.quad .glegend .lg-tri { flex: 0 0 50%; justify-content: center; }
+.gq.quad .glegend .lg-tri svg { zoom: 0.74; }

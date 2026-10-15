@@ -1,0 +1,11 @@
+/* Lines additions — Parallel and Perpendicular's parallelogram pairs: four buttons, each two equations stacked;
+   after a miss each equation's slope shows small under it (red under the picked pair, green under the right one). */
+.gq .pp-q { color: var(--muted); font-family: var(--f-body); font-weight: 400; }
+.gmc.pgs button { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 10px 4px; font-family: var(--f-mono); }
+.gmc.pgs button.ok::before { position: absolute; top: 4px; left: 8px; }
+.gmc.pgs .pp-eq { display: flex; flex-direction: column; align-items: center; }
+.gmc.pgs .pp-e { white-space: nowrap; overflow-wrap: normal; }
+.gmc.pgs .pp-m { display: none; font-family: var(--f-body); font-weight: 400; font-size: 0.78em; color: var(--muted); }
+.gmc.pgs.slopes .pp-m { display: block; }
+.gmc.pgs button.no .pp-m { color: var(--bad); }
+.gmc.pgs button.want .pp-m { color: var(--good); }

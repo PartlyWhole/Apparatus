@@ -129,14 +129,14 @@
         right(v) {
           if (stopped) return;
           const g = row.querySelector('.go'); g && g.remove();
-          row.classList.add('done'); quiet();
+          row.classList.add('st-done'); quiet();
           st.onRight && st.onRight(v, row);
           i++; next();
         },
         wrong(type, text) {
           if (stopped) return;
           if (!errs.some(e => e.step === ctx.i)) errs.push({ type, text, step: ctx.i });
-          sayEl.textContent = text; sayEl.classList.add('bad');
+          sayEl.innerHTML = text; sayEl.classList.add('bad');
           // the row again, in the same place; the sentence stays until they change something
           timer = setTimeout(() => { if (!stopped && el.isConnected) { row.classList.remove('drag'); build(row, st, ctx); } }, wait);
         }

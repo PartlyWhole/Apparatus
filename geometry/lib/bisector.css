@@ -1,0 +1,15 @@
+/* Perpendicular Bisector — the drawn lines (student's red after a miss, the bisector green), M ringed, the step rows
+   (tap steps have no row of their own), the coordinate choices. Builds on geo.css, grid-extra.css, steps.css. */
+.grid .ln.no { stroke: var(--bad); }
+.grid .ln.ok { stroke: var(--good); }
+.grid .ln.ok.faint { stroke: var(--good); stroke-dasharray: none; stroke-width: 2.2; opacity: 0.55; }
+.grid .bs-ring { fill: none; stroke: var(--good); stroke-width: 2; }
+.gq.bs .q.step:empty { display: none; }
+.gq.bs .bs-ch { width: 100%; display: flex; justify-content: center; }
+.gq.bs .bs-ch .gmc button { font-family: var(--f-mono); font-size: clamp(1rem, 4.4vw, 1.15rem); }
+.gq.bs .q.small { font-family: var(--f-body); font-weight: 400; color: var(--muted); font-size: clamp(1rem, 4.4vw, 1.15rem); }
+/* the half-triangle and its turned copy side by side under the grid on a phone */
+@media (max-width: 52rem) {
+  .gq.bs .glegend .lg-tri + .lg-br { display: none; }
+  .gq.bs .glegend .lg-tri svg { width: min(36vw, 9rem); height: auto; }
+}

@@ -1,0 +1,35 @@
+/* Simplify Roots (G9) — the answer row, the "r = √" hint, the cue (wrong part boxed, squared back) and the pairs animation.
+   Builds on geo.css, root.css and steps.css. */
+.gq .q.rq, .gq.steps .q.step.rs-rest, .gq.steps .q.step.rs-ans { gap: 0.3em; font-size: clamp(1.3rem, 6vw, 1.75rem); }
+.gq.steps .q.step.rs-rest .sf input { width: 3ch; }
+.gq .rhint { color: var(--muted); font-size: 0.9rem; opacity: 0.75; margin-top: -6px; }
+kbd { font-family: var(--f-mono); font-weight: 700; border: 1.5px solid var(--line); border-radius: 6px; padding: 0 6px; }
+
+/* six square chips: one row on a phone (the question area is as wide as the card) */
+#q { width: 100%; }
+.gq.steps .q.step.pick .gmc { width: 100%; max-width: 26rem; }
+.gq.steps .q.step.pick .gmc button { min-width: 0; padding-left: 0; padding-right: 0; font-family: var(--f-mono); }
+
+/* the cue: their answer → squared back */
+.gq .rcue { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 0.5em;
+  font-family: var(--f-mono); font-weight: 700; font-size: clamp(1.05rem, 4.6vw, 1.3rem); color: var(--muted); min-height: 1.2em; }
+.gq .rcue:empty { display: none; }
+.gq .rcue .rx { outline: 2.5px solid var(--bad); outline-offset: 2px; border-radius: 6px; color: var(--bad); }
+.gq .rcue .rc-ok { color: var(--good); }
+.gq .rcue .rc-a { color: var(--ink); }
+
+/* the pairs animation: √48 = √(16 · 3) = √(4 · 4 · 3) = 4√3, a line at a time */
+.gq .rpair { display: flex; flex-direction: column; align-items: center; gap: 6px; font-family: var(--f-mono); font-weight: 700;
+  font-size: clamp(1.1rem, 5vw, 1.4rem); color: var(--muted); }
+.gq .rpair:empty { display: none; }
+.rp-line:last-child { color: var(--ink); }
+.rp-line { opacity: 0; transform: translateY(6px); transition: opacity 0.4s, transform 0.4s; }
+.rp-line.on { opacity: 1; transform: none; }
+.rp-pair { color: var(--accent); border-bottom: 2.5px solid var(--accent); border-radius: 0 0 4px 4px; padding: 0 2px; }
+.rp-out { color: var(--accent); display: inline-block; }
+.rp-line.on .rp-out { animation: rpout 0.6s ease-out; }
+@keyframes rpout { from { transform: translateX(1.4em) scale(0.8); opacity: 0.3; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .rp-line { transition: none; transform: none; } .rp-line.on .rp-out { animation: none; } }
+
+.key .rkey .rk-sq { font-family: var(--f-mono); font-weight: 700; text-align: center; white-space: pre-wrap; }
+
