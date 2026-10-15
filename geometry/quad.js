@@ -3,7 +3,10 @@
 //   ⟂  the triangle turned 90° (product −1) (AB and BC, the corner at B)
 //   =  the same length d, even with different legs: 5, 0 and 3, 4 are both 5
 // Tree: two ∥ pairs → parallelogram (+ right angle: rectangle, + equal sides: rhombus, both: square); exactly one → trapezoid.
-// The most specific name wins. Scaffolding fades with item.lvl:
+// It starts by eye (lvl 'look'): a plain drawing, no grid or numbers, pick the name; a miss draws the markings
+// (ticks on equal sides, arrows on parallel sides, right-angle boxes). Then the most specific name wins, by the numbers.
+// Scaffolding fades with item.lvl ('v' = the first coordinates-only item: slopes of all four sides, the parallel
+// questions, the corner, the lengths, then the name):
 //   2 = one comparison per question ("Is AB parallel to DC?", "Is AD parallel to BC?", the angle at B, AB vs BC):
 //       its two sides lit on the shape, their slope triangles side by side under it; then the name (the opening)
 //   1 = the grid (zoomed to the shape), the name   0 = the vertices as text only (like the test's Q20), the name
@@ -169,6 +172,65 @@
     const p = el.querySelector('.quad-p'); if (p) p.innerHTML = cmpHTML(it, keys, { d: prop === 'eq' });
   }
 
+  // ---- by eye (lvl 'look'): a plain drawing of the shape, then its markings after a miss ----
+  // shapes as corners A, B, C, D (counterclockwise) in plain units; tilt turns them (a turned square is still a square)
+  const LOOK = {
+    square:  () => [[0, 0], [1, 0], [1, 1], [0, 1]],
+    rect:    () => [[0, 0], [1.8, 0], [1.8, 1], [0, 1]],
+    rhombus: tilt => tilt ? [[0, 0], [1.2, 0], [1.2 + 0.6, 1.04], [0.6, 1.04]] : [[0, -1], [0.7, 0], [0, 1], [-0.7, 0]],
+    pgram:   () => [[0, 0], [1.7, 0], [2.3, 1], [0.6, 1]],
+    trap:    tilt => tilt ? [[0, 0], [2, 0], [1.4, 1], [0, 1]] : [[0, 0], [2.2, 0], [1.6, 1], [0.6, 1]]
+  };
+  const turn = (pts, deg) => { const a = deg * Math.PI / 180, c = Math.cos(a), sn = Math.sin(a); return pts.map(([x, y]) => [x * c - y * sn, x * sn + y * c]); };
+  function lookItem(tilt) {
+    const shape = any(Object.keys(NAMES).filter(n => PG || n !== 'pgram'));
+    let v = LOOK[shape](tilt);
+    if (tilt) v = turn(v, shape === 'square' ? 45 : any([1, -1]) * r(15, 35));
+    return { shape, v, lvl: 'look' };
+  }
+  const near = (a, b) => Math.abs(a - b) < 1e-6;
+  function lookSVG(it, marks) {
+    const xs = it.v.map(p => p[0]), ys = it.v.map(p => p[1]), w = Math.max(...xs) - Math.min(...xs), h = Math.max(...ys) - Math.min(...ys);
+    const k = 200 / Math.max(w, h * 1.25), P = it.v.map(([x, y]) => [(x - Math.min(...xs)) * k + 30, (Math.max(...ys) - y) * k + 30]);
+    const W = w * k + 60, H = h * k + 60, path = P.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join('') + 'Z';
+    let m = '';
+    if (marks) {
+      const side = i => [P[i], P[(i + 1) % 4]], L = i => { const [a, b] = side(i); return Math.hypot(b[0] - a[0], b[1] - a[1]); };
+      const dir = i => { const [a, b] = side(i); return [b[0] - a[0], b[1] - a[1]]; };
+      const par = (i, j) => near(dir(i)[0] * dir(j)[1] - dir(i)[1] * dir(j)[0], 0);
+      // ticks: sides of equal length share a count (1 or 2)
+      const groups = []; [0, 1, 2, 3].forEach(i => { const g = groups.find(g => near(L(g[0]) / L(i), 1)); g ? g.push(i) : groups.push([i]); });
+      groups.filter(g => g.length > 1).forEach((g, n) => g.forEach(i => {
+        const [a, b] = side(i), mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2, d = dir(i), l = L(i), ux = d[0] / l, uy = d[1] / l;
+        for (let t = 0; t <= n; t++) { const o = (t - n / 2) * 6; m += `<path class="lk-mark" d="M${mx + ux * o - uy * 7} ${my + uy * o + ux * 7}L${mx + ux * o + uy * 7} ${my + uy * o - ux * 7}"/>`; }
+      }));
+      // arrows: each parallel pair (1 or 2 chevrons)
+      [[0, 2], [1, 3]].filter(([i, j]) => par(i, j)).forEach(([i, j], n) => [i, j].forEach(q => {
+        const [a, b] = side(q), d = dir(q), l = L(q), ux = d[0] / l, uy = d[1] / l, f = q === j ? -1 : 1;   // both arrows point the same way
+        for (let t = 0; t <= n; t++) { const c = 0.2 + t * 0.07, cx = a[0] + d[0] * c, cy = a[1] + d[1] * c; m += `<path class="lk-mark" d="M${cx - f * ux * 7 - uy * 6} ${cy - f * uy * 7 + ux * 6}L${cx} ${cy}L${cx - f * ux * 7 + uy * 6} ${cy - f * uy * 7 - ux * 6}"/>`; }
+      }));
+      // right-angle boxes
+      [0, 1, 2, 3].forEach(i => {
+        const c = P[i], a = P[(i + 3) % 4], b = P[(i + 1) % 4], u = [a[0] - c[0], a[1] - c[1]], v = [b[0] - c[0], b[1] - c[1]];
+        const lu = Math.hypot(...u), lv = Math.hypot(...v); if (!near((u[0] * v[0] + u[1] * v[1]) / (lu * lv), 0)) return;
+        const s1 = [u[0] / lu * 12, u[1] / lu * 12], s2 = [v[0] / lv * 12, v[1] / lv * 12];
+        m += `<path class="lk-mark" d="M${c[0] + s1[0]} ${c[1] + s1[1]}L${c[0] + s1[0] + s2[0]} ${c[1] + s1[1] + s2[1]}L${c[0] + s2[0]} ${c[1] + s2[1]}"/>`;
+      });
+    }
+    return `<svg class="lk" viewBox="0 0 ${W.toFixed(0)} ${H.toFixed(0)}" style="width:min(70vw, ${Math.round(W)}px)" role="img" aria-label="a four-sided shape"><path class="lk-shape" d="${path}"/>${m}</svg>`;
+  }
+  // a wrong name by eye: what the marks show, in one sentence
+  function lookSay(it, pick) {
+    const d = decide(it.shape, pick), P = props[it.shape], is = `it’s a ${word(it.shape)}`;
+    if (d.prop === 'pairs') return P.two ? `Both pairs of opposite sides are parallel: ${is}.` : `Only one pair of sides is parallel: ${is}.`;
+    if (d.prop === 'perp') return d.how === 'claim' ? `Its corners aren’t square: ${is}.` : `Its corners are all right angles: ${is}.`;
+    return d.how === 'claim' ? `Its sides aren’t all the same length: ${is}.` : `All four sides are the same length: ${is}.`;
+  }
+  function askLook(el, it, submit) {
+    el.innerHTML = `<div class="gq quad"><div class="lk-box">${lookSVG(it, false)}</div><div class="quad-n"><div class="q small">This is a…</div></div></div>`;
+    Pick.ask(el.querySelector('.quad-n'), choices(), id => submit({ name: id, errs: [] }), { cols: 3 });
+  }
+
   // ---- the answer area ----
   const choices = () => Object.keys(NAMES).filter(n => PG || n !== 'pgram').map(n => [n, NAMES[n]]);
   const vertsHTML = it => `<div class="q quad-v">${it.v.map((p, i) => `<span><b>${'ABCD'[i]}</b>${pt(p)}</span>`).join('')}</div>`;
@@ -217,7 +279,42 @@
     });
   }
 
-  // ---- the rule "Parallelogram as a choice" (Off: the test's four names) ----
+  // lvl 'v' (the first coordinates-only item): the method, in the student's own numbers — the slope of each side,
+  // the two parallel questions, the corner at B, the lengths of AB and BC, then the name; findings fold into one line
+  const KS = { AB: [0, 1], BC: [1, 2], CD: [2, 3], DA: [3, 0] };
+  function askVerts(el, it, submit) {
+    el.innerHTML = `<div class="gq quad">${vertsHTML(it)}<div class="quad-sum" aria-live="polite"></div><div class="quad-s"></div></div>`;
+    const P = props[it.shape], yn = [['y', 'Yes'], ['n', 'No']], V = it.v;
+    const vec = k => { const [i, j] = KS[k]; return sub(V[j], V[i]); };
+    const slopeOf = k => { const w = vec(k); return w[0] ? F.of(w[1], w[0]) : F.UNDEF; };
+    const sum = el.querySelector('.quad-sum'), note = t => sum.insertAdjacentHTML('beforeend', `<span>${t}</span>`);
+    const work = k => { const [i, j] = KS[k], a = V[i], b = V[j]; return `${k}: (${s(b[1])} − ${par(s(a[1]))}) ÷ (${s(b[0])} − ${par(s(a[0]))}) = ${vec(k)[0] ? sl(vec(k)) : 'undefined'}.`; };
+    const len = k => { const n = len2(vec(k)), q = Root.split(n); return Root.of(q.a, q.b); };
+    const sameSlope = (k1, k2) => F.eq(slopeOf(k1), slopeOf(k2));
+    const yesno = (q, want, key, say, found, onRight) => ({ text: q, pick: yn, want, cols: 2, name: q, why: a => [`q-${key}>${a}`, say(a)],
+      onRight: (v, row) => { note(found[want]); onRight && onRight(v, row); } });
+    const steps = [
+      { text: 'The slope of each side:', boxes: ['AB', 'BC', 'CD', 'DA'].map(k => [k, slopeOf(k), 'q-slope']), kind: 'frac',
+        eq: '<span class="vs-grid"><span>AB</span>{AB}<span>BC</span>{BC}<span>CD</span>{CD}<span>DA</span>{DA}</span>',
+        why: k => ['q-slope', work(k)] },
+      yesno('Is AB parallel to CD?', sameSlope('AB', 'CD') ? 'y' : 'n', 'pairs', a => a === 'y' ? `AB and CD have different slopes: ${sl(vec('AB'))} and ${sl(vec('CD'))}.` : `AB and CD both have slope ${sl(vec('AB'))}.`, { y: 'AB ∥ CD', n: 'AB ∦ CD' }),
+      yesno('Is BC parallel to DA?', sameSlope('BC', 'DA') ? 'y' : 'n', 'pairs', a => a === 'y' ? `BC and DA have different slopes: ${sl(vec('BC'))} and ${sl(vec('DA'))}.` : `BC and DA both have slope ${sl(vec('BC'))}.`, { y: 'BC ∥ DA', n: 'BC ∦ DA' })
+    ];
+    if (P.two) {
+      steps.push(yesno('Is the angle at B a right angle?', P.perp ? 'y' : 'n', 'perp', a => stepSay.perp(it, a), { y: 'right angle at B', n: 'no right angle' }));
+      steps.push({ text: 'The lengths of AB and BC:', boxes: [['lAB', len('AB'), 'q-len'], ['lBC', len('BC'), 'q-len']], kind: 'root',
+        eq: '<span class="vs-grid"><span>AB</span>{lAB}<span>BC</span>{lBC}</span>',
+        why: k => { const kk = k.slice(1), w = vec(kk); return ['q-len', `${kk}: √(${Math.abs(w[0])}² + ${Math.abs(w[1])}²) = √${len2(w)}${Root.text(len(kk)) === `√${len2(w)}` ? '' : ` = ${Root.text(len(kk))}`}.`]; } });
+      steps.push(yesno('Are AB and BC the same length?', P.eq ? 'y' : 'n', 'eq', a => stepSay.eq(it, a), { y: 'AB = BC', n: 'AB ≠ BC' }));
+    }
+    steps.push({ text: 'So ABCD is a…', pick: choices(), want: it.shape, cols: 3, name: 'name', why: id => [`${it.shape}>${id}`, nameSay(it, id)] });
+    Steps.run(el.querySelector('.quad-s'), steps, {
+      final: () => `ABCD is a ${word(it.shape)}.`,
+      done: errs => { const n = errs.find(e => /^\w+>\w+$/.test(e.type) && !/^q-/.test(e.type)); submit({ name: n ? n.type.split('>')[1] : it.shape, errs }); }
+    });
+  }
+
+  // ---- the rule "Parallelogram as a choice\" (Off: the test's four names) ----
   let PG = true;
   const mk = (idea, f, lvl) => ({ idea, make: () => make[f](lvl) });
   const ERR = {};
@@ -241,19 +338,22 @@
     id: 'geo-quad',
     title: 'Classify the Quadrilateral',
     ideas: {
-      perp:  { name: 'A right angle (turned 90°, not just swapped)', easy: ['rect'], hard: ['swap', 'rect0'], check: 'swap' },
+      look:  { name: 'By eye', easy: ['look'], hard: ['look-tilt'], check: 'look-tilt' },
+      perp:  { name: 'A right angle (turned 90°, not just swapped)', easy: ['rect'], hard: ['swap', 'rect-v'], check: 'swap' },
       eq:    { name: 'Equal sides (same d, different legs)', easy: ['square'], hard: ['legs', 'square0'], check: 'legs' },
       pairs: { name: 'Parallel pairs (parallelogram or trapezoid)', easy: ['pgram'], hard: ['trap', 'pgram0'], check: 'trap' }
     },
     kinds: {
-      rect: mk('perp', 'rect', 1), rect0: mk('perp', 'rect', 0), swap: mk('perp', 'swap', 1),
+      look: { idea: 'look', make: () => lookItem(false) }, 'look-tilt': { idea: 'look', make: () => lookItem(true) },
+      rect: mk('perp', 'rect', 1), rect0: mk('perp', 'rect', 0), 'rect-v': mk('perp', 'rect', 'v'), swap: mk('perp', 'swap', 1),
       square: mk('eq', 'square', 1), square0: mk('eq', 'square', 0), legs: mk('eq', 'legs', 1),
       pgram: mk('pairs', 'pgram', 1), pgram0: mk('pairs', 'pgram', 0), trap: mk('pairs', 'trap', 1), trap0: mk('pairs', 'trap', 0)
     },
-    // the contrast set: a rhombus and a square sharing AB = (2, 1); only the turn at B differs
+    // by eye first (a rectangle, a rhombus), then by the numbers: a rhombus that looks almost square, step by step
     opening: [
-      { kind: 'swap', item: { shape: 'rhombus', v: [[-2, -1], [0, 0], [1, 2], [-1, 1]], lvl: 2 } },
-      { kind: 'square', item: { shape: 'square', v: [[-2, -1], [0, 0], [-1, 2], [-3, 1]], lvl: 2 } }
+      { kind: 'look', item: { shape: 'rect', v: LOOK.rect(), lvl: 'look' } },
+      { kind: 'look', item: { shape: 'rhombus', v: LOOK.rhombus(false), lvl: 'look' } },
+      { kind: 'swap', item: { shape: 'rhombus', v: [[-2, -1], [0, 0], [1, 2], [-1, 1]], lvl: 2 } }
     ],
     defaults: { fix: 1, pgram: true },
     rules: [['pgram', 'Parallelogram as a choice', [[true, 'On'], [false, 'Off']], 'Off: only the test’s four names (Square, Rectangle, Rhombus, Trapezoid), and no plain parallelograms.']],
@@ -264,9 +364,11 @@
       return { ideas };
     },
     nextOnRight: true,
-    text: it => `${it.v.map((p, i) => 'ABCD'[i] + pt(p)).join(' ')}${it.lvl === 0 ? '' : ' (grid)'}`,
-    speak: it => `The quadrilateral ${it.v.map((p, i) => 'ABCD'[i] + pt(p)).join(', ')}. Which name fits best?`,
+    text: it => it.lvl === 'look' ? `a ${word(it.shape)} (by eye)` : `${it.v.map((p, i) => 'ABCD'[i] + pt(p)).join(' ')}${it.lvl === 0 ? '' : ' (grid)'}`,
+    speak: it => it.lvl === 'look' ? 'A four-sided shape. Which name fits best?' : `The quadrilateral ${it.v.map((p, i) => 'ABCD'[i] + pt(p)).join(', ')}. Which name fits best?`,
     ask(el, it, submit, ctx) {
+      if (it.lvl === 'look') { el._lvl = 'look'; return askLook(el, it, submit); }
+      if (it.lvl === 'v' && !(ctx && ctx.mode === 'warm')) { el._lvl = 2; return askVerts(el, it, submit); }
       const lvl = ctx && ctx.mode === 'warm' ? 0 : it.lvl ?? 1;
       el._lvl = lvl;
       (lvl === 2 ? askSteps : (e, i, s) => askName(e, i, lvl, s))(el, it, submit);
@@ -276,11 +378,12 @@
     classify: (it, a) => a.errs.length ? a.errs[0].type : `${it.shape}>${a.name}`,
     feedback(it, w, a) {
       if (a.errs.length) return ['', a.errs[0].text];
-      return [decide(it.shape, a.name).prop, nameSay(it, a.name)];
+      return [decide(it.shape, a.name).prop, it.lvl === 'look' ? lookSay(it, a.name) : nameSay(it, a.name)];
     },
     reveal(el, it, a, o) {
       if (el._lvl === 2) return;
       Pick.mark(el, it.shape, a.name, o.right);
+      if (el._lvl === 'look') { if (!o.right) el.querySelector('.lk-box').innerHTML = lookSVG(it, true); return; }
       const p = el.querySelector('.quad-p'); if (p) p.textContent = '';
       if (o.right) return;
       if (!el._g) {
@@ -292,6 +395,8 @@
     },
     errors: ERR,
     diagnose(err) {
+      if (err === 'q-slope') return ['Slips finding a side’s slope from two corners.', 'Write (y₂ − y₁) ÷ (x₂ − x₁) with the corners in order, brackets around negatives.'];
+      if (err === 'q-len') return ['Slips finding a side’s length.', 'The length is √(run² + rise²): square both, add, then simplify the root.'];
       const m = /^q-(\w+)>(y|n)$/.exec(err);
       if (m) {
         // a yes/no step: yes to a property that isn't there is a claim, no to one that is a miss

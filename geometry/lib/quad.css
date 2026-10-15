@@ -46,3 +46,13 @@
 .quad-k .tree { margin-top: 6px; text-align: left; line-height: 1.6; }
 .quad-k .tree .in { padding-left: 1.4em; }
 .quad-k .tree b { color: var(--ink); }
+
+/* by eye: the shape alone, then its markings after a miss */
+.gq.quad .lk-box { display: flex; justify-content: center; padding: 8px 0; }
+.gq.quad .lk { height: auto; overflow: visible; }
+.gq.quad .lk-shape { fill: color-mix(in srgb, var(--accent) 10%, transparent); stroke: var(--ink); stroke-width: 3; stroke-linejoin: round; }
+.gq.quad .lk-mark { fill: none; stroke: var(--good); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
+/* coordinates only, with the method: AB [ ]  BC [ ] / CD [ ]  DA [ ] */
+.gq.quad .vs-grid { display: grid; grid-template-columns: auto auto auto auto; align-items: center; gap: 10px 10px; }
+.gq.quad .vs-grid > span { font: 700 1rem var(--f-mono); color: var(--accent); text-align: right; }

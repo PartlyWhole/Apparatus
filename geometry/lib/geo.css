@@ -51,8 +51,8 @@
 @keyframes gshake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
 .sf input:disabled { cursor: default; }
 /* a stacked fraction in text */
-.frs { display: inline-flex; align-items: center; gap: 1px; }
-.fr { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; font-size: 0.85em; line-height: 1.05; }
+.frs { display: inline-flex; align-items: center; gap: 1px; vertical-align: middle; }   /* centred on the text line, not hanging from it */
+.fr { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; font-size: 0.8em; line-height: 1; }
 .fr span:first-child { border-bottom: 2px solid currentColor; padding: 0 2px; }
 .fr span:last-child { padding: 0 2px; }
 
@@ -183,3 +183,6 @@
 .wline .wl-eq .dslot .dn { color: var(--muted); }
 /* an equation with a stacked fraction, inline (the finished line) */
 .gq .q.final .ok { display: inline-flex; align-items: center; gap: 0.3em; }
+
+/* an equation inside a sentence: its parts on one line, the fraction centred */
+.wline .wl-text b { display: inline-flex; align-items: center; gap: 0.25em; vertical-align: middle; margin: 0 0.15em; }
