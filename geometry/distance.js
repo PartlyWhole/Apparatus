@@ -230,6 +230,20 @@
     });
   }
 
+  // then add, still under the root: d = √[45]
+  function addRow(el, it, diffs) {
+    return (g, row) => new Promise(res => {
+      const [dx, dy] = diffs(), D = dx * dx + dy * dy;
+      row.classList.add('drag');
+      row.innerHTML = `${radHTML(F.box('d2'))} ${GO}`;
+      const f = F.wire(row, { say: sayOf(el), onSubmit: v => {
+        const n = F.num(v.d2.v), ok = n === D; f.mark('d2', ok);
+        if (ok) return res({ ok: true });
+        const [err, sentence] = d2Why(it, n, true); res({ ok: false, err, sentence });
+      } });
+    });
+  }
+
   // ---- the chain of steps for an item at a level ----
   function chain(el, it, lvl) {
     const pic = el._pic, W = want(it), D = it.t === 'back' ? 0 : sqOf(it);
@@ -257,9 +271,10 @@
       const walk = [
         { tap: dragRow(el, it), onRight: v => { placed = v; } },
         { text: 'Subtract.', tap: diffRow(el, it, () => placed), onRight: v => { diffs = v; } },
-        { text: 'Square.', tap: squaresRow(el, it, () => diffs) }
+        { text: 'Square.', tap: squaresRow(el, it, () => diffs) },
+        { text: 'Add.', tap: addRow(el, it, () => diffs) }
       ];
-      return lvl === 2 ? [...walk, d2, dq] : lvl === 1 ? [d2, dq] : [dq];
+      return lvl === 2 ? [...walk, { ...dq, text: 'Simplify.' }] : lvl === 1 ? [d2, dq] : [dq];
     }
     if (it.t === 'map') {
       const m = miles(it), whole = near(m * 10, Math.round(m * 10));
