@@ -23,7 +23,7 @@
       if (!a) { a = q; g.dot(q, 'pt pick', `A(${G.sgn(q[0])}, ${G.sgn(q[1])})`, [it.run, it.rise]); return; }
       if (q[0] === a[0] && q[1] === a[1]) return;
       stop(); g.dot(q, 'pt pick', `B(${G.sgn(q[0])}, ${G.sgn(q[1])})`, [it.run, it.rise]); say.textContent = '';
-      g.triangle(a, q, { labels: !!o.labels, words: o.words });
+      el._tri = g.triangle(a, q, { labels: o.labels || false });
       done(a, q);
     });
   }
@@ -57,7 +57,7 @@
     speak: it => `A line on a grid. Find its slope.`,
     ask(el, it, submit, ctx) {
       const g = draw(el, it);
-      pickTwo(el, g, it, { labels: ctx.mode === 'open' }, (a, b) => {
+      pickTwo(el, g, it, { labels: ctx.mode === 'open' ? true : '?' }, (a, b) => {
         el._ab = [a, b];
         el.querySelector('.ans').hidden = false; el.querySelector('.go').hidden = false;
         el._f = F.wire(el, { want: () => slope(it), onSubmit: v => submit(v.slope) });
@@ -84,7 +84,7 @@
       el._f && el._f.mark('slope', o.right);
       if (o.right || !el._ab) return;
       // the triangle again, labelled
-      el._g.triangle(el._ab[0], el._ab[1], { labels: true, words: true });
+      el._tri && el._tri.remove(); el._g.triangle(el._ab[0], el._ab[1], { labels: true });
     },
     errors: { swap: 'run over rise (flipped)', sign: 'wrong sign', zero: 'flat ↔ vertical mixed up', other: 'miscounted' },
     diagnose(err) {

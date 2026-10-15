@@ -102,8 +102,10 @@
         if (rise) { el('line', { x1: X(c[0]), y1: Y(c[1]), x2: X(q[0]), y2: Y(q[1]), class: 'rise' }, grp); segs.push([X(c[0]), Y(c[1]), X(q[0]), Y(q[1])]); }
         if (o2.labels !== false) {
           const dash = /turned/.test(o2.cls || '') ? ' dash' : '';
-          legend.push({ node: grp, html: `<span class="lg-run${dash}"><i></i>run ${sgn(run)}</span>` });
-          legend.push({ node: grp, html: `<span class="lg-rise${dash}"><i></i>rise ${sgn(rise)}</span>` });
+          // labels: '?' names the legs without their values (the student counts them)
+          const v = n => o2.labels === '?' ? '?' : sgn(n);
+          legend.push({ node: grp, html: `<span class="lg-run${dash}"><i></i>run ${v(run)}</span>` });
+          legend.push({ node: grp, html: `<span class="lg-rise${dash}"><i></i>rise ${v(rise)}</span>` });
         }
         layout();
         return grp;
