@@ -344,10 +344,10 @@
       // the cue: the first wrong line red, the bisector green, M ringed
       const err = a.errs[0].type;
       if (x.lvl === 0) { const s0 = g.svg.querySelector('.g-draw line.ln.b'); if (s0) s0.setAttribute('class', 'ln no'); }
-      else if (x.bad) g.line(x.bad[0], x.bad[1], 'ln no');
+      else if (x.bad && !x.good) g.line(x.bad[0], x.bad[1], 'ln no');   // fixed in place: only the right line stays
       if (!x.good) x.good = g.line(M, add(M, w), 'ln ok faint');
       if (x.lvl === 0) g.dot(M, 'pt ok', 'M' + pt(M));
-      if (err === 'mid' && x.mTap) g.dot(x.mTap, 'pt no');
+      if (err === 'mid' && x.mTap && !x.good) g.dot(x.mTap, 'pt no');
       ring(g, M);
       const turn = x.lvl === 2 || DIR.includes(a.errs.find(e => e.type !== 'mid')?.type || '');
       if (turn || STRINGS) explain(el, g, it);
