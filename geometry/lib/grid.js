@@ -10,18 +10,26 @@
   // the slope triangle drawn small for the legend: run (blue) across, then rise (green) up or down, in the same
   // directions as on the grid, each leg labelled with its value ("?" while the student counts)
   function mini(run, rise, hide, names = []) {
-    const k = Math.min(run ? 84 / Math.abs(run) : 99, rise ? 60 / Math.abs(rise) : 99, 28);
-    const P = [0, 0], C = [run * k, 0], Q = [run * k, -rise * k], v = n => hide ? '?' : sgn(n);
-    const xs = [P[0], C[0], Q[0]], ys = [P[1], C[1], Q[1]];
-    const x0 = Math.min(...xs) - 52, x1 = Math.max(...xs) + 52, y0 = Math.min(...ys) - 20, y1 = Math.max(...ys) + 22;
-    let h = `<svg viewBox="${x0} ${y0} ${x1 - x0} ${y1 - y0}" width="${x1 - x0}" height="${y1 - y0}" aria-hidden="true">`;
+    // units → pixels: the longer leg at most 84 px, 40 px per unit at most; a zero leg keeps its label (rise 0 on a flat line, run 0 on a vertical one)
+    const big = Math.max(Math.abs(run), Math.abs(rise), 1), kk = Math.min(84 / big, 40), P = [0, 0], C = [run * kk, 0], Q = [run * kk, -rise * kk], v = n => hide ? '?' : sgn(n);
+    const R = run >= 0 ? 1 : -1, U = rise > 0 ? 1 : -1;
+    const t = (x, y, cls, anc, txt) => `<text x="${x}" y="${y}" class="${cls}" text-anchor="${anc}">${txt}</text>`;
+    let h = '';
     if (run && rise) h += `<line x1="${P[0]}" y1="${P[1]}" x2="${Q[0]}" y2="${Q[1]}" class="m-hyp"/>`;
-    if (run) h += `<line x1="${P[0]}" y1="0" x2="${C[0]}" y2="0" class="m-run"/><text x="${C[0] / 2}" y="${rise > 0 ? 15 : -6}" class="m-rl">run ${v(run)}</text>`;
-    if (rise) h += `<line x1="${C[0]}" y1="0" x2="${Q[0]}" y2="${Q[1]}" class="m-rise"/><text x="${C[0] + (run >= 0 ? 6 : -6)}" y="${Q[1] / 2 + 4}" class="m-ri" text-anchor="${run >= 0 ? 'start' : 'end'}">rise ${v(rise)}</text>`;
-    // the end points, named like the dots on the grid: the start beside its corner, the end past the rise
-    const nm = (pt, n, dx, dy, anc) => n ? `<text x="${pt[0] + dx}" y="${pt[1] + dy}" class="m-nm" text-anchor="${anc}">${n}</text>` : '';
-    h += nm(P, names[0], run >= 0 ? -7 : 7, 5, run >= 0 ? 'end' : 'start') + nm(Q, names[1], run >= 0 ? -6 : 6, rise > 0 ? -6 : 16, 'middle');
-    return h + `<circle cx="${P[0]}" cy="${P[1]}" r="3" class="m-pt"/><circle cx="${Q[0]}" cy="${Q[1]}" r="3" class="m-pt"/></svg>`;
+    if (run) h += `<line x1="0" y1="0" x2="${C[0]}" y2="0" class="m-run"/>`;
+    if (rise) h += `<line x1="${C[0]}" y1="0" x2="${Q[0]}" y2="${Q[1]}" class="m-rise"/>`;
+    // run label: on the side of the run leg away from the rise (above on a flat line); "run 0" under A on a vertical line
+    h += run ? t(C[0] / 2, rise > 0 ? 17 : -8, 'm-rl', 'middle', `run ${v(run)}`) : t(0, rise > 0 ? 20 : -10, 'm-rl', 'middle', `run ${v(0)}`);
+    // rise label: beside the rise leg, outside; "rise 0" under the end of a flat line
+    h += rise ? t(C[0] + 8 * R, Q[1] / 2 + 4, 'm-ri', R > 0 ? 'start' : 'end', `rise ${v(rise)}`) : t(C[0], 18, 'm-ri', 'middle', `rise ${v(0)}`);
+    // names: A behind the start, B past the end (above/below it, or beyond a flat line's end)
+    if (names[0]) h += run ? t(-9 * R, 5, 'm-nm', R > 0 ? 'end' : 'start', names[0]) : t(-9, 5, 'm-nm', 'end', names[0]);
+    if (names[1]) h += rise ? t(Q[0], Q[1] - (U > 0 ? 9 : -19), 'm-nm', 'middle', names[1]) : t(Q[0] + 9 * R, 5, 'm-nm', R > 0 ? 'start' : 'end', names[1]);
+    h += `<circle cx="0" cy="0" r="3" class="m-pt"/><circle cx="${Q[0]}" cy="${Q[1]}" r="3" class="m-pt"/>`;
+    // bounds: the legs plus room for the labels
+    const xs = [0, C[0]], ys = [0, Q[1]];
+    const x0 = Math.min(...xs) - 58, x1 = Math.max(...xs) + 58, y0 = Math.min(...ys) - 26, y1 = Math.max(...ys) + 26;
+    return `<svg viewBox="${x0} ${y0} ${x1 - x0} ${y1 - y0}" width="${x1 - x0}" height="${y1 - y0}" aria-hidden="true">${h}</svg>`;
   }
 
   // make(host, { min, max, step }) → a grid drawn into host; units run min..max on both axes
