@@ -1,6 +1,6 @@
 # Geometry: what the test still needs (G9–G13 + additions) — plan, awaiting approval
 
-Status: G9–G12 and the additions built (2026-10-15); G13 Lines Review next · Source: Ch. 4 Test A · Builds on specs/geometry-lines.md
+Status: built and live (2026-10-15): G9–G13 and the additions · Source: Ch. 4 Test A · Builds on specs/geometry-lines.md
 
 Test answers, checked: Q2 Δ(3, 12) → √153 = 3√17 · Q16 M(−1, −2), segment slope −1 → bisector y = x − 1; 16B (5, 4) · Q17 y² = 27 → 3√3 · Q18 3√2 squares × 1.5 ≈ 6.4 mi · Q20 all sides √65, slopes ⅛ and −7/4 (no right angle) → rhombus; HL = √65 · Q5 answer A (1 and 1); distractors: sign only, perpendicular, flip only.
 
@@ -126,3 +126,4 @@ One tricky probe per idea (slope, ∥/⟂ line incl. two points and graph, flat/
 - Write the Line `from`: graph scaffolding fades within a session (tap two points → slope only → whole line); y-axis points skip the substitution drag ("It crosses the y-axis at (0, 4), so b = 4.").
 - Parallel and Perpendicular: `mixed` sometimes pairs y = x + 2 with x − 3y = 6 (the x-number trap); `pgram` sentences e.g. "Slopes −3/2 and 3/2 only differ in sign: not parallel."
 - Shared: steps.js marks finished rows `.st-done` (not the engine's `.done`) and allows HTML in its sentences; lines.js has `Lines.given` and `Lines.plain`.
+- G13 (geometry/review.js): 9 ideas, one tricky probe each (defaults tricky 1, fix 1, no opening); each question is asked by its source exercise in 'warm' mode (lvl 0) and graded/explained by it; errors are "source:error"; analytics loads the list of source files (FILE entries may be arrays).

@@ -1,6 +1,6 @@
 # Geometry: Lines on the Coordinate Plane (Module 4) — plan
 
-Status: G1–G8 + G2a live (geometry/coords, two-points, equation-slope, relation, other-slope, find-b, write-line, midpoint); G9–G13 designed · Source: Ch. 4 Test A (Module 4, Form A), 20 questions · Section: Geometry in the library
+Status: G1–G13 + G2a live (G9–G13: see specs/geometry-next.md); (geometry/coords, two-points, equation-slope, relation, other-slope, find-b, write-line, midpoint); G9–G13 designed · Source: Ch. 4 Test A (Module 4, Form A), 20 questions · Section: Geometry in the library
 
 ## The thinking behind the test
 
