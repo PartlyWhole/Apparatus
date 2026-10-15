@@ -152,3 +152,30 @@
 .glegend .lg-tri text { font-size: 13px; }
 .glegend .lg-tri .m-nm { fill: var(--ink); font-size: 14px; }
 .sf input { field-sizing: content; min-width: 4.2ch; max-width: 11ch; }
+
+/* Name the Coordinates: number chips in the points, name slots below (drag, or tap then tap) */
+.gq .dpts { gap: 1.2em; }
+.dpt { display: inline-flex; align-items: center; gap: 2px; white-space: nowrap; }
+.dpt b { margin-right: 2px; }
+.dchip { min-width: 2.6ch; min-height: 44px; padding: 0 8px; border-radius: 10px; border: 2px solid var(--line); background: var(--surface); color: var(--ink);
+  font: inherit; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; position: relative; display: inline-flex; align-items: center; justify-content: center; }
+.dchip:hover:not(:disabled), .dchip.sel { border-color: var(--accent); }
+.dchip.sel { background: var(--accent); color: var(--on-accent); }
+.dchip.used { opacity: 0.35; }
+.dchip:disabled { cursor: default; }
+.dchip.ghost { position: fixed; z-index: 50; transform: translate(-50%, -50%); pointer-events: none; border-color: var(--accent); box-shadow: 0 6px 18px rgba(0,0,0,0.35); opacity: 1; font: 700 1.3rem var(--f-mono); }
+.dchip.named { opacity: 1; margin-bottom: 1.1em; }
+.dchip.named::after { content: attr(data-name); position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 3px; font: 700 0.75em var(--f-mono); color: var(--accent); }
+.dslots { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; width: min(100%, 26rem); }
+@media (max-width: 420px) { .dslots { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.dslot { min-height: 64px; border-radius: 14px; border: 2px dashed var(--line); background: transparent; color: var(--ink); display: flex; align-items: center; justify-content: center; gap: 10px;
+  font: 700 clamp(1.1rem, 4.6vw, 1.35rem) var(--f-mono); cursor: pointer; }
+.dslot .dn { color: var(--muted); }
+.dslot.full { border-style: solid; background: var(--surface); }
+.dslot.over { border-color: var(--accent); border-style: solid; }
+.dslot.ok { border-color: var(--good); }
+.dslot.ok .dv { color: var(--good); }
+.dslot.no { border-color: var(--bad); }
+.dslot.no s { color: var(--bad); font-weight: 600; opacity: 0.7; }
+.dslot:disabled { cursor: default; }
+.key .gk .dchip { min-height: 34px; cursor: default; }
