@@ -292,7 +292,7 @@
     },
     // one up, one down: the same length, 3√5
     opening: [
-      { kind: 'grid-root', item: { t: 'grid', a: [1, 1], b: [4, 7], lvl: 2 } },
+      { kind: 'grid-root', item: { t: 'grid', a: [1, -1], b: [4, 5], lvl: 2 } },
       { kind: 'num-neg', item: { t: 'num', a: [-2, 5], b: [1, -1], lvl: 2 } }
     ],
     nextOnRight: true,

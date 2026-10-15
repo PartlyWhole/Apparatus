@@ -51,7 +51,7 @@ Thinking: the segment is the slope triangle's slanted side → legs = run, rise 
 | `map` (late) | 5 squares × 0.5 mi | (3,3), 2 mi/square → 8.5 | no scale; truncating; walking the legs |
 | `back` (late) | A(0,0), B(6,0), C(3,y), AC = 5 → 4 | equilateral sides 2, 4, 6 → √3, 2√3, 3√3 | y = half the side; adding; y² unrooted |
 
-Opening: A(1,1)→B(4,7) on the grid and A(−2,5)→B(1,−1) as numbers: both 3√5 (one up, one down, same length).
+Opening: A(1,−1)→B(4,5) on the grid and A(−2,5)→B(1,−1) as numbers: both 3√5 (one up, one down, same length).
 Tutorial: "Square the legs" — squares grow on the legs in the legend's mini triangle (9 + 16), then the slanted square grows to 25; then A(0,0), B(1,2) → √5.
 lvl 2 grid: run/rise (either sign) → d² → d. lvl 2 numbers: drag into d = √(([x₂] − [x₁])² + ([y₂] − [y₁])²) (pair order free) → d² → d. lvl 1: d², d. lvl 0: d only. Map: "□ = 2 mi", d in squares, optional ≈ help computed from the student's own exact d, then miles. Backwards: "ABC is equilateral: all sides are equal." → AB → mini triangle run 2, rise y, d 4 → y² → y (squares animation in reverse).
 Answers: root box; unsimplified equal → "Simplify." nudge (not graded); decimal for exact → "Exact: keep the root."; tenth → nudge unless one decimal.
