@@ -1,0 +1,36 @@
+/* Midpoint — the scaffold: A's and B's numbers dragged into M = ((x₁ + x₂)/2, (y₁ + y₂)/2), and the halfway animation on the grid.
+   Chips and slots come from geo.css (.dchip, .dslot); this sizes the slots to sit inside the formula. */
+.gq .mps { display: flex; flex-direction: column; align-items: center; gap: 14px; width: 100%; }
+.gq .mps.wait { pointer-events: none; }
+.gq .mpc { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.gq .mpc:empty { display: none; }
+.gq .mpf { gap: 0.2em; flex-wrap: nowrap; font-size: clamp(1.05rem, 4.6vw, 1.4rem); }
+.gq .mpf .pa { font-size: 1.9em; font-weight: 400; line-height: 1; color: var(--muted); }
+.gq .mpf .cm { align-self: center; margin-right: 0.2em; }
+.mfr { display: inline-flex; flex-direction: column; align-items: center; }
+.mfr .nu { display: inline-flex; align-items: center; gap: 4px; padding-bottom: 5px; border-bottom: 2.5px solid var(--ink); }
+.mfr .de { padding-top: 3px; }
+.mpf .dslot { min-height: 44px; min-width: 3.1ch; padding: 0 5px; border-radius: 10px; gap: 0; font-size: inherit; }
+.mpf .dslot .dn { font-size: 0.85em; }
+.mpf .dslot.full .dn { display: none; }
+.gq .mps .dpts .dchip { min-width: 2.6ch; }
+
+/* the halfway animation: x's in blue (as run), y's in green (as rise) */
+.grid .mpa-drop { stroke: var(--muted); stroke-width: 1.3; stroke-dasharray: 3 3; transition: opacity 0.4s; }
+.grid .mpa-drop.done { opacity: 0.45; }
+.grid .mpa-span { stroke-width: 5; stroke-linecap: round; opacity: 0.3; transition: opacity 0.4s; }
+.grid .mpa-span.done { opacity: 0.18; }
+.grid .mpa-span.x, .grid .mpa-guide.x { stroke: var(--accent); }
+.grid .mpa-span.y, .grid .mpa-guide.y { stroke: var(--good); }
+.grid .mpa-m.x { fill: var(--accent); }
+.grid .mpa-m.y { fill: var(--good); }
+.grid .mpa-guide { stroke-width: 2; stroke-dasharray: 5 3; }
+.grid .mpa-v { font: 700 10px var(--f-mono); text-anchor: middle; paint-order: stroke; stroke: var(--bg); stroke-width: 3px; stroke-linejoin: round; }
+.grid .mpa-v.x { fill: var(--accent); }
+.grid .mpa-v.y { fill: var(--good); text-anchor: end; }
+.grid .mpa-pop { transform-box: fill-box; transform-origin: center; animation: mpapop 0.35s ease-out; }
+@keyframes mpapop { from { transform: scale(0); } 60% { transform: scale(1.5); } to { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .grid .mpa-pop { animation: none; } .grid .mpa-drop, .grid .mpa-span { transition: none; } }
+.grid .mpa-v.y.flip { text-anchor: start; }
+.grid .mpa-v { stroke-width: 4.5px; }
+.gq .mpq .mp { width: 5.4ch; }

@@ -31,7 +31,7 @@ A coordinate grid (SVG) with lattice points the student can tap. The anchor pict
 | G2a | **Name the Coordinates** | P₁ and P₂ given; drag each number to x₁, y₁, x₂, y₂ (names scrambled; tap-then-tap also works). Then unnamed points: either can be 1, but each point's numbers stay together. Then rise alone (y₂ − y₁) and run alone (x₂ − x₁), in your head | split point (x₁ from one, y₁ from the other); sign of 2 − 1; rise ↔ run; P₂ written first (late) | 4, 8, 20A |
 | G2 | **Slope from Two Points** | Points shown on the grid, then numbers only: Δy / Δx | double negatives (−9 − (−21)); subtracting in mixed order; Δx = 0 | 4, 8, 20A |
 | G3 | **Slope from an Equation** | y = mx + b: read m; Ax + By = C: solve for y step by step (chain like the unit conversions), then −A/B; y = c, x = c | m = 4 read from y = 4 − 3x; sign of −A/B; fractions like ½y | 3, 5, 9, 12 |
-| G4 | **Parallel, Perpendicular or Neither** | Two lines (graph or equations): pick; then the true/false facts | perpendicular ≠ "opposite sign only" (−2 vs 2); ≠ "reciprocal only" (2 vs ½); horizontal ⟂ vertical | 5, 15 |
+| G4 | **Parallel, Perpendicular or Neither** (merged with G5 → parallel-perp) | Two lines (graph or equations): pick; then the true/false facts | perpendicular ≠ "opposite sign only" (−2 vs 2); ≠ "reciprocal only" (2 vs ½); horizontal ⟂ vertical | 5, 15 |
 | G5 | **The Other Slope** | Given a slope or line: write the parallel slope and the perpendicular slope | whole numbers (3 → −⅓); negatives (−¼ → 4); 0 ↔ undefined | 3, 6, 9, 12 |
 | G6 | **Find b** | Slope + point → b: hops back to x = 0 on the grid, then b = y − m·x | negative x; fractional m; decimals (−8.5) | 4, 8, 10, 13 |
 | G7 | **Write the Line** (guided chain) | ∥ or ⟂ to a line (any form) through a point → y = mx + b, step by step: given slope → new slope → b → equation; horizontal/vertical shortcuts | standard-form givens; vertical/horizontal givens (y = 16 → y = 43; ⟂ x = 5 → y = 4) | 4, 7, 8, 10, 11, 13, 14 |
@@ -68,6 +68,13 @@ Each follows the house pattern: tutorial only where the idea is new (G1, G4's tu
 - Miss penalty defaults to 1 in geometry (`defaults: { fix: 1 }` in each exercise); tutors can still raise it.
 - On the grid: only point letters (A, B, M, P) and the colored run/rise legs. Coordinates and run/rise values go in a legend off the grid (below on a phone, beside it when there is room), with the slope triangle redrawn small beside the grid: run leg in blue and rise leg in green, each labelled with its value ("?" while the student is counting), ends named like the dots; dashed for a turned triangle.
 - Built in `geometry/` with its own libraries (`geometry/lib/`: grid, frac, lines, geo.css, page) and its own analytics page (`geometry/analytics.html`), so it doesn't touch the science set.
+
+## Updates (2026-10-15)
+- **G4 + G5 merged** into one page, Parallel and Perpendicular (`geometry/parallel-perp.*`, id geo-parallel-perp): the turn tutorial, then the other slope (∥ and ⟂), then pick parallel / perpendicular / neither, then true/false facts as the late twist. relation.* and other-slope.* stay on disk, unlinked.
+- **G6 Find b** starts with a substitution step: drag P's x and y into y = m·[x] + b (nothing computed for the student), then type b. Only the opening items have the drag; it comes back after an x/y mix-up. New error: swap.
+- **G8 Midpoint** starts with a scaffold: drag A's and B's numbers into ((x₁ + x₂)/2, (y₁ + y₂)/2), then type M; after Check, the x's meet halfway on the x-axis and the y's on the y-axis, and the guides meet at M. Later items drop the formula. New idea "Into the formula", new error mix.
+- **G2a Name the Coordinates**: the name slots start in order x₁ y₁ x₂ y₂ and slide into a scramble; tutor rule "Scramble animation" (On by default) turns it off for that page.
+- Shared drag-to-slot library: `geometry/lib/drag.js`.
 
 ## Open questions (remaining)
 4. Q16 Part A (graph the perpendicular bisector): tapping two points to draw the line is the planned interaction. OK?

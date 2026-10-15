@@ -63,6 +63,30 @@
   }
   const F = Frac;
 
+  // the names arrive in order (x₁ y₁ x₂ y₂), then slide to their scrambled places (FLIP); chips wait until they settle.
+  // Off with the tutor rule 'Scramble animation' or prefers-reduced-motion: straight to the scrambled order.
+  let ANIM = true;
+  const HOLD = 220, SLIDE = 480;                                 // ms: a beat in order, then the slide
+  function shuffleIn(el, it) {
+    const box = el.querySelector('.dslots'), slots = Array.from(box.children), by = k => slots.find(sl => sl.dataset.s === k);
+    const settle = () => it.order.forEach(k => box.appendChild(by(k)));
+    if (!ANIM || matchMedia('(prefers-reduced-motion: reduce)').matches) return settle();
+    const lock = Array.from(el.querySelectorAll('.dchip, .dslot')); lock.forEach(b => { b.disabled = true; });
+    box.classList.add('shuf');
+    setTimeout(() => {
+      if (!box.isConnected) return;
+      const first = new Map(slots.map(sl => [sl, sl.getBoundingClientRect()]));
+      settle();
+      slots.forEach(sl => {
+        const a = first.get(sl), b = sl.getBoundingClientRect();
+        sl.style.transition = 'none'; sl.style.transform = `translate(${a.left - b.left}px, ${a.top - b.top}px)`;
+      });
+      box.offsetWidth;                                           // commit the inverted positions, then play
+      slots.forEach(sl => { sl.style.transition = ''; sl.style.transform = ''; });
+      setTimeout(() => { box.classList.remove('shuf'); slots.forEach(sl => { sl.style.transition = ''; }); lock.forEach(b => { b.disabled = false; }); }, SLIDE + 20);
+    }, HOLD);
+  }
+
   Apparatus.define({
     id: 'geo-coords',
     title: 'Name the Coordinates',
@@ -83,7 +107,9 @@
       rev: mk('rev', () => make(-9, 9, true))
     },
     opening: [{ kind: 'pos', item: { p1: [2, 5], p2: [7, 3], order: ['y1', 'x2', 'x1', 'y2'], rev: false } }],
-    defaults: { fix: 1 },
+    defaults: { fix: 1, anim: true },
+    rules: [['anim', 'Scramble animation', [[true, 'On'], [false, 'Off']], 'The names start in order (x₁ y₁ x₂ y₂), then slide into a shuffled order.']],
+    configure(S) { ANIM = S.anim !== false; return {}; },
     text: it => it.q ? `${it.q} from P₁(${s(it.p1[0])}, ${s(it.p1[1])}) to P₂(${s(it.p2[0])}, ${s(it.p2[1])})`
       : it.free ? `(${s(it.p1[0])}, ${s(it.p1[1])}) and (${s(it.p2[0])}, ${s(it.p2[1])}), unnamed`
       : `P₁(${s(it.p1[0])}, ${s(it.p1[1])}) and P₂(${s(it.p2[0])}, ${s(it.p2[1])})`,
@@ -100,9 +126,10 @@
       }
       const pts = it.rev ? [2, 1] : [1, 2];
       el.innerHTML = `<div class="gq"><div class="q dpts">${pts.map(n => pointHTML(it, n)).join('')}</div>
-        <div class="dslots">${it.order.map(k => `<button type="button" class="dslot" data-s="${k}"><span class="dn">${nameOf(k)}</span><span class="dv"></span></button>`).join('')}</div>
+        <div class="dslots">${SLOTS.map(k => `<button type="button" class="dslot" data-s="${k}"><span class="dn">${nameOf(k)}</span><span class="dv"></span></button>`).join('')}</div>
         <button type="button" class="go" disabled>Check</button></div>`;
       wire(el, it, submit);
+      shuffleIn(el, it);
     },
     correct: it => it.q ? s(ch(it)) : SLOTS.map(k => `${nameOf(k)} = ${s(val(it, k))}`).join(', ') + (it.free ? ' (or the points the other way round)' : ''),
     isRight: (it, a) => it.q ? F.eq(a.v, F.of(ch(it))) : !firstWrong(it, a),

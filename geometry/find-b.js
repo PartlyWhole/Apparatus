@@ -1,6 +1,9 @@
 // Find b (G6) — a slope and a point → where the line crosses the y-axis: b = y − m·x.
 // The picture: the slope triangle from (0, b) to the point (run x, rise m·x), so b is the point's y minus that rise.
-// Spec: specs/geometry-lines.md (G6). Uses lib/grid.js, lib/frac.js, lib/lines.js.
+// Two steps: drag the point's numbers into y = m·x + b (nothing worked out for them: it reads 3 = ½·4 + b), then type b.
+// A swapped substitution is explained in place and fixed; first tries are graded. The drag step fades: the opening items
+// have it; later items are just y = mx + [b] through P — until a swap (or an x/y mix-up in b) brings it back once.
+// Spec: specs/geometry-lines.md (G6). Uses lib/grid.js, lib/frac.js, lib/lines.js, lib/drag.js; styles lib/find-b.css.
 (function () {
   const F = Frac, G = Grid, L = Lines, { r, any } = L;
   const nz = (a, b) => { let v = 0; while (v === 0) v = r(a, b); return v; };
@@ -10,7 +13,42 @@
   // an item: { m, p: [x, y] } (fractions); b = y − m·x
   const B = it => F.sub(it.p[1], F.mul(it.m, it.p[0]));
   const onGrid = it => [it.p[0], it.p[1], B(it)].every(v => v.d === 1 && Math.abs(v.n) <= 6) && F.mul(it.m, it.p[0]).d === 1;
-  const mk = (idea, f) => ({ idea, make: f });
+  // x ≠ y, so putting them in the wrong places always shows
+  const mk = (idea, f) => ({ idea, make: () => { let it; do it = f(); while (F.eq(it.p[0], it.p[1])); return it; } });
+  // the drag step comes back after a substitution mix-up, until one clean drag
+  let again = false;
+  // y = m·x + b with slots for y and x; the x slot shows brackets round a negative after a coefficient
+  const coef = m => m.n === m.d ? '' : m.n === -m.d ? '−' : `${F.html(m)}<span class="fb-dot">·</span>`;
+  const slot = v => `<button type="button" class="dslot fb-s" data-s="${v}" aria-label="${v}"><span class="dn">${v}</span><span class="dv"></span></button>`;
+  const chip = (it, k) => `<button type="button" class="dchip" data-k="${k}">${show(it.p[k === 'x' ? 0 : 1])}</button>`;
+  const subSay = it => `A point is (x, y): x is ${show(it.p[0])}, y is ${show(it.p[1])}.`;
+  // step 1: drag; a swap → red slots + the sentence, then fresh slots in the same place; done(swapped on the first try)
+  function substitute(el, it, done) {
+    const host = el.querySelector('.fb-sub'), sayEl = el.querySelector('.say'), xNeg = it.p[0].n < 0 && coef(it.m);
+    let miss = false;
+    (function build() {
+      host.innerHTML = `<div class="q dpts"><span class="dpt"><b>P</b>(${chip(it, 'x')},&nbsp;${chip(it, 'y')})</span></div>
+        <div class="q fb-eq">${slot('y')}<span>=</span><span>${coef(it.m)}${slot('x')}</span><span>+ b</span></div>
+        <button type="button" class="go" disabled>Check</button>`;
+      const go = host.querySelector('.go'), val = k => it.p[k === 'x' ? 0 : 1];
+      let live = false;                                          // the why-sentence stays until a chip moves
+      const d = Drag.wire({
+        chips: Array.from(host.querySelectorAll('.dchip')), slots: Array.from(host.querySelectorAll('.dslot')),
+        show: (sl, k) => { sl.querySelector('.dv').textContent = !k ? '' : sl.dataset.s === 'x' && xNeg && val(k).n < 0 ? `(${show(val(k))})` : show(val(k)); },
+        onChange: placed => { go.disabled = Object.keys(placed).length < 2; if (live) { sayEl.textContent = ''; sayEl.classList.remove('bad'); } }
+      });
+      live = true;
+      go.addEventListener('click', () => {
+        if (Object.keys(d.placed).length < 2) return;
+        d.disable(); go.disabled = true;
+        const ok = d.placed.y === 'y';
+        host.querySelectorAll('.dslot').forEach(sl => sl.classList.add(ok ? 'ok' : 'no'));
+        if (ok) { go.remove(); host.querySelector('.dpts').classList.add('fb-done'); return done(miss); }
+        miss = true; sayEl.textContent = subSay(it); sayEl.classList.add('bad');
+        setTimeout(build, 1600);
+      });
+    })();
+  }
   // a line through a grid point with slope m whose b is a small whole number
   function gridItem(m, neg) {
     for (let k = 0; k < 200; k++) {
@@ -58,35 +96,51 @@
     text: it => `slope ${F.text(it.m)} through ${pt(it.p)}`,
     speak: it => `A line with slope ${F.text(it.m)} goes through ${pt(it.p)}. What is b?`,
     ask(el, it, submit, ctx) {
-      el.innerHTML = `<div class="gq">${onGrid(it) ? '<div class="gridbox"></div>' : ''}<div class="q">${L.term(it.m, 'x', true) ? `y = ${L.term(it.m, 'x', true)} + ` : 'y = '}${F.box('b')}</div>
-        <div class="q small">through P${pt(it.p)}</div><p class="say" aria-live="polite"></p><button type="button" class="go">Check</button><div class="work" aria-live="polite"></div></div>`;
-      if (onGrid(it)) { const g = G.make(el.querySelector('.gridbox')); g.dot([it.p[0].n, it.p[1].n], 'pt', 'P' + pt(it.p), [it.m.d, it.m.n]); }
-      el._f = F.wire(el, { want: () => B(it), onSubmit: v => submit(v.b) });
+      const drag = ctx.mode !== 'warm' && (ctx.mode === 'open' || again), grid = onGrid(it) ? '<div class="gridbox"></div>' : '';
+      if (!drag) {
+        el.innerHTML = `<div class="gq">${grid}<div class="q">${L.term(it.m, 'x', true) ? `y = ${L.term(it.m, 'x', true)} + ` : 'y = '}${F.box('b')}</div>
+          <div class="q small">through P${pt(it.p)}</div><p class="say" aria-live="polite"></p><button type="button" class="go">Check</button><div class="work" aria-live="polite"></div></div>`;
+        el._f = F.wire(el, { want: () => B(it), onSubmit: v => submit(Object.assign({}, v.b, { sub: null })) });
+      } else {
+        el.innerHTML = `<div class="gq fb">${grid}<div class="fb-sub"></div><div class="q fb-b" hidden><span>b =</span> ${F.box('b')} <button type="button" class="go">Check</button></div>
+          <p class="say" aria-live="polite"></p><div class="work" aria-live="polite"></div></div>`;
+        el._f = null;
+        substitute(el, it, swapped => {
+          if (!swapped) again = false;
+          const row = el.querySelector('.fb-b'); row.hidden = false;
+          el._f = F.wire(row, { say: el.querySelector('.say'), want: () => B(it), onSubmit: v => submit(Object.assign({}, v.b, { sub: swapped ? 'swap' : null })) });
+        });
+      }
+      if (onGrid(it)) { const g = G.make(el.querySelector('.gridbox')); g.dot([it.p[0].n, it.p[1].n], 'pt', drag ? 'P' : 'P' + pt(it.p)); }
     },
     correct: it => F.text(B(it)),
-    isRight: (it, a) => F.eq(a.v, B(it)),
+    isRight: (it, a) => !a.sub && F.eq(a.v, B(it)),
     classify(it, a) {
       const v = a.v, mx = F.mul(it.m, it.p[0]);
+      if (a.sub) { again = true; return 'swap'; }
+      if (F.eq(v, F.sub(it.p[0], F.mul(it.m, it.p[1])))) again = true;
       if (F.eq(v, F.add(it.p[1], mx))) return 'sign';
       if (F.eq(v, F.sub(it.p[1], it.m))) return 'mx';
       if (F.eq(v, F.sub(it.p[0], F.mul(it.m, it.p[1])))) return 'xy';
       return 'other';
     },
     feedback(it, w, a, kind, err) {
+      if (err === 'swap') return ['slots', subSay(it)];
       if (err === 'sign') return ['work', 'Take m·x away from y; don’t add it.'];
       if (err === 'mx') return ['work', 'Multiply the slope by x first.'];
       if (err === 'xy') return ['work', 'Use the point’s y, minus m times its x.'];
       return ['work', 'Work out m·x first, then take it from y.'];
     },
     reveal(el, it, a, o) {
-      el._f && el._f.mark('b', o.right);
+      el._f && el._f.mark('b', F.eq(a.v, B(it)));
       if (o.right) return;
       el.querySelector('.work').textContent = work(it);
       if (onGrid(it)) { const gb = el.querySelector('.gridbox'); gb.innerHTML = ''; picture(gb, it, true); }
     },
-    errors: { sign: 'added m·x instead of subtracting', mx: 'forgot to multiply by x', xy: 'mixed up x and y', other: 'arithmetic' },
+    errors: { swap: 'put x and y in the wrong places', sign: 'added m·x instead of subtracting', mx: 'forgot to multiply by x', xy: 'mixed up x and y', other: 'arithmetic' },
     diagnose(err) {
       return ({
+        swap: ['Puts the point’s x where y goes (and y where x goes).', 'A point is (x, y): x first. Write “x =” and “y =” under the two numbers before plugging them into y = mx + b.'],
         sign: ['Adds m·x instead of taking it away (or loses a sign).', 'Start from y = mx + b with the point plugged in, then move m·x across: b = y − m·x.'],
         mx: ['Subtracts the slope itself instead of slope times x.', 'Write m·x out first as its own number.'],
         xy: ['Swaps the point’s x and y.', 'Label the point (x, y) before plugging in.'],
@@ -96,7 +150,7 @@
     get keyHTML() {
       const host = document.createElement('div');
       picture(host, { m: F.of(1, 2), p: [F.of(4), F.of(3)] }, true);
-      return `<div class="gk"><div class="gridbox">${host.innerHTML}</div><div>b = y − m·x</div></div>`;
+      return `<div class="gk"><div class="gridbox">${host.innerHTML}</div><div>P(4, 3) into y = ½x + b: 3 = ½·4 + b</div><div>b = y − m·x</div></div>`;
     }
   });
 })();
