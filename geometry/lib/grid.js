@@ -7,6 +7,23 @@
   const el = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent && parent.appendChild(e); return e; };
   const sgn = n => (n < 0 ? '−' + -n : String(n));
 
+  // the slope triangle drawn small for the legend: run (blue) across, then rise (green) up or down, in the same
+  // directions as on the grid, each leg labelled with its value ("?" while the student counts)
+  function mini(run, rise, hide, names = []) {
+    const k = Math.min(run ? 84 / Math.abs(run) : 99, rise ? 60 / Math.abs(rise) : 99, 28);
+    const P = [0, 0], C = [run * k, 0], Q = [run * k, -rise * k], v = n => hide ? '?' : sgn(n);
+    const xs = [P[0], C[0], Q[0]], ys = [P[1], C[1], Q[1]];
+    const x0 = Math.min(...xs) - 52, x1 = Math.max(...xs) + 52, y0 = Math.min(...ys) - 20, y1 = Math.max(...ys) + 22;
+    let h = `<svg viewBox="${x0} ${y0} ${x1 - x0} ${y1 - y0}" width="${x1 - x0}" height="${y1 - y0}" aria-hidden="true">`;
+    if (run && rise) h += `<line x1="${P[0]}" y1="${P[1]}" x2="${Q[0]}" y2="${Q[1]}" class="m-hyp"/>`;
+    if (run) h += `<line x1="${P[0]}" y1="0" x2="${C[0]}" y2="0" class="m-run"/><text x="${C[0] / 2}" y="${rise > 0 ? 15 : -6}" class="m-rl">run ${v(run)}</text>`;
+    if (rise) h += `<line x1="${C[0]}" y1="0" x2="${Q[0]}" y2="${Q[1]}" class="m-rise"/><text x="${C[0] + (run >= 0 ? 6 : -6)}" y="${Q[1] / 2 + 4}" class="m-ri" text-anchor="${run >= 0 ? 'start' : 'end'}">rise ${v(rise)}</text>`;
+    // the end points, named like the dots on the grid: the start beside its corner, the end past the rise
+    const nm = (pt, n, dx, dy, anc) => n ? `<text x="${pt[0] + dx}" y="${pt[1] + dy}" class="m-nm" text-anchor="${anc}">${n}</text>` : '';
+    h += nm(P, names[0], run >= 0 ? -7 : 7, 5, run >= 0 ? 'end' : 'start') + nm(Q, names[1], run >= 0 ? -6 : 6, rise > 0 ? -6 : 16, 'middle');
+    return h + `<circle cx="${P[0]}" cy="${P[1]}" r="3" class="m-pt"/><circle cx="${Q[0]}" cy="${Q[1]}" r="3" class="m-pt"/></svg>`;
+  }
+
   // make(host, { min, max, step }) → a grid drawn into host; units run min..max on both axes
   function make(host, o = {}) {
     const min = o.min ?? -6, max = o.max ?? 6, U = 20, size = (max - min) * U;
@@ -14,7 +31,8 @@
     host.innerHTML = '';
     // label layout: every label tries a few spots and takes the one that overlaps least (other labels, dots, lines,
     // the grid's edge); a tick number under a label is hidden. Text sizes are estimated (the svg may not be on screen).
-    const ticks = [], segs = [], dots = [], labels = [], legend = [];
+    const ticks = [], segs = [], dots = [], labels = [], legend = [], names = {};
+    const nameAt = p => names[p[0] + ',' + p[1]];
     const axes = [[X(min), Y(0), X(max), Y(0)], [X(0), Y(min), X(0), Y(max)]];
     const leg = document.createElement('div'); leg.className = 'glegend';
     const svg = el('svg', { viewBox: `-14 -14 ${size + 28} ${size + 28}`, class: 'grid', role: 'img', 'aria-label': 'Coordinate grid' }, host);
@@ -74,7 +92,7 @@
     }
     const g = {
       min, max, svg, X, Y,
-      clear() { layer.innerHTML = ''; top.innerHTML = ''; segs.length = dots.length = labels.length = legend.length = 0; layout(); },
+      clear() { layer.innerHTML = ''; top.innerHTML = ''; segs.length = dots.length = labels.length = legend.length = 0; for (const k in names) delete names[k]; layout(); },
       line(p, q, cls = 'ln') { const [a, b] = clip(p, q); segs.push([X(a[0]), Y(a[1]), X(b[0]), Y(b[1])]); layout(); return el('line', { x1: X(a[0]), y1: Y(a[1]), x2: X(b[0]), y2: Y(b[1]), class: cls }, layer); },
       seg(p, q, cls = 'sg') { segs.push([X(p[0]), Y(p[1]), X(q[0]), Y(q[1])]); layout(); return el('line', { x1: X(p[0]), y1: Y(p[1]), x2: X(q[0]), y2: Y(q[1]), class: cls }, layer); },
       dot(p, cls = 'pt', label) {
@@ -83,6 +101,7 @@
         if (label) {
           // "A(2, 3)": just the letter on the grid; the coordinates go in the legend beside it
           const m = /^([A-Z])(\(.*\))?$/.exec(label), name = m ? m[1] : label;
+          if (m) names[p[0] + ',' + p[1]] = m[1];
           const t = el('text', { class: 'pl' + (m ? ' pn' : '') }, top); t.textContent = name;
           if (m && m[2]) legend.push({ node: d, html: `<span class="lg-pt ${cls.replace('pt', '').trim()}"><b>${m[1]}</b>${m[2].replace(/, /, ',&nbsp;')}</span>` });
           const w = name.length * (m ? 7.5 : 5.9) + 2, cx = X(p[0]), cy = Y(p[1]);
@@ -103,9 +122,7 @@
         if (o2.labels !== false) {
           const dash = /turned/.test(o2.cls || '') ? ' dash' : '';
           // labels: '?' names the legs without their values (the student counts them)
-          const v = n => o2.labels === '?' ? '?' : sgn(n);
-          legend.push({ node: grp, html: `<span class="lg-run${dash}"><i></i>run ${v(run)}</span>` });
-          legend.push({ node: grp, html: `<span class="lg-rise${dash}"><i></i>rise ${v(rise)}</span>` });
+          legend.push({ node: grp, html: `<span class="lg-tri${dash}">${mini(run, rise, o2.labels === '?', [nameAt(p), nameAt(q)])}</span>` });
         }
         layout();
         return grp;

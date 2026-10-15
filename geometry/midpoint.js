@@ -33,7 +33,7 @@
     g.seg(it.a, it.b);
     const d = [it.b[0] - it.a[0], it.b[1] - it.a[1]];
     g.dot(it.a, 'pt', 'A' + pt(it.a), d); g.dot(it.b, 'pt', 'B' + pt(it.b), d);
-    if (showMid) { g.triangle(it.a, it.b, { labels: false, cls: 'ghost' }); g.triangle(it.a, m, { labels: true }); g.dot(m, 'pt ok', 'M' + pt(m), d); }
+    if (showMid) { g.dot(m, 'pt ok', 'M' + pt(m), d); g.triangle(it.a, it.b, { labels: false, cls: 'ghost' }); g.triangle(it.a, m, { labels: true }); }
     return g;
   }
 

@@ -139,3 +139,15 @@
 .grid .pl.pn { fill: var(--ink); font-size: 12.5px; }
 .glegend .lg-br { flex-basis: 100%; height: 0; }
 @media (min-width: 52rem) { .gq .gridbox .glegend .lg-br { height: 4px; } }
+/* the small triangle in the legend */
+.glegend .lg-tri svg { display: block; overflow: visible; }
+.glegend .lg-tri .m-run { stroke: var(--accent); stroke-width: 3; stroke-linecap: round; }
+.glegend .lg-tri .m-rise { stroke: var(--good); stroke-width: 3; stroke-linecap: round; }
+.glegend .lg-tri .m-hyp { stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 3 3; }
+.glegend .lg-tri .m-pt { fill: var(--ink); }
+.glegend .lg-tri text { font: 700 12px var(--f-mono); }
+.glegend .lg-tri .m-rl { fill: var(--accent); text-anchor: middle; }
+.glegend .lg-tri .m-ri { fill: var(--good); }
+.glegend .lg-tri.dash .m-run, .glegend .lg-tri.dash .m-rise { stroke-dasharray: 5 3; }
+.glegend .lg-tri text { font-size: 13px; }
+.glegend .lg-tri .m-nm { fill: var(--ink); font-size: 14px; }
