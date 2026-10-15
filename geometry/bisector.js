@@ -3,7 +3,8 @@
 // Drawing fades with the item's lvl: 2 = "Where is the middle of AB?" (tap M), then one more point; the half-triangle at M
 // turns 90° with a right-angle mark and (tutor rule) a point steps along the line with equal strings to A and B.
 // 1 = the same two taps, no turn unless missed. 0 = tap any two points, then Check. First tries are graded (fixed in place).
-// equi: which point is the same distance from A and B (the bisector drawn, or not). hv (late): flat and vertical segments.
+// equi: which point is the same distance from A and B — with the bisector drawn (easy), or in two parts: first draw
+// the bisector (tap M, then a point), then pick the point on it (hard). hv (late): flat and vertical segments.
 // Tutorial: tap on the dashed bisector → equal strings; tap off it → unequal.
 // Spec: specs/geometry-next.md (G11). Uses lib/grid.js (+ grid-extra.css), lib/steps.js, lib/pick.js; styles lib/bisector.css.
 (function () {
@@ -153,12 +154,12 @@
 
   // ---- the answer areas ----
   // lvl 2 and 1: tap M, then one more point (Steps: first tries graded, fixed in place)
-  function drawSteps(el, it, lvl, submit) {
-    el.innerHTML = '<div class="gq bs"><div class="gridbox"></div><div class="bs-steps"></div></div>';
-    const g = picture(el.querySelector('.gridbox'), it), M = mid(it), x = el._x = { g, lvl, it };
+  // the two drawing steps: tap M, then one more point on the bisector (first tries graded, fixed in place); x holds the picture
+  function lineSteps(g, it, x) {
+    const M = mid(it);
     let red = null, bad = null;
     const clean = () => { if (red) { red.forEach(n => g.remove(n)); red = null; } };
-    const steps = [
+    return [
       { text: 'Where is the middle of AB?', tap: () => new Promise(res => {
         clean();
         const stop = g.onTap(q => {
@@ -181,7 +182,11 @@
         });
       }) }
     ];
-    Steps.run(el.querySelector('.bs-steps'), steps, { grid: g, done: errs => submit({ lvl, errs }) });
+  }
+  function drawSteps(el, it, lvl, submit) {
+    el.innerHTML = '<div class="gq bs"><div class="gridbox"></div><div class="bs-steps"></div></div>';
+    const g = picture(el.querySelector('.gridbox'), it), x = el._x = { g, lvl, it };
+    Steps.run(el.querySelector('.bs-steps'), lineSteps(g, it, x), { grid: g, done: errs => submit({ lvl, errs }) });
   }
   // lvl 0: tap any two points (tap one again to take it back), then Check
   function drawFree(el, it, submit) {
@@ -198,6 +203,7 @@
     });
   }
   function askEqui(el, it, submit) {
+    if (!it.line) return askEqui2(el, it, submit);
     el.innerHTML = `<div class="gq bs"><div class="gridbox"></div><div class="q small">Which point is the same distance from A and B?</div><div class="bs-ch"></div></div>`;
     const g = picture(el.querySelector('.gridbox'), it), M = mid(it);
     if (it.line) g.line(M, add(M, perpDir(it)), 'ln faint');
@@ -205,6 +211,19 @@
     Pick.ask(el.querySelector('.bs-ch'), it.ch.map((p, i) => [i, pt(p)]), id => submit({ id: +id, p: it.ch[+id] }), { cols: 2 });
   }
 
+  // two parts: first the perpendicular bisector, then the point on it (the same distance from A and B)
+  function askEqui2(el, it, submit) {
+    el.innerHTML = '<div class="gq bs"><div class="gridbox"></div><div class="bs-steps"></div></div>';
+    const g = picture(el.querySelector('.gridbox'), it), x = el._x = { g, lvl: 1, it, two: true };
+    let picked = null;
+    const steps = [{ text: 'First, the perpendicular bisector of AB.' }, ...lineSteps(g, it, x), {
+      text: 'Which point is the same distance from A and B?', pick: it.ch.map((p, i) => [String(i), pt(p)]), cols: 2,
+      want: String(it.ch.indexOf(wantPt(it))), name: 'pick',
+      why: id => { const p = it.ch[+id]; return [same(p, it.a) || same(p, it.b) ? 'endpt' : d2(p, mid(it)) <= 2 ? 'near' : 'off', equiSay(it, p)]; },
+      onRight: v => { picked = v; }
+    }];
+    Steps.run(el.querySelector('.bs-steps'), steps, { grid: g, done: errs => { const R0 = wantPt(it); submit({ two: true, p: R0, id: it.ch.indexOf(R0), errs }); } });
+  }
   const DIR = ['along', 'sign', 'flip', 'slope', 'both'];
   const TIPS = {
     mid: ['Can’t find the middle of the segment.', 'Average the x’s and the y’s: ((x₁ + x₂) ÷ 2, (y₁ + y₂) ÷ 2). Or count halfway along the run and the rise.'],
@@ -253,15 +272,21 @@
       (lvl ? drawSteps(el, it, lvl, submit) : drawFree(el, it, submit));
     },
     correct: it => it.kind === 'equi' ? pt(wantPt(it)) : `through M${pt(mid(it))}, ${dirU(it)[1] === 0 ? 'vertical' : dirU(it)[0] === 0 ? 'flat' : 'slope ' + slopeTxt(perpDir(it))}`,
-    isRight: (it, a) => it.kind === 'equi' ? equal(it, a.p) : a.errs.length === 0,
+    isRight: (it, a) => it.kind === 'equi' ? equal(it, a.p) && !(a.errs || []).length : a.errs.length === 0,
     classify(it, a) {
-      if (it.kind === 'draw') return a.errs[0].type;
+      if (it.kind === 'draw' || (a.errs && a.errs.length)) return a.errs[0].type;
       return same(a.p, it.a) || same(a.p, it.b) ? 'endpt' : d2(a.p, mid(it)) <= 2 ? 'near' : 'off';
     },
-    feedback: (it, w, a) => ['pic', it.kind === 'equi' ? equiSay(it, a.p) : a.errs[0].text],
+    feedback: (it, w, a) => ['pic', it.kind === 'equi' && !(a.errs && a.errs.length) ? equiSay(it, a.p) : a.errs[0].text],
     reveal(el, it, a, o) {
       const x = el._x; if (!x) return;
       const g = x.g, M = mid(it), w = perpDir(it);
+      if (it.kind === 'equi' && a.two) {
+        // two parts: the bisector is drawn; show the equal strings from the point on it
+        if (x.good) x.good.setAttribute('class', 'ln ok');
+        const R = wantPt(it); g.strings(R, it.a, it.b, 'ok'); g.dot(R, 'pt ok');
+        return;
+      }
       if (it.kind === 'equi') {
         Pick.mark(el, o.right ? null : it.ch.indexOf(wantPt(it)), a.id, o.right);
         if (!it.line && !o.right) g.line(M, add(M, w), 'ln faint');

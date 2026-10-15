@@ -13,3 +13,5 @@
   .gq.bs .glegend .lg-tri + .lg-br { display: none; }
   .gq.bs .glegend .lg-tri svg { width: min(36vw, 9rem); height: auto; }
 }
+/* only the current prompt stays: finished ones fold away */
+.gq.bs .st-list > .st-text:not(:nth-last-child(-n+2)) { display: none; }
