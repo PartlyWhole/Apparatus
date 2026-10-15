@@ -58,7 +58,7 @@ Each follows the house pattern: tutorial only where the idea is new (G1, G4's tu
 - b with the sign of m·x wrong: "b = y − m·x = −9 − ¼·(−4) = −8."
 
 ## Decided (2026-10-14)
-- Answers: one box by default (a whole number, or a decimal like 0.5). The student decides when it's a fraction: typing "/" or tapping the small fraction icon beside the box opens stacked boxes; backspace in an empty bottom closes them. A minus typed in either box; a 0 on the bottom means undefined (the word shows under the boxes). No "undefined" button.
+- Answers: one box by default (a whole number, or a decimal like 0.5). The student decides when it's a fraction: typing "/" or tapping the small fraction icon beside the box opens stacked boxes; backspace in an empty bottom closes them. A minus typed in either box; a 0 on the bottom means undefined, and so does "?" or "undefined" typed in the single box (the word shows under the box). No "undefined" button.
 - ∥ and ⟂ always come with their words ("∥ parallel", "⟂ perpendicular").
 - An equal but unsimplified answer (2/4) gets a "Simplify." nudge and isn't graded.
 - G7 is a step chain (m → ∥/⟂ m → b): a wrong step says why, then fresh boxes in place; first tries are graded. The next-session check asks for y = [m]x + [b] at once.

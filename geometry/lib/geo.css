@@ -151,3 +151,4 @@
 .glegend .lg-tri.dash .m-run, .glegend .lg-tri.dash .m-rise { stroke-dasharray: 5 3; }
 .glegend .lg-tri text { font-size: 13px; }
 .glegend .lg-tri .m-nm { fill: var(--ink); font-size: 14px; }
+.sf input { field-sizing: content; min-width: 4.2ch; max-width: 11ch; }
