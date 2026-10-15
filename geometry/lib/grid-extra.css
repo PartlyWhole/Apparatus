@@ -1,0 +1,29 @@
+/* grid.js additions — polygons, the slanted side and its "d", the squares, right-angle marks, strings. Link after geo.css. */
+.grid .pg { fill: none; stroke: var(--ink); stroke-width: 2.4; stroke-linejoin: round; }
+.grid .pg.faint { stroke: var(--muted); stroke-width: 1.6; stroke-dasharray: 4 4; }
+.grid .pg.ok { stroke: var(--good); }
+.grid .pg.no { stroke: var(--bad); }
+.grid .tri .hyp { stroke: var(--ink); stroke-width: 2.4; stroke-linecap: round; }
+.grid .rmark { fill: none; stroke: var(--ink); stroke-width: 1.4; stroke-linejoin: round; }
+.grid .rmark.ok { stroke: var(--good); }
+.grid .strs .str { stroke: var(--ink); stroke-width: 1.6; stroke-dasharray: 4 3; stroke-linecap: round; }
+.grid .strs .tick { stroke: var(--ink); stroke-width: 1.8; stroke-linecap: round; }
+.grid .strs.ok .str, .grid .strs.ok .tick { stroke: var(--good); }
+.grid .strs.no .str, .grid .strs.no .tick { stroke: var(--bad); }
+
+/* the legend triangle: the slanted side in ink, its d label, the squares (tiles, area inside) */
+.glegend .lg-tri .m-hyp.m-d { stroke: var(--ink); stroke-width: 3; stroke-dasharray: none; stroke-linecap: round; }
+.glegend .lg-tri .m-dl { fill: var(--ink); }
+.glegend .lg-tri .m-sq { stroke-width: 1.6; stroke-linejoin: round; }
+.glegend .lg-tri .m-sq-run { fill: color-mix(in srgb, var(--accent) 16%, transparent); stroke: var(--accent); }
+.glegend .lg-tri .m-sq-rise { fill: color-mix(in srgb, var(--good) 16%, transparent); stroke: var(--good); }
+.glegend .lg-tri .m-sq-hyp { fill: color-mix(in srgb, var(--ink) 9%, transparent); stroke: var(--ink); }
+.glegend .lg-tri .m-tile { stroke-width: 0.8; opacity: 0.5; }
+.glegend .lg-tri .m-tile-run { stroke: var(--accent); }
+.glegend .lg-tri .m-tile-rise { stroke: var(--good); }
+.glegend .lg-tri .m-tile-hyp { stroke: var(--ink); }
+.glegend .lg-tri .m-ar { font-size: 15px; paint-order: stroke; stroke: var(--bg); stroke-width: 3.5px; stroke-linejoin: round; }
+.glegend .lg-tri .m-ar-run { fill: var(--accent); }
+.glegend .lg-tri .m-ar-rise { fill: var(--good); }
+.glegend .lg-tri .m-ar-hyp { fill: var(--ink); }
+.glegend .lg-tri .m-sum { fill: var(--ink); font-size: 15px; }

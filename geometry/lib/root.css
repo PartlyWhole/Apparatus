@@ -1,0 +1,29 @@
+/* Root — the root answer box and a√b in text (root.js). Colors come from engine/exercise.css; boxes match frac.js's. */
+.rb, .rt { --rt-w: 0.09em; }
+
+/* a√b in text: the sign stretches to the radicand's height and meets its overline */
+.rt { display: inline-flex; align-items: flex-end; white-space: nowrap; }
+.rt-r, .rb-r { display: inline-flex; align-items: stretch; }
+.rt-s { width: 0.5em; flex: none; margin-top: calc(var(--rt-w) / 2); overflow: visible; }
+.rt-s path { fill: none; stroke: currentColor; stroke-width: var(--rt-w); stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.rt-b { border-top: var(--rt-w) solid currentColor; padding: 0.06em 0.08em 0 0.06em; line-height: 1.05; }
+
+/* the answer box: one box; "r" opens the radical (.rad), with no coefficient box when nothing was typed first (.one) */
+.rb { --rt-w: 3px; display: inline-flex; align-items: flex-end; gap: 2px; vertical-align: middle; position: relative; }
+.rb input { width: 4.2ch; padding: 4px 4px; border-radius: 10px; border: 2px solid var(--line); background: var(--surface); color: var(--ink);
+  font: inherit; font-family: var(--f-mono); font-weight: 700; text-align: center; }
+.rb input:focus { outline: none; border-color: var(--accent); }
+.rb input:disabled { cursor: default; }
+.rb .rt-s { width: 0.6em; margin-top: 1.5px; }
+.rb .rt-s path { stroke: var(--ink); stroke-width: 3px; }
+.rb-o { border-top: 3px solid var(--ink); border-radius: 0 2px 0 0; padding: 4px 1px 0 3px; display: inline-flex; }
+.rb:not(.rad) .rb-r, .rb.one .rb-a { display: none; }
+.rb.bad input { border-color: var(--bad); animation: rshake 0.3s ease; }
+.rb.ok input { border-color: var(--good); color: var(--good); }
+.rb.no input { border-color: var(--bad); color: var(--bad); }
+.rb.ok .rt-s path { stroke: var(--good); }
+.rb.ok .rb-o { border-top-color: var(--good); }
+.rb.no .rt-s path { stroke: var(--bad); }
+.rb.no .rb-o { border-top-color: var(--bad); }
+@keyframes rshake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+@media (prefers-reduced-motion: reduce) { .rb.bad input { animation: none; } }

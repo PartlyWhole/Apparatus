@@ -1,0 +1,13 @@
+/* Steps (steps.js) — a chain of rows: plain-words lines, answer boxes, drag rows, choice rows. Builds on geo.css. */
+.gq.steps .st-list { display: flex; flex-direction: column; gap: 12px; align-items: center; width: 100%; }
+.gq.steps .st-text { color: var(--muted); font-family: var(--f-body); font-weight: 400; font-size: clamp(1rem, 4.4vw, 1.15rem); }
+.gq.steps .st-text b { color: var(--ink); font-family: var(--f-mono); font-weight: 700; white-space: nowrap; }
+.gq.steps .q.step.drag, .gq.steps .q.step.pick { flex-direction: column; gap: 10px; width: 100%; }
+.gq.steps .st-chips { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.gq.steps .st-eq { display: flex; align-items: center; gap: 0.3em; flex-wrap: wrap; justify-content: center; }
+.gq.steps .st-eq .dslot { min-height: 46px; min-width: 2.8em; padding: 0 8px; display: inline-flex; border-radius: 12px; }
+/* a pick already tried and wrong: faded while they fix it */
+.gmc button.tried { opacity: 0.25; }
+/* choices read as words (wrap math in <b> for the mono face) */
+.gq.steps .q.step.pick { font-family: var(--f-body); }
+.gq.steps .q.step.pick b { font-family: var(--f-mono); }
