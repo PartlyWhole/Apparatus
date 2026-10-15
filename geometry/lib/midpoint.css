@@ -33,4 +33,4 @@
 @media (prefers-reduced-motion: reduce) { .grid .mpa-pop { animation: none; } .grid .mpa-drop, .grid .mpa-span { transition: none; } }
 .grid .mpa-v.y.flip { text-anchor: start; }
 .grid .mpa-v { stroke-width: 4.5px; }
-.gq .mpq .mp { width: 5.4ch; }
+.gq .mpq .sf input { width: 5ch; }

@@ -6,6 +6,7 @@
 // Spec: specs/geometry-lines.md (G8). Uses lib/grid.js, lib/lines.js, lib/drag.js; styles lib/midpoint.css.
 (function () {
   const G = Grid, L = Lines, { r, any } = L;
+  const F = Frac;
   const nz = (a, b) => { let v = 0; while (v === 0) v = r(a, b); return v; };
   const s = G.sgn, pt = p => `(${s(p[0])}, ${s(p[1])})`, paren = n => n < 0 ? `(${s(n)})` : String(n);
   // an item: { a, b, words? }
@@ -136,17 +137,12 @@
     return g;
   }
 
-  // the M(x, y) boxes: Check once both read as numbers
-  function answer(el, done) {
-    const ins = Array.from(el.querySelectorAll('.mp')), go = el.querySelector('.go');
-    const check = () => {
-      const v = ins.map(i => read(i.value)), k = v.findIndex(x => x == null);
-      if (k >= 0) { const i = ins[k]; i.classList.remove('bad'); void i.offsetWidth; i.classList.add('bad'); return i.focus(); }
-      ins.forEach(i => { i.disabled = true; }); go.disabled = true; done(v);
-    };
-    ins.forEach(i => { i.addEventListener('input', () => i.classList.remove('bad')); i.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); check(); } }); });
-    go.addEventListener('click', check);
-    setTimeout(() => ins[0].focus({ preventScroll: true }), 30);
+  // the M(x, y) boxes: the shared answer box (a whole number, a decimal like −1.5, or "/" for a fraction like −3/2)
+  const NM = ['mx', 'my'];
+  const mbox = c => F.box(NM[c]);
+  function answer(el, done, it) {
+    const m = mid(it), say = el.closest('.gq').querySelector('.say');
+    F.wire(el, { say, want: n => F.fromDec(m[NM.indexOf(n)]), onSubmit: v => done(NM.map(n => F.num(v[n].v))) });
   }
 
   Apparatus.define({
@@ -179,19 +175,18 @@
         el._g = picture(el.querySelector('.gridbox'), it, false);
         scaffold(el, it, err => {
           const c = el.querySelector('.mpc');
-          c.innerHTML = `<div class="q mpq">M(<input class="mp" data-c="0" inputmode="decimal" autocomplete="off" spellcheck="false" aria-label="x">, <input class="mp" data-c="1" inputmode="decimal" autocomplete="off" spellcheck="false" aria-label="y">)</div><button type="button" class="go">Check</button>`;
-          answer(c, v => submit({ v, drag: err }));
+          c.innerHTML = `<div class="q mpq">M(${mbox(0)}, ${mbox(1)})</div><button type="button" class="go">Check</button>`;
+          answer(c, v => submit({ v, drag: err }), it);
         });
         return;
       }
-      const box = c => `<input class="mp" data-c="${c}" inputmode="decimal" autocomplete="off" spellcheck="false" aria-label="${c ? 'y' : 'x'}">`;
       const head = it.words
         ? `<div class="q small">${it.words[0]} ${pt(it.a)}</div><div class="q small">${it.words[1]} ${pt(it.b)}</div><div class="q small">halfway?</div>`
         : onGrid(it) ? '' : `<div class="q two"><span>A${pt(it.a)}</span><span>B${pt(it.b)}</span></div>`;
       el.innerHTML = `<div class="gq">${!it.words && onGrid(it) ? '<div class="gridbox"></div>' : ''}${head}
-        <div class="q mpq">M(${box(0)}, ${box(1)})</div><p class="say" aria-live="polite"></p><button type="button" class="go">Check</button><div class="work" aria-live="polite"></div></div>`;
+        <div class="q mpq">M(${mbox(0)}, ${mbox(1)})</div><p class="say" aria-live="polite"></p><button type="button" class="go">Check</button><div class="work" aria-live="polite"></div></div>`;
       if (el.querySelector('.gridbox')) picture(el.querySelector('.gridbox'), it, false);
-      answer(el, v => submit({ v, drag: null }));
+      answer(el, v => submit({ v, drag: null }), it);
     },
     errors: { mix: 'put an x with the y’s (formula)', diff: 'half the difference', nohalf: 'added but didn’t halve', swap: 'swapped x and y', other: 'arithmetic' },
     correct: it => pt(mid(it)),
@@ -216,7 +211,7 @@
     },
     reveal(el, it, ans, o) {
       const m = mid(it);
-      el.querySelectorAll('.mp').forEach(i => i.classList.add(ans.v[+i.dataset.c] === m[+i.dataset.c] ? 'ok' : 'no'));
+      NM.forEach((n, c) => { const b = el.querySelector(`.sf[data-n="${n}"]`); b && b.classList.add(ans.v[c] === m[c] ? 'ok' : 'no'); });
       if (it.sc) {
         if (ans.v[0] !== m[0] || ans.v[1] !== m[1]) el.querySelector('.work').innerHTML = `<div>x: ${work(it, 0)}</div><div>y: ${work(it, 1)}</div>`;
         return el._g && halfway(el._g, it);
