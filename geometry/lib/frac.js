@@ -1,6 +1,6 @@
 // Frac — exact fractions for slopes (including "undefined"), and the answer box:
-//   [ 3 ] ⁄      one box for a whole number (or a decimal: 0.5); the student decides when it's a fraction —
-//                typing "/" or tapping the small ⁄ beside it opens a stacked fraction; "?" or "undefined" means undefined:
+//   [ 3 ]        one box for a whole number (or a decimal: 0.5); the student decides when it's a fraction —
+//                typing "/" opens a stacked fraction; "?" or "undefined" means undefined:
 //   [ top ]      a minus is typed in either box ("-" or "−"); backspace in an empty bottom closes it again;
 //   ───────      a 0 on the bottom means undefined (vertical lines: no run), and the word shows under the boxes;
 //   [ bottom ]   an equal but unsimplified answer gets a nudge ("Simplify.") instead of being graded.
@@ -32,7 +32,7 @@
   // "?" or the word (or its start, "und…") means undefined
   const isUndef = s => /^\s*(\?|und(e(f(i(n(ed?)?)?)?)?)?)\s*$/i.test(s);
   // the stacked boxes: box(name) → HTML; wire(el, { want(name) → value for the simplify nudge, onSubmit(values), say })
-  const box = name => `<span class="sf" data-n="${name}"><button type="button" class="sf-fr" aria-label="${name}: write as a fraction" aria-pressed="false"><span></span><span></span></button><input class="sf-t" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="${name}: top"><span class="sf-bar"></span><input class="sf-b" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="${name}: bottom"><span class="sf-u" aria-live="polite"></span></span>`;
+  const box = name => `<span class="sf" data-n="${name}"><input class="sf-t" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="${name}: top"><span class="sf-bar"></span><input class="sf-b" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="${name}: bottom"><span class="sf-u" aria-live="polite"></span></span>`;
   function wire(host, o) {
     const boxes = Array.from(host.querySelectorAll('.sf'));
     const go = host.querySelector('.go'), say = o.say || host.querySelector('.say');
@@ -41,11 +41,9 @@
       const u = b.querySelector('.sf-u'), bot = b.querySelector('.sf-b'), top = b.querySelector('.sf-t');
       const note = () => { const z = (b.classList.contains('frac') && readNum(bot.value) === 0) || isUndef(top.value); u.textContent = z ? 'undefined' : ''; b.classList.toggle('is-undef', z); };
       bot.addEventListener('input', note);
-      // whole number ↔ fraction: "/" in the box, the ⁄ button, or backspace in an empty bottom
-      const fr = b.querySelector('.sf-fr');
+      // whole number ↔ fraction: "/" in the box opens it, backspace in an empty bottom closes it
       top.addEventListener('input', note);
-      const frac = on => { b.classList.toggle('frac', on); fr.setAttribute('aria-pressed', String(on)); if (!on) { bot.value = ''; note(); } (on ? bot : top).focus(); };
-      fr.addEventListener('click', () => frac(!b.classList.contains('frac')));
+      const frac = on => { b.classList.toggle('frac', on); if (!on) { bot.value = ''; note(); } (on ? bot : top).focus(); };
       top.addEventListener('keydown', e => { if (e.key === '/') { e.preventDefault(); frac(true); } });
       top.addEventListener('input', () => { const k = top.value.indexOf('/'); if (k < 0) return; const rest = top.value.slice(k + 1).replace('/', ''); top.value = top.value.slice(0, k); frac(true); bot.value = rest; note(); });
       bot.addEventListener('keydown', e => { if (e.key === 'Backspace' && bot.value === '') { e.preventDefault(); frac(false); } });
@@ -75,7 +73,7 @@
         if (w && !r.v.undef && eq(r.v, w) && !r.reduced) { if (say) say.innerHTML = 'Simplify.'; return shake(b); }
         vals[b.dataset.n] = r;
       }
-      host.querySelectorAll('.sf input, .sf-fr').forEach(x => { x.disabled = true; }); if (go) go.disabled = true;
+      host.querySelectorAll('.sf input').forEach(x => { x.disabled = true; }); if (go) go.disabled = true;
       o.onSubmit(vals);
     }
     if (go) go.addEventListener('click', check);

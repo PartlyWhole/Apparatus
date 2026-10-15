@@ -107,19 +107,10 @@
 .gq .q.step .lab { font-family: var(--f-body); }
 .gq .sf.frac { margin-bottom: 1.1em; }
 
-/* whole number by default; .frac opens the stacked fraction. The small ⁄ button (a mini fraction) sits to the right. */
+/* whole number by default; typing "/" (.frac) opens the stacked fraction */
 .sf:not(.frac) .sf-bar, .sf:not(.frac) .sf-b { display: none; }
-.sf .sf-fr { position: absolute; left: calc(100% + 6px); top: 50%; transform: translateY(-50%); width: 26px; height: 34px; padding: 0; border: 0; border-radius: 8px;
-  background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer; opacity: 0.55; }
-.sf .sf-fr span { width: 10px; height: 8px; border: 1.5px solid var(--muted); border-radius: 2px; }
-.sf .sf-fr::before { content: ''; order: 1; width: 14px; height: 1.5px; background: var(--muted); }
-.sf .sf-fr span:last-child { order: 2; }
-.sf .sf-fr:hover, .sf .sf-fr:focus-visible { opacity: 1; background: var(--surface); }
-.sf .sf-fr[aria-pressed="true"] { opacity: 0.9; }
-.sf .sf-fr:disabled { display: none; }
 .sf.frac .sf-u { top: 100%; }
 .gq .q.two { align-items: flex-start; }
-.gq .q.step .sf, .gq .q .sf:not(:last-child) { margin-right: 30px; }
 
 /* the legend: point coordinates, then run and rise in their colors — below the grid on a phone, beside it when there's room */
 .gridbox { position: relative; }
