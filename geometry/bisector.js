@@ -150,6 +150,48 @@
       await pause(650);
     }
   }
+  // after the line: why it's the perpendicular bisector, one idea per tap of ›, each step clearing the last
+  //   1. through the middle   2. at a right angle (the half-triangle turns 90°)   3. every point on it: the same distance
+  function explain(el, g, it) {
+    const M = mid(it), w = perpDir(it), rot = v => [-v[1], v[0]];
+    const host = el.querySelector('.gq'); if (!host || el.querySelector('.bs-why')) return;
+    el.querySelectorAll('.st-text, .gq.bs > .q.small').forEach(t => { t.style.display = 'none'; });   // the prompts are done
+    host.insertAdjacentHTML('beforeend', '<div class="bs-why"><p class="q small bs-cap"></p><button type="button" class="tb bs-next" aria-label="next">›</button></div>');
+    const cap = el.querySelector('.bs-cap'), btn = el.querySelector('.bs-next');
+    let shown = [], i = 0;
+    const clear = () => { shown.forEach(n => g.remove(n)); shown = []; };
+    const steps = [
+      () => { cap.textContent = 'It goes through the middle of AB.'; shown.push(ring(g, M)); },
+      () => new Promise(res => {
+        cap.textContent = 'It crosses AB at a right angle.';
+        const E = [it.b, it.a].find(e => inGrid(add(M, rot(sub(e, M))))) || it.b, v = sub(E, M);
+        const t1 = g.triangle(M, E, { labels: true }); shown.push(t1);
+        const grp = g.el('g', {}), tri = g.triangle(M, E, { labels: false, cls: 'turned' }); grp.appendChild(tri);
+        setTimeout(() => {
+          if (!alive(g)) return res();
+          g.turn(grp, M, () => {
+            g.remove(tri); grp.remove();
+            if (!alive(g)) return res();
+            shown.push(g.triangle(M, add(M, rot(v)), { labels: true, cls: 'turned' }), g.rightMark(M, v, rot(v), 'rmark ok'));
+            res();
+          });
+        }, reduced() ? 0 : 500);
+      }),
+      () => {
+        cap.textContent = 'Any point on it is the same distance from A and B.';
+        const P = [2, 1, -1, -2].map(k => add(M, w, k)).find(p => inGrid(p, 5) && !same(p, it.a) && !same(p, it.b)) || add(M, w);
+        shown.push(g.strings(P, it.a, it.b, 'ok'), g.dot(P, 'pt pick'));
+      }
+    ];
+    const go = async () => {
+      btn.disabled = true; clear();
+      await steps[i++]();
+      btn.disabled = false;
+      if (i === steps.length) btn.remove();
+    };
+    btn.addEventListener('click', go);
+    go();
+  }
   function ring(g, p) { return g.el('circle', { cx: g.X(p[0]), cy: g.Y(p[1]), r: 9, class: 'bs-ring' }); }
 
   // ---- the answer areas ----
@@ -296,7 +338,7 @@
       }
       if (x.good) x.good.setAttribute('class', 'ln ok');
       if (o.right) {
-        if (x.lvl === 2) turnShow(g, it).then(() => STRINGS && walk(g, it));
+        if (x.lvl === 2) explain(el, g, it);
         return;
       }
       // the cue: the first wrong line red, the bisector green, M ringed
@@ -308,7 +350,7 @@
       if (err === 'mid' && x.mTap) g.dot(x.mTap, 'pt no');
       ring(g, M);
       const turn = x.lvl === 2 || DIR.includes(a.errs.find(e => e.type !== 'mid')?.type || '');
-      (turn ? turnShow(g, it) : Promise.resolve()).then(() => STRINGS && (x.lvl === 2 || !DIR.includes(err)) && walk(g, it));
+      if (turn || STRINGS) explain(el, g, it);
     },
     errors: {
       mid: 'missed the middle', along: 'drew it along AB', sign: 'only changed the sign', flip: 'only flipped', slope: 'wrong perpendicular slope',

@@ -15,3 +15,7 @@
 }
 /* only the current prompt stays: finished ones fold away */
 .gq.bs .st-list > .st-text:not(:nth-last-child(-n+2)) { display: none; }
+
+/* why it's the bisector: one idea at a time, › for the next */
+.gq.bs .bs-why { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.gq.bs .bs-cap { margin: 0; color: var(--ink); }
