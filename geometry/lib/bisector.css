@@ -19,3 +19,4 @@
 /* why it's the bisector: one idea at a time, › for the next */
 .gq.bs .bs-why { display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .gq.bs .bs-cap { margin: 0; color: var(--ink); }
+.grid .bs-rm { fill: color-mix(in srgb, var(--good) 18%, transparent); stroke: var(--good); stroke-width: 2.4; stroke-linejoin: round; }

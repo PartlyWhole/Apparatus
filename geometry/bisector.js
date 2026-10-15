@@ -162,21 +162,12 @@
     const clear = () => { shown.forEach(n => g.remove(n)); shown = []; };
     const steps = [
       () => { cap.textContent = 'It goes through the middle of AB.'; shown.push(ring(g, M)); },
-      () => new Promise(res => {
+      () => {
+        // the right-angle square where it crosses AB (drawn large enough to read)
         cap.textContent = 'It crosses AB at a right angle.';
-        const E = [it.b, it.a].find(e => inGrid(add(M, rot(sub(e, M))))) || it.b, v = sub(E, M);
-        const t1 = g.triangle(M, E, { labels: true }); shown.push(t1);
-        const grp = g.el('g', {}), tri = g.triangle(M, E, { labels: false, cls: 'turned' }); grp.appendChild(tri);
-        setTimeout(() => {
-          if (!alive(g)) return res();
-          g.turn(grp, M, () => {
-            g.remove(tri); grp.remove();
-            if (!alive(g)) return res();
-            shown.push(g.triangle(M, add(M, rot(v)), { labels: true, cls: 'turned' }), g.rightMark(M, v, rot(v), 'rmark ok'));
-            res();
-          });
-        }, reduced() ? 0 : 500);
-      }),
+        const n = v => { const l = Math.hypot(v[0], v[1]); return [v[0] / l * 13, -v[1] / l * 13]; }, a = n(sub(it.b, M)), c = n(w), x0 = g.X(M[0]), y0 = g.Y(M[1]);
+        shown.push(g.el('path', { d: `M${x0 + a[0]} ${y0 + a[1]}L${x0 + a[0] + c[0]} ${y0 + a[1] + c[1]}L${x0 + c[0]} ${y0 + c[1]}`, class: 'bs-rm' }));
+      },
       () => {
         cap.textContent = 'Any point on it is the same distance from A and B.';
         const P = [2, 1, -1, -2].map(k => add(M, w, k)).find(p => inGrid(p, 5) && !same(p, it.a) && !same(p, it.b)) || add(M, w);
