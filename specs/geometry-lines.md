@@ -65,6 +65,7 @@ Each follows the house pattern: tutorial only where the idea is new (G1, G4's tu
 - G8 answers are (x, y) boxes that take decimals (6.5).
 - Numbers stay small enough to do in your head (mostly single digits): the exercises teach the process, not arithmetic. The test's own numbers (14x − 18y = 72, (22, −8.5)) are not reused; the same traps come with small numbers.
 - Miss penalty defaults to 1 in geometry (`defaults: { fix: 1 }` in each exercise); tutors can still raise it.
+- On the grid: only point letters (A, B, M, P) and the colored run/rise legs. Coordinates and run/rise values go in a legend off the grid (below on a phone, beside it when there is room), run in blue and rise in green, a dashed swatch for a turned triangle.
 - Built in `geometry/` with its own libraries (`geometry/lib/`: grid, frac, lines, geo.css, page) and its own analytics page (`geometry/analytics.html`), so it doesn't touch the science set.
 
 ## Open questions (remaining)

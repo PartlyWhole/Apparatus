@@ -64,7 +64,7 @@
       const box = c => `<input class="mp" data-c="${c}" inputmode="decimal" autocomplete="off" spellcheck="false" aria-label="${c ? 'y' : 'x'}">`;
       const head = it.words
         ? `<div class="q small">${it.words[0]} ${pt(it.a)}</div><div class="q small">${it.words[1]} ${pt(it.b)}</div><div class="q small">halfway?</div>`
-        : `<div class="q two"><span>A${pt(it.a)}</span><span>B${pt(it.b)}</span></div>`;
+        : onGrid(it) ? '' : `<div class="q two"><span>A${pt(it.a)}</span><span>B${pt(it.b)}</span></div>`;
       el.innerHTML = `<div class="gq">${!it.words && onGrid(it) ? '<div class="gridbox"></div>' : ''}${head}
         <div class="q mpq">M(${box(0)}, ${box(1)})</div><p class="say" aria-live="polite"></p><button type="button" class="go">Check</button><div class="work" aria-live="polite"></div></div>`;
       if (el.querySelector('.gridbox')) picture(el.querySelector('.gridbox'), it, false);

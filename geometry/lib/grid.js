@@ -14,9 +14,11 @@
     host.innerHTML = '';
     // label layout: every label tries a few spots and takes the one that overlaps least (other labels, dots, lines,
     // the grid's edge); a tick number under a label is hidden. Text sizes are estimated (the svg may not be on screen).
-    const ticks = [], segs = [], dots = [], labels = [];
+    const ticks = [], segs = [], dots = [], labels = [], legend = [];
     const axes = [[X(min), Y(0), X(max), Y(0)], [X(0), Y(min), X(0), Y(max)]];
+    const leg = document.createElement('div'); leg.className = 'glegend';
     const svg = el('svg', { viewBox: `-14 -14 ${size + 28} ${size + 28}`, class: 'grid', role: 'img', 'aria-label': 'Coordinate grid' }, host);
+    host.appendChild(leg);
     const base = el('g', { class: 'g-base' }, svg);
     for (let v = min; v <= max; v++) {
       el('line', { x1: X(v), y1: 0, x2: X(v), y2: size, class: v === 0 ? 'axis' : 'gl' }, base);
@@ -66,21 +68,24 @@
         done.push(rectOf(L, best));
       });
       ticks.forEach(tk => { tk.e.style.visibility = done.some(r => hit(r, tk.r)) ? 'hidden' : ''; });
+      for (let i = legend.length - 1; i >= 0; i--) if (legend[i].node.ownerSVGElement !== svg) legend.splice(i, 1);
+      const pts = legend.filter(x => /lg-pt/.test(x.html)), rr = legend.filter(x => !/lg-pt/.test(x.html));
+      leg.innerHTML = pts.map(x => x.html).join('') + (pts.length && rr.length ? '<span class="lg-br"></span>' : '') + rr.map((x, i) => (i && rr[i - 1].node !== x.node ? '<span class="lg-br"></span>' : '') + x.html).join('');
     }
     const g = {
       min, max, svg, X, Y,
-      clear() { layer.innerHTML = ''; top.innerHTML = ''; segs.length = dots.length = labels.length = 0; layout(); },
+      clear() { layer.innerHTML = ''; top.innerHTML = ''; segs.length = dots.length = labels.length = legend.length = 0; layout(); },
       line(p, q, cls = 'ln') { const [a, b] = clip(p, q); segs.push([X(a[0]), Y(a[1]), X(b[0]), Y(b[1])]); layout(); return el('line', { x1: X(a[0]), y1: Y(a[1]), x2: X(b[0]), y2: Y(b[1]), class: cls }, layer); },
       seg(p, q, cls = 'sg') { segs.push([X(p[0]), Y(p[1]), X(q[0]), Y(q[1])]); layout(); return el('line', { x1: X(p[0]), y1: Y(p[1]), x2: X(q[0]), y2: Y(q[1]), class: cls }, layer); },
       dot(p, cls = 'pt', label) {
         const d = el('circle', { cx: X(p[0]), cy: Y(p[1]), r: 4.5, class: cls }, top);
         dots.push([X(p[0]), Y(p[1])]);
         if (label) {
-          // "A(2, 3)": the letter bold, the coordinates beside it
-          const t = el('text', { class: 'pl' }, top);
-          const m = /^([A-Z])(\(.*\))?$/.exec(label);
-          if (m) { el('tspan', { class: 'pn' }, t).textContent = m[1]; if (m[2]) el('tspan', {}, t).textContent = m[2]; } else t.textContent = label;
-          const w = label.length * 5.9 + 2, cx = X(p[0]), cy = Y(p[1]);
+          // "A(2, 3)": just the letter on the grid; the coordinates go in the legend beside it
+          const m = /^([A-Z])(\(.*\))?$/.exec(label), name = m ? m[1] : label;
+          const t = el('text', { class: 'pl' + (m ? ' pn' : '') }, top); t.textContent = name;
+          if (m && m[2]) legend.push({ node: d, html: `<span class="lg-pt ${cls.replace('pt', '').trim()}"><b>${m[1]}</b>${m[2].replace(/, /, ',&nbsp;')}</span>` });
+          const w = name.length * (m ? 7.5 : 5.9) + 2, cx = X(p[0]), cy = Y(p[1]);
           // NE, NW, SE, SW, E, W, N, S
           labels.push({ t, pri: 1, w, h: 11, at: [[cx + 7, cy - 7, 's'], [cx - 7, cy - 7, 'e'], [cx + 7, cy + 15, 's'], [cx - 7, cy + 15, 'e'],
             [cx + 9, cy + 4, 's'], [cx - 9, cy + 4, 'e'], [cx, cy - 10, 'm'], [cx, cy + 19, 'm']] });
@@ -88,24 +93,17 @@
         layout();
         return d;
       },
-      // the slope triangle from p to q: run (across) first, then rise (up/down); labels show signed run and rise
+      // the slope triangle from p to q: run (across, blue) then rise (up/down, green). With labels, run and rise go in
+      // the legend beside the grid in the same colors (dashed swatch for a turned triangle).
       triangle(p, q, o2 = {}) {
         const grp = el('g', { class: 'tri' + (o2.cls ? ' ' + o2.cls : '') }, layer);
         const c = [q[0], p[1]], run = q[0] - p[0], rise = q[1] - p[1];
         if (run) { el('line', { x1: X(p[0]), y1: Y(p[1]), x2: X(c[0]), y2: Y(c[1]), class: 'run' }, grp); segs.push([X(p[0]), Y(p[1]), X(c[0]), Y(c[1])]); }
         if (rise) { el('line', { x1: X(c[0]), y1: Y(c[1]), x2: X(q[0]), y2: Y(q[1]), class: 'rise' }, grp); segs.push([X(c[0]), Y(c[1]), X(q[0]), Y(q[1])]); }
         if (o2.labels !== false) {
-          // run: under or over its leg (outside the triangle first), sliding along it; rise: beside its leg
-          if (run) {
-            const s1 = (o2.words ? 'run ' : '') + sgn(run), t = el('text', { class: 'tl run-l' }, grp); t.textContent = s1;
-            const mx = (X(p[0]) + X(c[0])) / 2, y0 = Y(p[1]), out = rise > 0 ? 15 : -6, inn = rise > 0 ? -6 : 15, sl = Math.abs(X(c[0]) - X(p[0])) / 4;
-            labels.push({ t, pri: 0, w: s1.length * 7, h: 12, at: [[mx, y0 + out, 'm'], [mx, y0 + inn, 'm'], [mx - sl, y0 + out, 'm'], [mx + sl, y0 + out, 'm'], [mx - sl, y0 + inn, 'm'], [mx + sl, y0 + inn, 'm']] });
-          }
-          if (rise) {
-            const s2 = (o2.words ? 'rise ' : '') + sgn(rise), t = el('text', { class: 'tl rise-l' }, grp); t.textContent = s2;
-            const x0 = X(c[0]), my = (Y(c[1]) + Y(q[1])) / 2 + 4, sl = Math.abs(Y(q[1]) - Y(c[1])) / 4, o = run >= 0 ? [7, 's', -7, 'e'] : [-7, 'e', 7, 's'];
-            labels.push({ t, pri: 0, w: s2.length * 7, h: 12, at: [[x0 + o[0], my, o[1]], [x0 + o[2], my, o[3]], [x0 + o[0], my - sl, o[1]], [x0 + o[0], my + sl, o[1]], [x0 + o[2], my - sl, o[3]], [x0 + o[2], my + sl, o[3]]] });
-          }
+          const dash = /turned/.test(o2.cls || '') ? ' dash' : '';
+          legend.push({ node: grp, html: `<span class="lg-run${dash}"><i></i>run ${sgn(run)}</span>` });
+          legend.push({ node: grp, html: `<span class="lg-rise${dash}"><i></i>rise ${sgn(rise)}</span>` });
         }
         layout();
         return grp;
