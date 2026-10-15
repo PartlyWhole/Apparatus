@@ -28,7 +28,7 @@ A coordinate grid (SVG) with lattice points the student can tap. The anchor pict
 | # | Exercise | What the student does | Tricky kinds (wrong rule caught) | Test Qs |
 |---|---|---|---|---|
 | G1 | **Rise and Run** (tutorial) | Tap two lattice points on a drawn line; the slope triangle appears; enter rise and run → slope (fraction, simplified) | going down (negative rise); steep vs shallow (rise/run swapped); horizontal (0); vertical (undefined) | 7 |
-| G2a | **Name the Coordinates** | P₁ and P₂ given; drag each number to x₁, y₁, x₂, y₂ (names scrambled; tap-then-tap also works) | P₂ written first (late) | 4, 8, 20A |
+| G2a | **Name the Coordinates** | P₁ and P₂ given; drag each number to x₁, y₁, x₂, y₂ (names scrambled; tap-then-tap also works). Then unnamed points: either can be 1, but each point's numbers stay together. Then rise alone (y₂ − y₁) and run alone (x₂ − x₁), in your head | split point (x₁ from one, y₁ from the other); sign of 2 − 1; rise ↔ run; P₂ written first (late) | 4, 8, 20A |
 | G2 | **Slope from Two Points** | Points shown on the grid, then numbers only: Δy / Δx | double negatives (−9 − (−21)); subtracting in mixed order; Δx = 0 | 4, 8, 20A |
 | G3 | **Slope from an Equation** | y = mx + b: read m; Ax + By = C: solve for y step by step (chain like the unit conversions), then −A/B; y = c, x = c | m = 4 read from y = 4 − 3x; sign of −A/B; fractions like ½y | 3, 5, 9, 12 |
 | G4 | **Parallel, Perpendicular or Neither** | Two lines (graph or equations): pick; then the true/false facts | perpendicular ≠ "opposite sign only" (−2 vs 2); ≠ "reciprocal only" (2 vs ½); horizontal ⟂ vertical | 5, 15 |

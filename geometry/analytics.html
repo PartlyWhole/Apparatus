@@ -17,7 +17,7 @@
   const main = document.getElementById('main');
   if (!id) { main.innerHTML = '<p class="empty">No exercise.</p>'; return; }
   const FILE = { 'geo-rise': 'rise-run', 'geo-two-points': 'two-points', 'geo-equation': 'equation-slope', 'geo-relation': 'relation', 'geo-other-slope': 'other-slope', 'geo-find-b': 'find-b', 'geo-write-line': 'write-line', 'geo-midpoint': 'midpoint', 'geo-coords': 'coords' };
-  const LIBS = ['lib/frac.js?v=6', 'lib/lines.js?v=1', 'lib/grid.js?v=13', `${FILE[id] || id}.js?v=9`];
+  const LIBS = ['lib/frac.js?v=6', 'lib/lines.js?v=1', 'lib/grid.js?v=13', `${FILE[id] || id}.js?v=10`];
   const load = i => {
     if (i === LIBS.length) return Apparatus.defs[id] ? Apparatus.analytics(Apparatus.defs[id], main, `${FILE[id] || id}.html`) : (main.innerHTML = '<p class="empty">No exercise.</p>');
     const l = document.createElement('script'); l.src = LIBS[i]; l.onload = () => load(i + 1); l.onerror = () => { main.innerHTML = '<p class="empty">No exercise.</p>'; }; document.body.appendChild(l);
