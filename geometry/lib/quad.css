@@ -1,4 +1,4 @@
-/* Classify the Quadrilateral (G12) — tappable sides, the vertices as text (lvl 0), the name buttons, the ? key. On geo.css + grid-extra.css + steps.css. */
+/* Classify the Quadrilateral (G12) — lit sides and side-by-side triangles, the vertices as text (lvl 0), the name buttons, the ? key. On geo.css + grid-extra.css + steps.css. */
 .gq.quad .quad-n { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
 .gq.quad .quad-n .q.small, .gq.quad .quad-p { margin: 0; }
 .gq.quad .quad-p:empty { display: none; }
@@ -8,11 +8,29 @@
 .gq.quad .quad-v span { white-space: nowrap; }
 .gq.quad .quad-v b { color: var(--accent); }
 
-/* the sides take the taps: wide invisible strokes; what's drawn on top lets taps through */
-.grid .q-hit { stroke: transparent; stroke-width: 18; stroke-linecap: round; pointer-events: none; }
-.grid.q-taps .q-hit { pointer-events: stroke; cursor: pointer; }
-.grid.q-taps .q-hit:hover, .grid.q-taps .q-hit:focus-visible { stroke: color-mix(in srgb, var(--accent) 18%, transparent); outline: none; }
-.gq.quad .grid .tri, .gq.quad .grid .pt, .gq.quad .grid .pl, .gq.quad .grid .rmark { pointer-events: none; }
+/* the two sides a question is about, lit on the shape */
+.grid .sg.q-hi { stroke: var(--accent); stroke-width: 4.5; stroke-linecap: round; }
+
+/* their slope triangles side by side, under the question; only the current question's stay open */
+.gq.quad .cmp { display: flex; justify-content: center; align-items: flex-end; gap: 22px; margin-top: 8px; }
+.gq.quad .cmp-t { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.gq.quad .cmp-t figcaption { font: 700 1rem var(--f-mono); color: var(--accent); }
+.gq.quad .cmp svg { overflow: visible; }
+.gq.quad .cmp .k-run, .gq.quad .cmp .k-rise { fill: none; stroke-width: 2.6; stroke-linecap: round; }
+.gq.quad .cmp .k-run { stroke: var(--accent); }
+.gq.quad .cmp .k-rise { stroke: var(--good); }
+.gq.quad .cmp .k-hyp { fill: none; stroke: var(--muted); stroke-width: 1.4; stroke-dasharray: 3 3; }
+.gq.quad .cmp text { font: 700 14px var(--f-mono); }
+.gq.quad .cmp .k-rl { fill: var(--accent); }
+.gq.quad .cmp .k-ri { fill: var(--good); }
+.gq.quad .cmp .k-dl { fill: var(--ink); }
+.gq.quad .quad-s .st-list > .st-text:not(:nth-last-child(2)), .gq.quad .quad-s .st-list > .q.step.st-done { display: none; }
+/* the findings so far, one line: AB ∥ DC · AD ∥ BC · right angle at B */
+.gq.quad .quad-sum { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 0; font: 700 clamp(0.95rem, 4vw, 1.1rem) var(--f-body); color: var(--good); }
+.gq.quad .quad-sum span { white-space: nowrap; }
+.gq.quad .quad-sum:empty { display: none; }
+.gq.quad .quad-sum span + span::before { content: '·'; color: var(--muted); margin: 0 0.6em; }
+.gq.quad .quad-p:empty { display: none; }
 
 /* the ? key: the three tests drawn small, then the tree */
 .quad-k .kt { display: grid; gap: 6px; }
@@ -28,10 +46,3 @@
 .quad-k .tree { margin-top: 6px; text-align: left; line-height: 1.6; }
 .quad-k .tree .in { padding-left: 1.4em; }
 .quad-k .tree b { color: var(--ink); }
-
-/* the side triangles in the legend sit side by side (AB beside DC, AD beside BC), not one per line */
-.gq.quad .glegend .lg-tri + .lg-br { display: none; }
-.gq.quad .glegend { gap: 4px 0; }
-.gq.quad .glegend .lg-pt { margin: 0 8px; }
-.gq.quad .glegend .lg-tri { flex: 0 0 50%; justify-content: center; }
-.gq.quad .glegend .lg-tri svg { zoom: 0.74; }

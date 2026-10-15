@@ -4,9 +4,11 @@
 //   =  the same length d, even with different legs: 5, 0 and 3, 4 are both 5
 // Tree: two ∥ pairs → parallelogram (+ right angle: rectangle, + equal sides: rhombus, both: square); exactly one → trapezoid.
 // The most specific name wins. Scaffolding fades with item.lvl:
-//   2 = tap each side to see its triangle, then plain yes/no questions, then the name (the opening; wrong steps fixed in place)
-//   1 = the grid, tap sides to compare, the name   0 = the vertices as text only (like the test's Q20), the name
-// A wrong name: the deciding sides' triangles on the grid + one sentence on the first property the PICKED name gets wrong.
+//   2 = one comparison per question ("Is AB parallel to DC?", "Is AD parallel to BC?", the angle at B, AB vs BC):
+//       its two sides lit on the shape, their slope triangles side by side under it; then the name (the opening)
+//   1 = the grid (zoomed to the shape), the name   0 = the vertices as text only (like the test's Q20), the name
+// A wrong name: the deciding sides lit + their triangles side by side + one sentence on the first property the PICKED
+// name gets wrong. Nothing but the shape and its corner letters on the grid (coordinates in the legend).
 // Shapes are P, P+u, P+u+v, P+v (a trapezoid: P, P+a·w, P+v+b·w, P+v). Spec: specs/geometry-next.md (G12).
 // Uses lib/grid.js (+ grid-extra.css), lib/frac.js, lib/pick.js, lib/steps.js (+ steps.css); styles lib/quad.css.
 (function () {
@@ -122,7 +124,7 @@
   }
   // the sentences for a wrong yes/no step (lvl 2)
   const stepSay = {
-    pairs: (it, a) => { const S = sides(it); return a === 'y' ? `AD and BC have different triangles: slopes ${sl(S.AD)} and ${sl(S.BC)}.` : 'AB and DC have the same triangle, and so do AD and BC.'; },
+    pairs: (it, a, k1 = 'AD', k2 = 'BC') => { const S = sides(it); return a === 'y' ? `${k1} and ${k2} have different triangles: slopes ${sl(S[k1])} and ${sl(S[k2])}.` : `${k1} and ${k2} have the same triangle: both slope ${sl(S[k1])}.`; },
     perp: (it, a) => { const S = sides(it); return a === 'y' ? `BC’s triangle isn’t AB’s turned 90°: ${perpWork(S.AB, S.BC)}.` : `BC’s triangle is AB’s turned 90°: ${perpWork(S.AB, S.BC)}.`; },
     eq: (it, a) => {
       const S = sides(it), la = len2(S.AB), lb = len2(S.BC);
@@ -131,46 +133,40 @@
   };
 
   // ---- the picture ----
-  // the shape with lettered corners (coordinates in the legend); sides tappable when tap(side) is given
-  function picture(host, it, o = {}) {
-    const g = G.make(host, { min: -5, max: 5 }), L = 'ABCD';
+  // the shape, zoomed to fit, with lettered corners (coordinates in the legend). g.hi(['AB', 'DC']) lights the sides
+  // a question is about; their slope triangles go in the comparison panel (cmpHTML), never on the grid.
+  function picture(host, it) {
+    const xs = it.v.flatMap(p => p), lo0 = Math.min(...xs) - 1, hi0 = Math.max(...xs) + 1, grow = Math.max(0, 6 - (hi0 - lo0));
+    const lo = lo0 - Math.floor(grow / 2), hi = hi0 + Math.ceil(grow / 2);
+    const g = G.make(host, { min: lo, max: hi }), L = 'ABCD';
     g.poly(it.v, 'pg');
-    const c = it.v.reduce((m, p) => [m[0] + p[0] / 4, m[1] + p[1] / 4], [0, 0]);
-    it.v.forEach((p, i) => g.dot(p, 'pt', L[i] + pt(p), sub(p, c)));
-    const tris = {}, opts = {};
-    // a side's slope triangle on the grid and in the legend (from its first letter to its second); all shown sides are
-    // redrawn in the order AB, DC, AD, BC so the legend pairs opposite sides (AB beside DC, AD beside BC)
-    const redraw = () => Object.keys(ENDS).forEach(k => {
-      if (tris[k]) g.remove(tris[k]);
-      if (!opts[k]) return delete tris[k];
-      const [i, j] = ENDS[k];
-      tris[k] = g.triangle(it.v[i], it.v[j], Object.assign({ labels: true }, opts[k]));
-    });
-    g.side = (k, x = {}) => { opts[k] = x; redraw(); return tris[k]; };
-    g.unside = k => { delete opts[k]; redraw(); };
-    g.shown = k => !!tris[k];
-    if (o.tap) {
-      // wide invisible strokes over each side take the taps (and Enter/Space)
-      Object.keys(ENDS).forEach(k => {
-        const [i, j] = ENDS[k], p = it.v[i], q = it.v[j];
-        const h = g.el('line', { x1: g.X(p[0]), y1: g.Y(p[1]), x2: g.X(q[0]), y2: g.Y(q[1]), class: 'q-hit', tabindex: 0, role: 'button', 'aria-label': `side ${k}` });
-        h.parentNode.appendChild(h);
-        const go = () => o.tap(k, h);
-        h.addEventListener('click', e => { e.stopPropagation(); go(); });
-        h.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
-      });
-      g.svg.classList.add('q-taps');
-    }
+    it.v.forEach((p, i) => g.dot(p, 'pt', L[i] + pt(p)));
+    let lit = [];
+    g.hi = (keys = []) => {
+      lit.forEach(n => g.remove(n));
+      lit = keys.map(k => { const [i, j] = ENDS[k]; return g.seg(it.v[i], it.v[j], 'sg q-hi'); });
+    };
     return g;
   }
-  // the cue after a wrong name: the deciding sides' triangles
-  function cue(g, it, prop) {
-    Object.keys(ENDS).forEach(k => g.unside(k));
-    const S = sides(it), B = it.v[1];
-    if (prop === 'pairs') { g.side('AD'); g.side('BC'); return; }
-    if (prop === 'eq') { const d = k => lenText(len2(S[k])); g.side('AB', { hyp: true, d: d('AB') }); g.side('BC', { hyp: true, d: d('BC') }); return; }
-    g.side('AB'); g.side('BC');
-    if (dot(S.AB, S.BC) === 0) g.rightMark(B, sub(it.v[0], B), S.BC, 'rmark ok');
+  // two sides' slope triangles side by side, each from its first letter to its second: run (blue), rise (green), the side
+  function triSVG(k, w, o = {}) {
+    const run = w[0], rise = w[1], m = Math.max(Math.abs(run), Math.abs(rise), 1), u = Math.min(30, 76 / m);
+    const P = [0, 0], C = [run * u, 0], Q = [run * u, -rise * u], xs = [0, C[0]], ys = [0, Q[1]];
+    const x0 = Math.min(...xs) - 26, x1 = Math.max(...xs) + 26, y0 = Math.min(...ys) - 14, y1 = Math.max(...ys) + 20;
+    const R0 = run >= 0 ? 1 : -1, T = (x, y, c, a, t) => `<text x="${x}" y="${y}" class="${c}" text-anchor="${a}">${t}</text>`;
+    let b = `<path class="k-hyp" d="M0 0L${Q[0]} ${Q[1]}"/>`;
+    if (run) b += `<path class="k-run" d="M0 0H${C[0]}"/>` + T(C[0] / 2, rise > 0 ? 16 : -7, 'k-rl', 'middle', s(run));
+    if (rise) b += `<path class="k-rise" d="M${C[0]} 0V${Q[1]}"/>` + T(C[0] + 7 * R0, Q[1] / 2 + 4, 'k-ri', R0 > 0 ? 'start' : 'end', s(rise));
+    if (o.d) b += T(Q[0] / 2 - 8 * R0, Q[1] / 2 - 4, 'k-dl', R0 > 0 ? 'end' : 'start', o.d);
+    return `<figure class="cmp-t"><figcaption>${k}</figcaption><svg viewBox="${x0} ${y0} ${x1 - x0} ${y1 - y0}" width="${x1 - x0}" height="${y1 - y0}" style="width:${x1 - x0}px;height:${y1 - y0}px" aria-hidden="true">${b}</svg></figure>`;
+  }
+  const cmpHTML = (it, keys, o = {}) => { const S = sides(it); return `<div class="cmp">${keys.map(k => triSVG(k, S[k], { d: o.d ? lenText(len2(S[k])) : '' })).join('')}</div>`; };
+  // the cue after a wrong name: the deciding sides lit, their triangles side by side
+  function cue(el, g, it, prop) {
+    const S = sides(it), B = it.v[1], keys = prop === 'pairs' ? ['AD', 'BC'] : ['AB', 'BC'];
+    g.hi(keys);
+    if (prop === 'perp' && dot(S.AB, S.BC) === 0) g.rightMark(B, sub(it.v[0], B), S.BC, 'rmark ok');
+    const p = el.querySelector('.quad-p'); if (p) p.innerHTML = cmpHTML(it, keys, { d: prop === 'eq' });
   }
 
   // ---- the answer area ----
@@ -179,34 +175,38 @@
 
   function askName(el, it, lvl, submit) {
     el.innerHTML = `<div class="gq quad">${lvl ? '<div class="gridbox"></div>' : vertsHTML(it)}
-      <div class="q small quad-p">${lvl ? 'Tap a side to see its triangle.' : ''}</div><div class="quad-n"><div class="q small">ABCD is a…</div></div></div>`;
+      <div class="quad-p"></div><div class="quad-n"><div class="q small">ABCD is a…</div></div></div>`;
     if (lvl) {
-      el._g = picture(el.querySelector('.gridbox'), it, { tap: k => { if (el._done) return; el._g.shown(k) ? el._g.unside(k) : el._g.side(k); } });
+      el._g = picture(el.querySelector('.gridbox'), it);
     } else el._g = null;
     el._done = false;
     Pick.ask(el.querySelector('.quad-n'), choices(), id => { el._done = true; submit({ name: id, errs: [] }); }, { cols: 3 });
   }
 
-  // lvl 2: tap every side, then the questions, then the name; a wrong step is fixed in place (first tries graded)
+  // lvl 2: one comparison per question — its two sides lit on the shape, their triangles side by side under it —
+  // then the name; a wrong step is fixed in place (first tries graded)
   function askSteps(el, it, submit) {
-    el.innerHTML = `<div class="gq quad"><div class="gridbox"></div><div class="quad-s"></div></div>`;
+    el.innerHTML = `<div class="gq quad"><div class="gridbox"></div><div class="quad-sum" aria-live="polite"></div><div class="quad-s"></div></div>`;
     const S = sides(it), P = props[it.shape], yn = [['y', 'Yes'], ['n', 'No']];
-    let seen = new Set(), onAll = null;
-    const g = el._g = picture(el.querySelector('.gridbox'), it, { tap: k => {
-      if (!onAll) return;
-      if (!g.shown(k)) g.side(k);
-      seen.add(k); if (seen.size === 4) { const f = onAll; onAll = null; f(); }
-    } });
-    const ask = (q, want, key, onRight) => ({ text: q, pick: yn, want, cols: 2, name: key, why: a => [`q-${key}>${a}`, stepSay[key](it, a)], onRight });
+    // an answered question folds into one line of findings, so the shape and the current question stay in view
+    const sum = el.querySelector('.quad-sum'), note = t => { sum.insertAdjacentHTML('beforeend', `<span>${t}</span>`); };
+    const g = el._g = picture(el.querySelector('.gridbox'), it);
+    const par = (k1, k2) => cross(S[k1], S[k2]) === 0;
+    const ask = (q, keys, want, key, say, onRight, d, found) => () => {
+      g.hi(keys);
+      return { text: `${q}${cmpHTML(it, keys, { d })}`, pick: yn, want, cols: 2, name: q, why: a => [`q-${key}>${a}`, say(a)],
+        onRight: (v, row) => { note(found[want]); onRight && onRight(v, row); } };
+    };
     const steps = [
-      { text: 'Tap each side to see its slope triangle.', tap: () => new Promise(res => { onAll = () => res({ ok: true }); }) },
-      ask('Are both pairs of opposite sides parallel?', P.two ? 'y' : 'n', 'pairs')
+      ask('Is AB parallel to DC?', ['AB', 'DC'], par('AB', 'DC') ? 'y' : 'n', 'pairs', a => stepSay.pairs(it, a, 'AB', 'DC'), null, false, { y: 'AB ∥ DC', n: 'AB ∦ DC' }),
+      ask('Is AD parallel to BC?', ['AD', 'BC'], par('AD', 'BC') ? 'y' : 'n', 'pairs', a => stepSay.pairs(it, a, 'AD', 'BC'), null, false, { y: 'AD ∥ BC', n: 'AD ∦ BC' })
     ];
     if (P.two) {
-      steps.push(ask('A right angle at B?', P.perp ? 'y' : 'n', 'perp', () => { if (P.perp) g.rightMark(it.v[1], sub(it.v[0], it.v[1]), S.BC, 'rmark ok'); }));
-      steps.push(ask('AB and BC the same length?', P.eq ? 'y' : 'n', 'eq', () => ['AB', 'BC'].forEach(k => g.side(k, { hyp: true, d: lenText(len2(S[k])) }))));
+      steps.push(ask('Is the angle at B a right angle?', ['AB', 'BC'], P.perp ? 'y' : 'n', 'perp', a => stepSay.perp(it, a),
+        () => { if (P.perp) g.rightMark(it.v[1], sub(it.v[0], it.v[1]), S.BC, 'rmark ok'); }, false, { y: 'right angle at B', n: 'no right angle' }));
+      steps.push(ask('Are AB and BC the same length?', ['AB', 'BC'], P.eq ? 'y' : 'n', 'eq', a => stepSay.eq(it, a), null, false, { y: 'AB = BC', n: 'AB ≠ BC' }));
     }
-    steps.push({ text: 'So ABCD is a…', pick: choices(), want: it.shape, cols: 3, name: 'name', why: id => [`${it.shape}>${id}`, nameSay(it, id)] });
+    steps.push(() => { g.hi([]); return { text: 'So ABCD is a…', pick: choices(), want: it.shape, cols: 3, name: 'name', why: id => [`${it.shape}>${id}`, nameSay(it, id)] }; });
     Steps.run(el.querySelector('.quad-s'), steps, {
       final: () => `ABCD is a ${word(it.shape)}.`,
       done: errs => {
@@ -288,8 +288,7 @@
         el.querySelector('.quad-v').after(gb);
         el._g = picture(gb, it);
       }
-      el._g.svg.classList.remove('q-taps');
-      cue(el._g, it, o.cue);
+      cue(el, el._g, it, o.cue);
     },
     errors: ERR,
     diagnose(err) {
