@@ -36,6 +36,7 @@
     },
     opening: [{ kind: 'grid-up', item: { a: [-2, -1], b: [2, 2] } }, { kind: 'negs', item: { a: [-3, -5], b: [1, -2] } }],
     nextOnRight: true,
+    defaults: { fix: 1 },
     text: it => `A${pt(it.a)} and B${pt(it.b)}`,
     speak: it => `The points ${pt(it.a)} and ${pt(it.b)}. What is the slope?`,
     ask(el, it, submit) {

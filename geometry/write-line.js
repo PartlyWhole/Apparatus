@@ -104,6 +104,7 @@
       { kind: 'par-std', item: { rel: 'par', g: { form: 'std', A: F.of(2), B: F.of(-4), C: F.of(8) }, p: [F.of(4), F.of(1)] } }
     ],
     nextOnRight: true,
+    defaults: { fix: 1 },
     text: it => `${it.rel === 'par' ? '∥' : '⟂'} to ${plain(gHTML(it.g))} through ${pt(it.p)}`,
     speak: it => `Write the line ${it.rel === 'par' ? 'parallel' : 'perpendicular'} to ${plain(gHTML(it.g))} through ${pt(it.p)}.`,
     ask(el, it, submit, ctx) { mount(el, it, ctx.mode === 'warm', submit); },

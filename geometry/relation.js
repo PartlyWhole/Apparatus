@@ -61,6 +61,7 @@
       { kind: 'opp', item: { kind: 'lines', m1: F.of(2), m2: F.of(-2), b1: F.of(1), b2: F.of(-3), rel: 'none', trap: 'opp' } }
     ],
     nextOnRight: true,
+    defaults: { fix: 1 },
     text: it => it.kind === 'fact' ? FACTS[it.i][0] : `${plain(eq(it.m1, it.b1))} and ${plain(eq(it.m2, it.b2))}`,
     speak: it => it.kind === 'fact' ? `True or false: ${FACTS[it.i][0]}` : `${plain(eq(it.m1, it.b1))} and ${plain(eq(it.m2, it.b2))}. Parallel, perpendicular or neither?`,
     ask(el, it, submit) {

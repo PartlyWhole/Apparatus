@@ -54,6 +54,7 @@
       { kind: 'neg-both', item: { m: F.of(-1, 4), p: [F.of(-4), F.of(-3)] } }
     ],
     nextOnRight: true,
+    defaults: { fix: 1 },
     text: it => `slope ${F.text(it.m)} through ${pt(it.p)}`,
     speak: it => `A line with slope ${F.text(it.m)} goes through ${pt(it.p)}. What is b?`,
     ask(el, it, submit, ctx) {

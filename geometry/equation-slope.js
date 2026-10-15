@@ -52,6 +52,7 @@
       { kind: 'std', item: { form: 'std', A: F.of(2), B: F.of(-4), C: F.of(8) } }
     ],
     nextOnRight: true,
+    defaults: { fix: 1 },
     text: it => plain(eqHTML(it)),
     speak: it => `${plain(eqHTML(it))}. What is the slope?`,
     ask(el, it, submit) {

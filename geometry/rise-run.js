@@ -52,6 +52,7 @@
       { kind: 'down-mixed', item: { p: [0, 1], run: 3, rise: -2 } }
     ],
     nextOnRight: true,
+    defaults: { fix: 1 },
     text: it => `line with slope ${F.text(slope(it))}`,
     speak: it => `A line on a grid. Find its slope.`,
     ask(el, it, submit, ctx) {

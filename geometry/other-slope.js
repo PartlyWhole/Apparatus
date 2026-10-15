@@ -46,6 +46,7 @@
     },
     opening: [{ kind: 'whole', item: { m: F.of(2), b: F.of(1), from: 'slope' } }, { kind: 'neg-frac', item: { m: F.of(-1, 4), b: F.of(1), from: 'slope' } }],
     nextOnRight: true,
+    defaults: { fix: 1 },
     text: it => plain(given(it)),
     speak: it => `${plain(given(it))}. Write the parallel slope and the perpendicular slope.`,
     ask(el, it, submit) {

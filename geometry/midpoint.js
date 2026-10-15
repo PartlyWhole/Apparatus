@@ -57,6 +57,7 @@
       { kind: 'big', item: { a: [1, 4], b: [6, -3] } }
     ],
     nextOnRight: true,
+    defaults: { fix: 1 },
     text: it => it.words ? `halfway from ${it.words[0]} ${pt(it.a)} to ${it.words[1]} ${pt(it.b)}` : `midpoint of A${pt(it.a)} and B${pt(it.b)}`,
     speak: it => it.words ? `${it.words[0]} is at ${pt(it.a)} and ${it.words[1]} is at ${pt(it.b)}. What point is halfway?` : `What is the midpoint of ${pt(it.a)} and ${pt(it.b)}?`,
     ask(el, it, submit) {
