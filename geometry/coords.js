@@ -2,7 +2,7 @@
 // Tap a number then a name works too. A point is (x, y): x first. With P₁ and P₂ written, the ₁s come from P₁, wherever
 // it is (the late twist lists P₂ first). With no names on the points, either point can be 1 — but both its numbers
 // must be: the ₁s from one point, the ₂s from the other. Then the rise alone (y₂ − y₁) and the run alone (x₂ − x₁), in
-// your head. Spec: specs/geometry-lines.md (G2a). Uses lib/grid.js, lib/lines.js, lib/frac.js.
+// your head. Spec: specs/geometry-lines.md (G2a). Uses lib/grid.js, lib/lines.js, lib/frac.js, lib/drag.js.
 (function () {
   const G = Grid, L = Lines, { r, any } = L;
   const s = G.sgn, SUB = { 1: '₁', 2: '₂' };
@@ -24,52 +24,19 @@
     return `<span class="dpt">${it.free ? '' : `<b>P${SUB[n]}</b>`}(${chip('x' + n)},&nbsp;${chip('y' + n)})</span>`;
   };
 
-  // drag (mouse or touch) or tap-then-tap; a filled name can be tapped to empty it
+  // drag or tap-then-tap (lib/drag.js); Check once all four names are filled
   function wire(el, it, submit) {
-    const chips = Array.from(el.querySelectorAll('.dchip')), slots = Array.from(el.querySelectorAll('.dslot')), go = el.querySelector('.go');
-    const placed = {};                                            // slot → chip key
-    let sel = null;
-    const refresh = () => {
-      slots.forEach(sl => { const k = placed[sl.dataset.s]; sl.querySelector('.dv').textContent = k ? s(val(it, k)) : ''; sl.classList.toggle('full', !!k); });
-      chips.forEach(c => { c.classList.toggle('used', Object.values(placed).includes(c.dataset.k)); c.classList.toggle('sel', c === sel); });
-      go.disabled = Object.keys(placed).length < 4;
-    };
-    const put = (chip, slot) => {
-      for (const k in placed) if (placed[k] === chip.dataset.k) delete placed[k];
-      placed[slot.dataset.s] = chip.dataset.k; sel = null; refresh();
-    };
-    slots.forEach(sl => sl.addEventListener('click', () => {
-      if (sel) put(sel, sl); else if (placed[sl.dataset.s]) { delete placed[sl.dataset.s]; refresh(); }
-    }));
-    chips.forEach(c => {
-      c.addEventListener('click', () => { if (c._dragged) { c._dragged = false; return; } sel = sel === c ? null : c; refresh(); });
-      c.addEventListener('pointerdown', e => {
-        if (c.disabled) return;
-        const x0 = e.clientX, y0 = e.clientY; let ghost = null;
-        try { c.setPointerCapture(e.pointerId); } catch (_) {}
-        const move = ev => {
-          if (!ghost && Math.hypot(ev.clientX - x0, ev.clientY - y0) < 6) return;
-          if (!ghost) { ghost = c.cloneNode(true); ghost.className = 'dchip ghost'; document.body.appendChild(ghost); }
-          ghost.style.left = ev.clientX + 'px'; ghost.style.top = ev.clientY + 'px';
-          slots.forEach(sl => sl.classList.toggle('over', sl === slotAt(ev)));
-        };
-        const end = (ev, drop) => {
-          c.removeEventListener('pointermove', move); c.removeEventListener('pointerup', up); c.removeEventListener('pointercancel', cancel);
-          if (!ghost) return;
-          ghost.remove(); c._dragged = true; setTimeout(() => { c._dragged = false; }, 0); slots.forEach(sl => sl.classList.remove('over'));
-          const sl = drop && slotAt(ev); if (sl) put(c, sl); else refresh();
-        };
-        const up = ev => end(ev, true), cancel = ev => end(ev, false);
-        c.addEventListener('pointermove', move); c.addEventListener('pointerup', up); c.addEventListener('pointercancel', cancel);
-      });
+    const go = el.querySelector('.go');
+    const d = Drag.wire({
+      chips: Array.from(el.querySelectorAll('.dchip')), slots: Array.from(el.querySelectorAll('.dslot')),
+      show: (sl, k) => { sl.querySelector('.dv').textContent = k ? s(val(it, k)) : ''; },
+      onChange: placed => { go.disabled = Object.keys(placed).length < 4; }
     });
-    const slotAt = ev => { const t = document.elementFromPoint(ev.clientX, ev.clientY); return t && t.closest ? slots.find(sl => sl.contains(t)) : null; };
     go.addEventListener('click', () => {
-      if (Object.keys(placed).length < 4) return;
-      chips.concat(slots).forEach(b => { b.disabled = true; }); go.disabled = true;
-      submit(Object.assign({}, placed));
+      if (Object.keys(d.placed).length < 4) return;
+      d.disable(); go.disabled = true;
+      submit(Object.assign({}, d.placed));
     });
-    refresh();
   }
 
   // which point is 1: P₁ when named; with free points, whichever the student made 1 (the assignment that fits best)
