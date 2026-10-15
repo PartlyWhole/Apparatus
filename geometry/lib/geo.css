@@ -181,3 +181,5 @@
 .wline .wl-eq { display: flex; align-items: center; gap: 0.3em; flex-wrap: wrap; justify-content: center; }
 .wline .wl-eq .dslot { min-height: 46px; min-width: 2.8em; padding: 0 8px; display: inline-flex; border-radius: 12px; }
 .wline .wl-eq .dslot .dn { color: var(--muted); }
+/* an equation with a stacked fraction, inline (the finished line) */
+.gq .q.final .ok { display: inline-flex; align-items: center; gap: 0.3em; }

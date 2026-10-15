@@ -109,6 +109,7 @@
       out.push({ drag: ms.sort(() => Math.random() - 0.5), eq: `y = ${slot('m', 'm')}x + b`, want: { m: 'new' }, type: 'slope' });
       // substitute P: [y] = m·[x] + b
       const mm = n.n < 0 ? `(${F.html(n)})` : F.html(n);
+      out.push({ text: `To find b, put P’s x and y into the equation.` });
       out.push({ drag: [['x', show(it.p[0])], ['y', show(it.p[1])]], point: true, eq: `${slot('y', 'y')} = ${mm}·${slot('x', 'x')} + b`, want: { x: 'x', y: 'y' }, type: 'sub' });
       out.push({ boxes: [['b', B(it), 'b']], before: 'b = ' });
     } else {
