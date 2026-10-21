@@ -1,0 +1,57 @@
+/* Rotate About the Origin — the turn line (arrow, angle, direction), the origin ring, the turning copy, the image
+   polygon, the fact cues, the clock and the wheel. Builds on geo.css and grid-extra.css. */
+.gq.rt .rt-turn { gap: 0.3em; }
+.rt-arc { width: 1.15em; height: 1.15em; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; vertical-align: -0.2em; }
+.rt-arc.cw { transform: scaleX(-1); }
+.gq.rt .rt-turn .rt-arc { color: var(--accent); }
+.gq.rt .rt-dir { font-family: var(--f-body); font-weight: 700; font-size: 0.72em; color: var(--muted); }
+.gq.rt .rt-alias { margin-top: -10px; font-size: 0.95rem; color: var(--muted); }
+.gq.rt .rt-ans { gap: 0.15em; }
+.gq.rt .rt-do[hidden] { display: none; }
+.gq.rt .q.small { font-family: var(--f-body); font-weight: 400; }
+.gq.rt .rt-words { max-width: 22rem; }
+.tb .rt-arc { margin-left: 0.2em; }
+
+/* the grid: the center, the turning copy, the image, highlights */
+.grid .rt-o { fill: none; stroke: var(--ink); stroke-width: 1.6; }
+.grid .tri.rt-leg { display: none; }               /* a triangle drawn only for its legend entry */
+.grid .rt-spin .pg.faint { stroke: var(--good); stroke-dasharray: 5 3; stroke-width: 2; }
+.grid .tri .hl { stroke-width: 5; }
+.grid .pg.img { stroke: var(--accent); }
+.grid .pg.rt-glow { stroke: var(--good); }
+.grid .sg.rt-hl { stroke-width: 3.4; }
+.grid .sg.rt-hl.ok { stroke: var(--good); }
+.grid .sg.rt-hl.no { stroke: var(--bad); }
+.grid .rt-ring { fill: none; stroke: var(--good); stroke-width: 2; }
+
+/* true / false */
+.gq.rt .rt-fact.words { font-family: var(--f-body); font-size: clamp(1.05rem, 4.6vw, 1.3rem); max-width: 22rem; }
+.gq.rt .rt-ch { width: 100%; display: flex; justify-content: center; }
+.gq.rt .rt-ch .gmc { width: min(100%, 20rem); }
+
+/* the clock and the wheel */
+.gq.rt .rt-pic { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.ck { width: min(52vw, 11rem); height: auto; display: block; }
+.ck .ck-face { fill: var(--surface); stroke: var(--ink); stroke-width: 2; }
+.ck .ck-t { stroke: var(--muted); stroke-width: 0.8; }
+.ck .ck-t.big { stroke: var(--ink); stroke-width: 1.8; }
+.ck .ck-n { fill: var(--muted); font: 700 9px var(--f-mono); text-anchor: middle; }
+.ck .ck-hand { stroke: var(--ink); stroke-width: 3; stroke-linecap: round; }
+.ck .ck-hand.was { stroke: var(--muted); stroke-width: 2.2; stroke-dasharray: 3 3; }
+.ck .ck-hub { fill: var(--ink); }
+.ck .ck-arc { fill: none; stroke: var(--accent); stroke-width: 2.6; stroke-linecap: round; }
+.ck .ck-arc.cue { stroke: var(--good); stroke-width: 4; }
+.ck .wh-car { fill: var(--muted); }
+.ck .wh-car.on { fill: var(--accent); }
+.ck .wh-sp { stroke: var(--muted); stroke-width: 1.4; }
+
+/* the cheat sheet */
+.key .gk.rt-key .rt-arc { color: var(--accent); }
+
+/* the legend's triangles side by side under the grid on a phone */
+@media (max-width: 52rem) {
+  .gq.rt .glegend .lg-tri + .lg-br { display: none; }
+  .gq.rt .glegend .lg-tri svg { width: min(36vw, 9rem); height: auto; }
+}
+.grid .sg.rt-ray { stroke: var(--good); stroke-width: 1.4; }
+.grid .rt-arcs { fill: none; stroke: var(--good); stroke-width: 2.4; stroke-dasharray: 5 4; }

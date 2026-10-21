@@ -1,6 +1,6 @@
 # Geometry: Transformations and Symmetry (Module 5) — plan
 
-Status: approved, building (2026-10-21); decisions: counterclockwise first, tap to plot whole figures, T3 folded into T2 (clock) and T7 (360°/n) · Source: Ch. 5 Test A (Module 5, Form A), 12 questions (#10, the compass construction of a translation, skipped by request) · Textbook: Module 5, Lessons 5.1–5.4 (see the "Geometry Module 5" doc) · Section: Geometry, after Lines on the Coordinate Plane
+Status: built and live (2026-10-21): geometry/vectors, rotate, reflect, name-it, two-moves, symmetry, transform-review; decisions: counterclockwise first, tap to plot whole figures, T3 folded into T2 (clock) and T7 (360°/n) · Source: Ch. 5 Test A (Module 5, Form A), 12 questions (#10, the compass construction of a translation, skipped by request) · Textbook: Module 5, Lessons 5.1–5.4 (see the "Geometry Module 5" doc) · Section: Geometry, after Lines on the Coordinate Plane
 
 ## The thinking behind the test
 
@@ -94,3 +94,13 @@ Each follows the house pattern: scaffolding first and fading; one cue + one sent
 2. **Plotting by tapping** (vs typing coordinates) for whole figures. Recommendation: type a single point first; tap to plot whole figures (as the test's Q9 asks to graph); the numbers stay in the legend.
 3. **T3 as its own page** or as late twists in T2 (clock) and T7 (360°/n). Recommendation: fold it in; it is two ideas with one formula each.
 4. **Q10 (the compass construction)** is skipped as asked; the property it tests (each vertex moves the length of the vector) is a true/false fact in T1.
+
+## As built (notes from the builders)
+- T1: 12 questions; northeast as four choices (Q8); the Q10 property as True/False facts.
+- T2: tutorial P(4, 1) → (−1, 4) with › steps (the legs recolour as run ↔ rise); clock, restaurant and wheel as the late idea; tutor rules: name both turns on 270° items, turn animation, clock idea.
+- T4: distance on y = ±x is counted in squares crossed corner to corner (shown only when the path meets the mirror at a grid corner).
+- T5: steps "Is the image facing the same way?" → line, or "same vector?" → vector or angle; then the test's four named choices; then coordinates only. Tutor rule `ab` (mirrors x = a, y = b).
+- T6: ① ② moves, the first image faint; from the third try, faint rings mark the right spots; › explanation of "one move does both".
+- T7: no grid; lines and turns computed from the drawn edges; a None button for no turn.
+- T8 (transform-review): one question per idea, asked and explained by its own exercise (as Lines Review).
+- Known gaps: Plot.mark colours the dots but not their legend entries; Plot.wire can't start with points placed; tap items have no keyboard input.

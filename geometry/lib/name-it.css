@@ -1,0 +1,55 @@
+/* Name the Transformation (T5) — the figure (ink) and its image (blue), the order-around chevrons, the moves, the turn,
+   the ghost of a wrong pick, the findings line, the named choices, the ? key. On geo.css + grid-extra.css + steps.css. */
+.grid .pg.nm-img { stroke: var(--accent); }
+.grid .pt.nm-i { fill: var(--accent); }
+.glegend .lg-pt.nm-i b { color: var(--accent); }
+/* the order around: A → B → C (ink) and A′ → B′ → C′ (blue) */
+.grid .nm-dir { fill: none; stroke: var(--ink); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.grid .nm-dir.nm-dir-i { stroke: var(--accent); }
+/* each vertex to its image; the turn from the origin */
+.grid .sg.nm-mv { stroke: var(--muted); stroke-width: 1.6; stroke-dasharray: 4 4; }
+.grid .sg.nm-sp { stroke: var(--good); stroke-width: 1.8; stroke-dasharray: 5 4; }
+/* where the picked move would have put it */
+.grid .pg.nm-ghost { stroke-width: 2; }
+
+.gq.nm .nm-n { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
+.gq.nm .nm-n .q.small { margin: 0; }
+.gq.nm .nm-n .gmc button { font-family: var(--f-body); }
+.gq.nm .nm-s { width: 100%; }
+.gq.nm .gmc button small { font-size: 0.85em; color: var(--muted); font-weight: 400; }
+/* only the current question shows; answered ones fold into the findings line */
+.gq.nm .nm-s .st-list > .st-text:not(:nth-last-child(2)), .gq.nm .nm-s .st-list > .q.step.st-done { display: none; }
+.gq.nm .nm-sum { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 0; font: 700 clamp(0.95rem, 4vw, 1.1rem) var(--f-body); color: var(--good); }
+.gq.nm .nm-sum span { white-space: nowrap; }
+.gq.nm .nm-sum:empty { display: none; }
+.gq.nm .nm-sum span + span::before { content: '·'; color: var(--muted); margin: 0 0.6em; }
+/* lvl 0: the vertices as text, each beside its image */
+.gq.nm .nm-v { display: grid; grid-template-columns: auto auto; justify-content: center; gap: 4px 1.6em; font-size: clamp(1rem, 4.6vw, 1.3rem); }
+.gq.nm .nm-v span { white-space: nowrap; text-align: left; }
+.gq.nm .nm-v b { color: var(--ink); }
+.gq.nm .nm-v span:nth-child(even) b { color: var(--accent); }
+
+/* the ? key: the questions in order, the rules, the two names of one turn */
+.nm-k .tree { text-align: left; line-height: 1.6; }
+.nm-k .tree i { font-style: normal; color: var(--muted); }
+.nm-k .tree .in { padding-left: 1.2em; }
+.nm-k .tree .in2 { padding-left: 2.4em; }
+.nm-k .tree b { color: var(--ink); }
+.nm-k .nm-rules { margin: 10px auto 0; border-collapse: collapse; text-align: left; }
+.nm-k .nm-rules td { padding: 2px 8px; }
+.nm-k .nm-rules td + td { font-family: var(--f-mono); font-weight: 700; white-space: nowrap; }
+.nm-k .nm-eq { margin-top: 8px; font-weight: 700; }
+/* step choices compact, so the grid stays in view */
+.gq.nm .nm-s .gmc { gap: 8px; }
+.gq.nm .nm-s .gmc button { min-height: 46px; }
+/* all done: only the findings and the finished line */
+.gq.nm .nm-s .gq.steps:has(.final .ok) .st-text { display: none; }
+/* the mirror found (green), a picked mirror that's wrong (red) */
+.grid .ln.mirror.nm-m { stroke: var(--good); stroke-width: 2.4; }
+.grid .ln.mirror.nm-mno { stroke: var(--bad); stroke-width: 1.6; opacity: 0.7; }
+/* the question in words; four named choices, compact so the grid stays in view */
+.gq.nm .nm-n .q.small { font-family: var(--f-body); font-weight: 400; }
+.gq.nm .nm-n .gmc { gap: 8px; }
+.gq.nm .nm-n .gmc button { min-height: 46px; }
+/* the grid drawn after a miss on coordinates only: the coordinates are already above it */
+.gq.nm .nm-v + .gridbox .glegend { display: none; }

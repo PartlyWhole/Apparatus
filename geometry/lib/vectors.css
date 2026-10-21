@@ -1,0 +1,27 @@
+/* Vectors and Translations (T1) — the arrow, the ⟨□, □⟩ and A′(□, □) boxes, the compass rose, the facts. On geo.css + grid-extra.css. */
+.grid .sg.vec { stroke: var(--ink); stroke-width: 2.6; }
+.grid .vhead { fill: var(--ink); stroke: none; }
+.grid .vhead.ok { fill: var(--good); }
+.gq.vx .vq { gap: 0.15em 0.25em; }
+.gq.vx .vq > span:not(.vbx):not(.vbr):not(.vcm):not(.vpa):not(.vnm) { white-space: nowrap; }
+.gq.vx .vbx { display: inline-flex; align-items: center; gap: 0.15em; white-space: nowrap; }
+.gq.vx .vbr { font-size: 1.3em; line-height: 1; color: var(--muted); }
+.gq.vx .vpa, .gq.vx .vcm { color: var(--muted); }
+.gq.vx .vpts { gap: 0.3em 0.6em; }
+.gq.vx .vpts span { white-space: nowrap; }
+.gq.vx .vto { color: var(--muted); }
+/* a fact or a route, in words */
+.gq.vx .vst { font-family: var(--f-body); font-weight: 400; color: var(--ink); max-width: 24rem; line-height: 1.4; display: block; }
+.gq.vx .vst b { font-family: var(--f-mono); font-weight: 700; white-space: nowrap; }
+.gq.vx .vpick { width: min(100%, 22rem); display: flex; justify-content: center; }
+.gq.vx .vpick .gmc button b { font-family: var(--f-mono); }
+/* the compass rose */
+.vrose { display: block; overflow: visible; }
+.vrose path { fill: var(--line); stroke: var(--muted); stroke-width: 1; stroke-linejoin: round; }
+.vrose text { fill: var(--muted); font: 700 10px var(--f-mono); text-anchor: middle; }
+/* the cheat sheet */
+.key .vk .vk-c { font-family: var(--f-mono); font-size: 0.9em; color: var(--muted); }
+/* a plotted figure after a miss: the student's sides fade, the right image dashed in green */
+.grid .sg.pl-seg.vfade { stroke: var(--muted); opacity: 0.45; }
+.grid .pg.vdash { stroke-dasharray: 6 4; stroke-width: 2; }
+.vnw { white-space: nowrap; }

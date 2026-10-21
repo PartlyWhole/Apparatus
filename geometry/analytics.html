@@ -18,9 +18,11 @@
   if (!id) { main.innerHTML = '<p class="empty">No exercise.</p>'; return; }
   const FILE = { 'geo-rise': 'rise-run', 'geo-two-points': 'two-points', 'geo-equation': 'equation-slope', 'geo-relation': 'relation', 'geo-other-slope': 'other-slope', 'geo-parallel-perp': 'parallel-perp', 'geo-find-b': 'find-b', 'geo-write-line': 'write-line', 'geo-midpoint': 'midpoint', 'geo-coords': 'coords', 'geo-roots': 'roots', 'geo-distance': 'distance', 'geo-bisector': 'bisector', 'geo-quad': 'quad',
     // the review loads every exercise it draws from, then itself
+    'geo-vectors': 'vectors', 'geo-rotate': 'rotate', 'geo-reflect': 'reflect', 'geo-name-it': 'name-it', 'geo-two-moves': 'two-moves', 'geo-symmetry': 'symmetry',
+    'geo-transform-review': ['vectors', 'rotate', 'reflect', 'name-it', 'two-moves', 'symmetry', 'transform-review'],
     'geo-review': ['two-points', 'equation-slope', 'write-line', 'parallel-perp', 'midpoint', 'distance', 'bisector', 'quad', 'review'] };
   const files = [].concat(FILE[id] || id), page = files[files.length - 1];
-  const LIBS = ['lib/frac.js?v=7', 'lib/lines.js?v=2', 'lib/drag.js?v=3', 'lib/grid.js?v=14', 'lib/root.js?v=1', 'lib/pick.js?v=1', 'lib/steps.js?v=2', ...files.map(f => `${f}.js?v=13`)];
+  const LIBS = ['lib/frac.js?v=7', 'lib/lines.js?v=2', 'lib/drag.js?v=3', 'lib/grid.js?v=15', 'lib/root.js?v=1', 'lib/pick.js?v=1', 'lib/steps.js?v=2', 'lib/plot.js?v=1', ...files.map(f => `${f}.js?v=14`)];
   const load = i => {
     if (i === LIBS.length) return Apparatus.defs[id] ? Apparatus.analytics(Apparatus.defs[id], main, `${page}.html`) : (main.innerHTML = '<p class="empty">No exercise.</p>');
     const l = document.createElement('script'); l.src = LIBS[i]; l.onload = () => load(i + 1); l.onerror = () => { main.innerHTML = '<p class="empty">No exercise.</p>'; }; document.body.appendChild(l);

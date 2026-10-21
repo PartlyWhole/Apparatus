@@ -1,0 +1,52 @@
+/* Symmetry (T7) — the plain drawing, its ghost copy folding and turning, the dashed lines, the angle at the center,
+   the answer parts (box, °, None), the choices, the ›-stepped explanation, the ? key. On geo.css. */
+.gq.sy .sy-fig { display: flex; justify-content: center; }
+.gq.sy .sy, .sy-k .sy { width: min(62vw, 15rem); height: auto; overflow: visible; display: block; }
+.sy .sy-f path { fill: color-mix(in srgb, var(--accent) 10%, transparent); stroke: var(--ink); stroke-width: 3.2; stroke-linejoin: round; }
+/* the ghost copy: blue while it moves, green when it lands on the shape, red when it doesn't */
+.sy .sy-g { pointer-events: none; }
+.sy .sy-g path { fill: color-mix(in srgb, var(--accent) 16%, transparent); stroke: var(--accent); stroke-width: 2.6; stroke-dasharray: 7 5; stroke-linejoin: round; }
+.sy .sy-g.ok path { fill: var(--good-bg); stroke: var(--good); }
+.sy .sy-g.no path { fill: var(--bad-bg); stroke: var(--bad); }
+/* lines of symmetry: dashed; a fold that doesn't work: dashed in muted */
+.sy .sy-ax { stroke: var(--good); stroke-width: 2.4; stroke-dasharray: 9 7; stroke-linecap: round; }
+.sy .sy-ax.off { stroke: var(--muted); }
+/* the angle at the center (green), the corner angle (red) */
+.sy .sy-c { fill: var(--ink); }
+.sy .sy-sp { stroke: var(--good); stroke-width: 2.2; stroke-linecap: round; }
+.sy .sy-sp.faint { stroke: var(--muted); stroke-width: 1.2; opacity: 0.6; }
+.sy .sy-arc { fill: none; stroke: var(--good); stroke-width: 2.6; }
+.sy .sy-arc.no { stroke: var(--bad); }
+.sy .sy-t { fill: var(--good); font: 700 19px var(--f-mono); text-anchor: middle; paint-order: stroke; stroke: var(--bg); stroke-width: 5px; stroke-linejoin: round; }
+.sy .sy-t.no { fill: var(--bad); }
+
+/* words instead of a drawing: like the test's Q2 */
+.gq.sy .sy-w { font-family: var(--f-body); font-size: clamp(1.1rem, 4.8vw, 1.35rem); max-width: 22rem; }
+.gq.sy .sy-parts { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; }
+.gq.sy .sy-part { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.gq.sy .q.small { margin: 0; font-family: var(--f-body); font-weight: 400; }
+.gq.sy .q.step { gap: 0.35em; }
+.gq.sy .q.step .go { font-size: 1rem; min-height: 44px; padding: 0 18px; }
+.gq.sy .sy-deg { margin-left: -0.15em; }
+.gq.sy .sy-none { min-height: 44px; padding: 0 16px; border-radius: 999px; border: 2px solid var(--line); background: var(--surface); color: var(--ink); font: 700 1rem var(--f-body); }
+.gq.sy .sy-none:hover:not(:disabled) { border-color: var(--accent); }
+.gq.sy .sy-none:disabled { opacity: 0.4; cursor: default; }
+.gq.sy .q.step:has(input:disabled) .sy-none:not(.ok):not(.no) { display: none; }
+.gq.sy .sy-none.ok { opacity: 1; border-color: var(--good); color: var(--good); background: var(--good-bg); }
+.gq.sy .sy-none.no { opacity: 1; border-color: var(--bad); color: var(--bad); }
+.gq.sy .sy-ch { width: 100%; display: flex; justify-content: center; }
+.gq.sy .sy-ch .gmc { width: min(100%, 22rem); }
+.gq.sy .sy-ch .gmc button { font-family: var(--f-mono); font-size: clamp(0.95rem, 4.2vw, 1.1rem); }
+
+/* after a miss: one idea at a time, › for the next */
+.gq.sy .sy-why { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.gq.sy .sy-cap { color: var(--ink); max-width: 24rem; }
+
+/* the ? key */
+.sy-k { text-align: left; justify-items: stretch; }
+.sy-k .sy-fig { display: flex; justify-content: center; gap: 12px; }
+.sy-k .sy { width: min(34vw, 8rem); }
+.sy-k .sy .sy-t { font-size: 26px; }
+.sy-k > div:not(.sy-fig) { width: 100%; text-align: left; }
+.sy-k b { color: var(--ink); white-space: nowrap; }
+.gq.sy.shown .gmc button:not(.no):not(.want) { display: none; }

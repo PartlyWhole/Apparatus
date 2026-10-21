@@ -1,0 +1,38 @@
+/* Two in a Row — the two moves (the current one stands out, with its mirror), the first image faint, the plotting
+   prompt, hint rings, the first wrong try after a miss, and the "what one move does both?" › steps.
+   Builds on geo.css, grid-extra.css (plot.js lines), steps.css. */
+.gq.tm .tm-moves { list-style: none; counter-reset: mv; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; align-items: flex-start;
+  font-family: var(--f-body); font-size: clamp(1rem, 4.4vw, 1.15rem); color: var(--muted); }
+.gq.tm .tm-moves li { counter-increment: mv; display: flex; gap: 0.5em; align-items: baseline; }
+.gq.tm .tm-moves li::before { content: counter(mv); font: 700 0.8em var(--f-mono); min-width: 1.5em; height: 1.5em; border-radius: 50%; border: 1.5px solid currentColor;
+  display: inline-grid; place-items: center; }
+.gq.tm .tm-moves b { font-family: var(--f-mono); color: var(--ink); white-space: nowrap; }
+.gq.tm .tm-moves li.cur { color: var(--ink); }
+.gq.tm .tm-moves li.cur::before { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.gq.tm .tm-moves:has(li.cur) li:not(.cur) { opacity: 0.55; }
+.grid .ln.mirror.cur { stroke: var(--ink); }
+.gq.tm .tm-p, .gq.tm .tm-cap { margin: 0; text-align: center; font-family: var(--f-body); font-size: clamp(1rem, 4.4vw, 1.15rem); color: var(--muted); }
+.gq.tm .tm-p b { font-family: var(--f-mono); color: var(--ink); }
+.gq.tm .tm-steps { width: 100%; }
+.gq.tm .q.step:empty, .gq.tm .q.final:empty { display: none; }
+.gq.tm .tm-p:empty { display: none; }
+
+/* the first image while the second is plotted */
+.grid .pt.faint { fill: var(--muted); opacity: 0.7; }
+.grid .pl.tm-faint { fill: var(--muted); }
+.glegend .lg-pt.faint, .glegend .lg-pt.faint b { color: var(--muted); opacity: 0.8; }
+.grid .tm-hint { fill: none; stroke: var(--good); stroke-width: 1.6; stroke-dasharray: 3 3; }
+/* after a miss: the first wrong try */
+.grid .pg.no.tm-was { stroke-dasharray: 5 4; stroke-width: 1.8; opacity: 0.8; }
+
+/* what one move does both: one idea at a time, › for the next */
+.gq.tm .tm-why { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.gq.tm .tm-cap { color: var(--ink); }
+.grid .tm-ring { fill: none; stroke: var(--good); stroke-width: 2; }
+.grid .sg.tm-gap { stroke: var(--ink); stroke-width: 3.2; }
+.grid .pg.tm-gh { stroke: var(--accent); stroke-width: 2; stroke-dasharray: 5 4; fill: color-mix(in srgb, var(--accent) 22%, transparent); }
+/* lvl 0 miss: the point's path */
+.grid .sg.tm-path { stroke: var(--muted); stroke-width: 1.4; stroke-dasharray: 3 4; }
+.gq.tm .tm-cue:empty { display: none; }
+.gq.tm .tm-cue { width: 100%; display: flex; justify-content: center; }
+.gq.tm.tm-x .grid .sg.pl-seg { stroke: var(--good); opacity: 0.75; }

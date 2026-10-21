@@ -1,0 +1,16 @@
+/* Reflect It — the mirror line, the point's dashed path across it (one tick on each side: the same distance), the
+   distance in the legend, the faint right image after a missed figure. Builds on geo.css and grid-extra.css. */
+.grid .ln.mirror.rf-m { stroke: var(--warn); stroke-width: 2.4; stroke-dasharray: 8 5; }
+.grid .ln.rf-ray { stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 2 4; opacity: 0.7; }
+.grid .rf-half .rf-path { stroke: var(--ink); stroke-width: 1.8; stroke-dasharray: 4 3; stroke-linecap: round; }
+.grid .rf-half .rf-tick { stroke: var(--ink); stroke-width: 2; stroke-linecap: round; }
+.grid .rf-half.ok .rf-path, .grid .rf-half.ok .rf-tick { stroke: var(--good); }
+.grid .pg.rf-want, .grid .sg.rf-want { stroke: var(--good); stroke-width: 2; opacity: 0.55; }
+.glegend .rf-lgd { color: var(--ink); }
+.glegend .rf-lgd svg { display: block; overflow: visible; }
+.glegend .rf-lgd .rf-path { stroke: var(--ink); stroke-width: 2; stroke-dasharray: 4 3; stroke-linecap: round; }
+.glegend .rf-lgd .rf-tick { stroke: var(--ink); stroke-width: 2.2; stroke-linecap: round; }
+.gq.rf .rf-p { font-family: var(--f-body); font-weight: 400; }
+.gq.rf .rf-q .sf input { width: 4ch; }
+.gk.rf-key .rf-kl { display: inline-block; min-width: 4.5em; color: var(--muted); }
+.gq.rf .rf-head[hidden] { display: none; }
