@@ -1,6 +1,6 @@
 # Geometry: Transformations and Symmetry (Module 5) — plan
 
-Status: designed, not built (2026-10-20) · Source: Ch. 5 Test A (Module 5, Form A), 12 questions (#10, the compass construction of a translation, skipped by request) · Textbook: Module 5, Lessons 5.1–5.4 (see the "Geometry Module 5" doc) · Section: Geometry, after Lines on the Coordinate Plane
+Status: approved, building (2026-10-21); decisions: counterclockwise first, tap to plot whole figures, T3 folded into T2 (clock) and T7 (360°/n) · Source: Ch. 5 Test A (Module 5, Form A), 12 questions (#10, the compass construction of a translation, skipped by request) · Textbook: Module 5, Lessons 5.1–5.4 (see the "Geometry Module 5" doc) · Section: Geometry, after Lines on the Coordinate Plane
 
 ## The thinking behind the test
 

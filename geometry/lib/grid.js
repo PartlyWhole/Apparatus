@@ -192,7 +192,7 @@
         const rec = [X(p[0]), Y(p[1])]; rec.node = d; dots.push(rec);
         if (label) {
           // "A(2, 3)": just the letter on the grid; the coordinates go in the legend beside it
-          const m = /^([A-Z])(\(.*\))?$/.exec(label), name = m ? m[1] : label;
+          const m = /^([A-Z][′″]?)(\(.*\))?$/.exec(label), name = m ? m[1] : label;
           if (m) names[p[0] + ',' + p[1]] = m[1];
           const t = el('text', { class: 'pl' + (m ? ' pn' : '') }, top); t.textContent = name;
           d._gl = { t, key: m ? p[0] + ',' + p[1] : null, name: m && m[1] };

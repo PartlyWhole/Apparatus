@@ -27,3 +27,6 @@
 .glegend .lg-tri .m-ar-rise { fill: var(--good); }
 .glegend .lg-tri .m-ar-hyp { fill: var(--ink); }
 .glegend .lg-tri .m-sum { fill: var(--ink); font-size: 15px; }
+/* lib/plot.js: the plotted image's sides, and mirror lines */
+.grid .sg.pl-seg { stroke: var(--accent); stroke-width: 2.4; }
+.grid .ln.mirror { stroke: var(--muted); stroke-width: 2; stroke-dasharray: 7 5; }
